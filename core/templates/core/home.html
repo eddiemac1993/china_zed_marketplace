@@ -1,0 +1,464 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>China Zed Marketplace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="text-slate-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-white border-b border-slate-200 text-sm">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
+            <div class="text-slate-500 hidden sm:block">
+                Zambia Marketplace · Order from China
+            </div>
+
+            <div class="flex items-center gap-4 ml-auto">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="hover:text-orange-600">My Orders</a>
+                    <a href="{% url 'logout' %}" class="hover:text-orange-600">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="hover:text-orange-600">Login</a>
+                    <a href="{% url 'register' %}" class="hover:text-orange-600">Register</a>
+                {% endif %}
+                <a href="{% url 'order_policy' %}" class="hover:text-orange-600">Order Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER / SEARCH -->
+    <header class="bg-white">
+        <div class="max-w-7xl mx-auto px-4 py-5 grid grid-cols-1 lg:grid-cols-5 gap-5 items-center">
+            <form method="GET" class="lg:col-span-3">
+                <div class="flex border-2 border-orange-500 rounded-full overflow-hidden bg-white">
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="Search products from China..."
+                        value="{{ query|default:'' }}"
+                        class="flex-1 px-5 py-3 outline-none text-sm"
+                    >
+
+                    {% if category_id %}
+                        <input type="hidden" name="category" value="{{ category_id }}">
+                    {% endif %}
+
+                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 font-black">
+                        Search
+                    </button>
+                </div>
+            </form>
+
+            <div class="hidden lg:flex justify-end">
+                <a href="{% url 'profile' %}"
+                   class="bg-orange-50 text-orange-600 px-5 py-3 rounded-2xl font-bold hover:bg-orange-100">
+                    Track Orders
+                </a>
+            </div>
+        </div>
+
+        <!-- TAOBAO STYLE CATEGORY BAR -->
+        <div class="border-t border-slate-100 border-b border-slate-200 bg-white">
+            <div class="max-w-7xl mx-auto px-4">
+
+                <div class="flex items-center gap-3 py-3 overflow-x-auto hide-scrollbar">
+
+                    <a href="{% url 'home' %}"
+                       class="shrink-0 px-5 py-2 rounded-full text-sm font-black transition
+                       {% if not category_id %}
+                            bg-orange-500 text-white shadow
+                       {% else %}
+                            bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-600
+                       {% endif %}">
+                        All
+                    </a>
+
+                    {% for category in categories %}
+                        <a href="?category={{ category.id }}"
+                           class="shrink-0 px-5 py-2 rounded-full text-sm font-black transition
+                           {% if category_id == category.id|stringformat:'s' %}
+                                bg-orange-500 text-white shadow
+                           {% else %}
+                                bg-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-600
+                           {% endif %}">
+                            {{ category.name }}
+                        </a>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 mt-4">
+            {% for message in messages %}
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl shadow-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- MAIN LAYOUT -->
+    <main class="max-w-7xl mx-auto px-4 py-5">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+            <!-- LEFT CATEGORIES -->
+            <aside class="lg:col-span-2 bg-white rounded-2xl p-4 shadow-sm hidden lg:block">
+                <h2 class="font-black text-orange-600 mb-4">Categories</h2>
+
+                <a href="{% url 'home' %}"
+                   class="block py-2 text-sm border-b border-slate-100
+                   {% if not category_id %}text-orange-600 font-black{% else %}hover:text-orange-600{% endif %}">
+                    All Categories
+                </a>
+
+                {% for category in categories %}
+                    <a href="?category={{ category.id }}"
+                       class="block py-2 text-sm border-b border-slate-100
+                       {% if category_id == category.id|stringformat:'s' %}
+                            text-orange-600 font-black
+                       {% else %}
+                            hover:text-orange-600
+                       {% endif %}">
+                        {{ category.name }}
+                    </a>
+                {% endfor %}
+            </aside>
+
+            <!-- CENTER CONTENT -->
+            <section class="lg:col-span-7">
+
+                <!-- BANNER SLIDER -->
+                <div class="relative rounded-3xl overflow-hidden mb-5 shadow-sm">
+                    <div id="bannerSlider" class="flex transition-transform duration-500">
+
+                        <div class="min-w-full bg-gradient-to-r from-orange-500 to-red-500 p-8 text-white min-h-[240px] flex flex-col justify-center relative overflow-hidden">
+                            <div class="relative z-10">
+                                <p class="font-bold bg-white/20 inline-block px-3 py-1 rounded-full text-sm mb-3">
+                                    China-to-Zambia Pre-order
+                                </p>
+                                <h2 class="text-3xl md:text-5xl font-black mb-3">Browse. Order. Track.</h2>
+                                <p class="text-orange-50 max-w-xl">
+                                    Confirm through WhatsApp and track your goods until they arrive in Zambia.
+                                </p>
+                            </div>
+                            <div class="absolute right-6 bottom-2 text-white/20 text-8xl font-black hidden md:block">CZ</div>
+                        </div>
+
+                        <div class="min-w-full bg-gradient-to-r from-slate-900 to-teal-700 p-8 text-white min-h-[240px] flex flex-col justify-center relative overflow-hidden">
+                            <div class="relative z-10">
+                                <p class="font-bold bg-white/20 inline-block px-3 py-1 rounded-full text-sm mb-3">
+                                    20% Deposit
+                                </p>
+                                <h2 class="text-3xl md:text-5xl font-black mb-3">Pay small, track easy.</h2>
+                                <p class="text-slate-100 max-w-xl">
+                                    Pay the balance after your goods arrive in Zambia.
+                                </p>
+                            </div>
+                            <div class="absolute right-6 bottom-2 text-white/10 text-8xl font-black hidden md:block">20%</div>
+                        </div>
+
+                        <div class="min-w-full bg-gradient-to-r from-yellow-500 to-orange-500 p-8 text-white min-h-[240px] flex flex-col justify-center relative overflow-hidden">
+                            <div class="relative z-10">
+                                <p class="font-bold bg-white/20 inline-block px-3 py-1 rounded-full text-sm mb-3">
+                                    Hot China Items
+                                </p>
+                                <h2 class="text-3xl md:text-5xl font-black mb-3">New arrivals every week.</h2>
+                                <p class="text-orange-50 max-w-xl">
+                                    Phones, accessories, clothes, gadgets, home items and more.
+                                </p>
+                            </div>
+                            <div class="absolute right-6 bottom-2 text-white/20 text-8xl font-black hidden md:block">HOT</div>
+                        </div>
+
+                    </div>
+
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        <span class="h-2 w-2 rounded-full bg-white/80"></span>
+                        <span class="h-2 w-2 rounded-full bg-white/50"></span>
+                        <span class="h-2 w-2 rounded-full bg-white/50"></span>
+                    </div>
+                </div>
+                <!-- HOT ITEMS / FLASH DEALS -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm mb-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-black text-orange-600">
+                            🔥 Hot Items / Flash Deals
+                        </h2>
+                        <span class="text-xs text-slate-400">Limited availability</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {% for product in featured_products %}
+                            <a href="{% url 'product_detail' product.id %}"
+                               class="border border-orange-100 rounded-2xl overflow-hidden hover:shadow-lg transition bg-orange-50/30">
+
+                                <div class="h-32 bg-slate-100">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}"
+                                             alt="{{ product.name }}"
+                                             class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="h-full flex items-center justify-center text-slate-400 text-xs">
+                                            No Image
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="p-3">
+                                    <h3 class="text-xs font-bold text-slate-800 line-clamp-2 min-h-[32px]">
+                                        {{ product.name }}
+                                    </h3>
+
+                                    <p class="text-orange-600 font-black mt-2">
+                                        K{{ product.selling_price|floatformat:2 }}
+                                    </p>
+
+                                    <p class="text-[11px] text-slate-500">
+                                        Deposit: K{{ product.deposit_amount|floatformat:2 }}
+                                    </p>
+                                </div>
+                            </a>
+                        {% empty %}
+                            <p class="text-slate-400 text-sm">No hot items yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- PRODUCTS -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-black">
+                            {% if category_id %}
+                                Filtered Products
+                            {% else %}
+                                Recommended Products
+                            {% endif %}
+                        </h2>
+
+                        <a href="{% url 'home' %}" class="text-sm text-orange-600 font-bold">
+                            Reset
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {% for product in products %}
+                            <a href="{% url 'product_detail' product.id %}"
+                               class="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg transition">
+
+                                <div class="relative h-40 md:h-48 bg-slate-100 overflow-hidden">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}"
+                                             alt="{{ product.name }}"
+                                             class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                    {% else %}
+                                        <div class="h-full flex items-center justify-center text-slate-400 text-sm">
+                                            No Image
+                                        </div>
+                                    {% endif %}
+
+                                    {% if product.category %}
+                                        <span class="absolute top-2 left-2 bg-white/95 text-slate-700 px-2 py-1 rounded-full text-[10px] font-bold">
+                                            {{ product.category.name }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="p-3">
+                                    <h3 class="text-sm font-semibold text-slate-800 line-clamp-2 min-h-[40px]">
+                                        {{ product.name }}
+                                    </h3>
+
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        {{ product.delivery_range }}
+                                    </p>
+
+                                    <p class="mt-2 text-orange-600 font-black text-xl">
+                                        K{{ product.selling_price|floatformat:2 }}
+                                    </p>
+
+                                    <div class="text-[11px] text-slate-500 mt-1">
+                                        Deposit: K{{ product.deposit_amount|floatformat:2 }}
+                                    </div>
+                                </div>
+                            </a>
+                        {% empty %}
+                            <div class="col-span-full text-center py-16 text-slate-400">
+                                No products available at the moment.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT USER PANEL -->
+            <aside class="lg:col-span-3 space-y-5">
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    {% if request.user.is_authenticated %}
+                        <h3 class="font-black text-lg mb-2">
+                            Welcome back
+                        </h3>
+
+                        <p class="text-slate-500 text-sm mb-4">
+                            {{ request.user.username }}
+                        </p>
+
+                        <a href="{% url 'profile' %}"
+                           class="block bg-orange-500 hover:bg-orange-600 text-white text-center py-3 rounded-xl font-black">
+                            View My Orders
+                        </a>
+                    {% else %}
+                        <h3 class="font-black text-lg mb-2">
+                            Welcome
+                        </h3>
+
+                        <p class="text-slate-500 text-sm mb-4">
+                            Login to place orders and track deliveries.
+                        </p>
+
+                        <a href="{% url 'login' %}"
+                           class="block bg-orange-500 hover:bg-orange-600 text-white text-center py-3 rounded-xl font-black mb-3">
+                            Login
+                        </a>
+
+                        <a href="{% url 'register' %}"
+                           class="block bg-orange-50 hover:bg-orange-100 text-orange-600 text-center py-3 rounded-xl font-black">
+                            Create Account
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm">
+                    <h3 class="font-black text-lg mb-4">
+                        How It Works
+                    </h3>
+
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <p class="font-bold">1. Choose Product</p>
+                            <p class="text-slate-500">Browse items listed from China.</p>
+                        </div>
+
+                        <div>
+                            <p class="font-bold">2. Confirm on WhatsApp</p>
+                            <p class="text-slate-500">Order is confirmed manually.</p>
+                        </div>
+
+                        <div>
+                            <p class="font-bold">3. Track Order</p>
+                            <p class="text-slate-500">Follow status from your profile.</p>
+                        </div>
+
+                        <div>
+                            <p class="font-bold">4. Generate Receipt</p>
+                            <p class="text-slate-500">Available once goods arrive.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
+                    <h3 class="font-black text-orange-700 mb-2">
+                        Need help?
+                    </h3>
+
+                    <p class="text-sm text-slate-600 mb-4">
+                        Contact us on WhatsApp before placing an order.
+                    </p>
+
+                    <a href="https://wa.me/260970261322"
+                       target="_blank"
+                       class="block bg-green-500 hover:bg-green-600 text-white text-center py-3 rounded-xl font-black">
+                        WhatsApp Us
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 mt-10">
+        <div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="{% static 'core/images/china-zed-logo.png' %}"
+                         alt="China Zed Marketplace Logo"
+                         class="h-12 w-12 object-contain">
+
+                    <div>
+                        <h3 class="font-black text-orange-600 text-lg">
+                            China Zed Marketplace
+                        </h3>
+                        <p class="text-xs text-slate-500">
+                            Order from China. Receive in Zambia.
+                        </p>
+                    </div>
+                </div>
+
+                <p class="text-slate-500">
+                    Zambia-based marketplace for pre-ordering selected products from China.
+                </p>
+            </div>
+
+            <div>
+                <h4 class="font-black mb-3">Contact</h4>
+                <p class="text-slate-500">Phone: +260 970261322</p>
+                <p class="text-slate-500">Email: chinatozambia.zm@gmail.com</p>
+            </div>
+
+            <div>
+                <h4 class="font-black mb-3">Quick Links</h4>
+                <p><a href="{% url 'home' %}" class="text-slate-500 hover:text-orange-600">Home</a></p>
+                <p><a href="{% url 'order_policy' %}" class="text-slate-500 hover:text-orange-600">Order Policy</a></p>
+                <p><a href="{% url 'profile' %}" class="text-slate-500 hover:text-orange-600">Track Orders</a></p>
+            </div>
+        </div>
+
+        <div class="text-center text-xs text-slate-400 pb-6">
+            © 2026 China Zed Marketplace. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 0;
+        const slider = document.getElementById("bannerSlider");
+        const totalSlides = 3;
+
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }, 3500);
+    </script>
+
+</body>
+</html>

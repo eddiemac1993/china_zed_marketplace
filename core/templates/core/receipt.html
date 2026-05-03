@@ -1,0 +1,106 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="max-w-3xl mx-auto mt-10 bg-white rounded-2xl shadow p-6">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between border-b pb-4 mb-6">
+        <div class="flex items-center gap-3">
+            <img src="{% static 'core/images/china-zed-logo.png' %}" class="h-12">
+            <div>
+                <h1 class="font-bold text-lg">China Zed Marketplace</h1>
+                <p class="text-sm text-gray-500">Customer Receipt</p>
+            </div>
+        </div>
+
+        <div class="text-right">
+            <p class="text-sm text-gray-500">Receipt No</p>
+            <p class="font-bold">{{ order.receipt_number }}</p>
+        </div>
+    </div>
+
+    <!-- DETAILS -->
+    <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+        <div>
+            <p class="text-gray-500">Customer</p>
+            <p class="font-bold">{{ order.user.username }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Phone</p>
+            <p class="font-bold">{{ order.customer_phone }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Order Date</p>
+            <p class="font-bold">{{ order.order_date|date:"d M Y" }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Status</p>
+            <p class="font-bold text-orange-600">{{ order.get_status_display }}</p>
+        </div>
+    </div>
+
+    <!-- PRODUCT -->
+    <div class="border rounded-xl p-4 mb-6">
+        <p class="font-bold text-lg">{{ order.product.name }}</p>
+        <p class="text-sm text-gray-500">
+            Delivery: {{ order.estimated_arrival_start }} - {{ order.estimated_arrival_end }}
+        </p>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="bg-orange-50 rounded-xl p-5 mb-6">
+        <div class="flex justify-between mb-2">
+            <span>Total</span>
+            <span class="font-bold">K{{ order.total_price }}</span>
+        </div>
+
+        <div class="flex justify-between mb-2">
+            <span>Deposit</span>
+            <span class="font-bold">K{{ order.deposit_amount }}</span>
+        </div>
+
+        <div class="flex justify-between mb-2">
+            <span>Balance</span>
+            <span class="font-bold">K{{ order.balance_amount }}</span>
+        </div>
+
+        <div class="border-t mt-3 pt-3 flex justify-between text-lg font-bold text-orange-600">
+            <span>Total</span>
+            <span>K{{ order.total_price }}</span>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex gap-3">
+        <a href="{% url 'profile' %}"
+           class="bg-gray-800 text-white px-4 py-2 rounded-xl font-bold">
+            Back
+        </a>
+
+        <a href="{% url 'receipt_pdf' order.id %}"
+           class="bg-orange-500 text-white px-4 py-2 rounded-xl font-bold">
+            Download PDF
+        </a>
+
+        <button onclick="window.print()"
+                class="bg-green-500 text-white px-4 py-2 rounded-xl font-bold">
+            Print
+        </button>
+    </div>
+
+</div>
+
+</body>
+</html>

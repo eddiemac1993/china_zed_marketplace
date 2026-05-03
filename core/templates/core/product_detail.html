@@ -1,0 +1,272 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - China Zed Marketplace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body class="text-slate-900">
+
+    <div class="bg-white border-b border-slate-200 text-sm">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-slate-500 hover:text-orange-600">
+                ← Back to Marketplace
+            </a>
+
+            <div class="flex items-center gap-4">
+                <a href="{% url 'order_policy' %}" class="hover:text-orange-600">Order Policy</a>
+
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="hover:text-orange-600">My Orders</a>
+                    <a href="{% url 'logout' %}" class="hover:text-orange-600">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="hover:text-orange-600">Login</a>
+                    <a href="{% url 'register' %}" class="hover:text-orange-600">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <header class="bg-white">
+        <div class="max-w-7xl mx-auto px-4 py-5 flex items-center gap-3">
+            <img src="{% static 'core/images/china-zed-logo.png' %}"
+                 alt="China Zed Marketplace Logo"
+                 class="h-14 w-14 object-contain">
+
+            <div>
+                <h1 class="text-2xl font-black text-orange-600">
+                    China Zed Marketplace
+                </h1>
+                <p class="text-xs text-slate-500">
+                    Order from China. Receive in Zambia.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 pb-24 md:pb-6">
+
+        <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
+
+                <div class="p-4 md:p-6 border-b lg:border-b-0 lg:border-r border-slate-100">
+                    <div class="bg-slate-100 rounded-3xl overflow-hidden">
+                        {% if product.image %}
+                            <img id="mainProductImage"
+                                 src="{{ product.image.url }}"
+                                 alt="{{ product.name }}"
+                                 class="w-full h-[360px] md:h-[520px] object-cover">
+                        {% else %}
+                            <div class="w-full h-[360px] md:h-[520px] flex items-center justify-center text-slate-400 font-bold">
+                                No Image
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-4 sm:grid-cols-5 gap-3 mt-4">
+                        {% if product.image %}
+                            <button type="button"
+                                    onclick="changeMainImage('{{ product.image.url }}')"
+                                    class="h-20 rounded-2xl border-2 border-orange-500 overflow-hidden bg-slate-100">
+                                <img src="{{ product.image.url }}"
+                                     alt="{{ product.name }}"
+                                     class="w-full h-full object-cover">
+                            </button>
+                        {% endif %}
+
+                        {% for img in product.gallery_images.all %}
+                            <button type="button"
+                                    onclick="changeMainImage('{{ img.image.url }}')"
+                                    class="h-20 rounded-2xl border border-slate-200 overflow-hidden bg-slate-100 hover:border-orange-500 transition">
+                                <img src="{{ img.image.url }}"
+                                     alt="{{ img.caption|default:product.name }}"
+                                     class="w-full h-full object-cover">
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="p-5 md:p-8">
+
+                    {% if product.category %}
+                        <span class="inline-block bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-xs font-black mb-3">
+                            {{ product.category.name }}
+                        </span>
+                    {% endif %}
+
+                    <h2 class="text-2xl md:text-4xl font-black text-slate-900 leading-tight mb-3">
+                        {{ product.name }}
+                    </h2>
+
+                    <p class="text-slate-500 leading-relaxed mb-5">
+                        {{ product.description }}
+                    </p>
+
+                    <div class="bg-orange-50 border border-orange-100 rounded-3xl p-5 mb-5">
+                        <p class="text-xs font-black text-orange-500 uppercase mb-1">
+                            Final Price
+                        </p>
+
+                        <p class="text-4xl md:text-5xl font-black text-orange-600">
+                            K{{ product.selling_price|floatformat:2 }}
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                            <div class="bg-white rounded-2xl p-4 border border-orange-100">
+                                <p class="text-xs text-slate-500 font-bold">Deposit Required</p>
+                                <p class="text-2xl font-black text-slate-900">
+                                    K{{ product.deposit_amount|floatformat:2 }}
+                                </p>
+                                <p class="text-xs text-slate-400">20% after WhatsApp confirmation</p>
+                            </div>
+
+                            <div class="bg-white rounded-2xl p-4 border border-orange-100">
+                                <p class="text-xs text-slate-500 font-bold">Balance on Arrival</p>
+                                <p class="text-2xl font-black text-slate-900">
+                                    K{{ product.balance_amount|floatformat:2 }}
+                                </p>
+                                <p class="text-xs text-slate-400">Paid when goods arrive</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-3xl p-5 mb-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="font-black text-slate-900">Estimated Delivery</p>
+                                <p class="text-slate-500 text-sm">{{ product.delivery_range }}</p>
+                            </div>
+
+                            <span class="bg-white px-3 py-1 rounded-full text-xs font-black text-orange-600">
+                                Pre-order
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                        <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm">
+                            <p class="font-black text-sm">20% Deposit</p>
+                            <p class="text-xs text-slate-500">Order confirmation</p>
+                        </div>
+
+                        <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm">
+                            <p class="font-black text-sm">Track Order</p>
+                            <p class="text-xs text-slate-500">From profile</p>
+                        </div>
+
+                        <div class="bg-white border border-slate-100 rounded-2xl p-3 shadow-sm">
+                            <p class="font-black text-sm">Receipt</p>
+                            <p class="text-xs text-slate-500">After arrival</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                        <a href="https://wa.me/260970261322?text=Hello,%20I%20want%20to%20ask%20about%20{{ product.name }}.%20Price:%20K{{ product.selling_price|floatformat:2 }}.%20Deposit:%20K{{ product.deposit_amount|floatformat:2 }}.%20Balance:%20K{{ product.balance_amount|floatformat:2 }}"
+                           target="_blank"
+                           class="bg-green-500 hover:bg-green-600 text-white text-center py-4 rounded-2xl font-black">
+                            Ask on WhatsApp
+                        </a>
+
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'place_order' product.id %}"
+                               class="bg-orange-500 hover:bg-orange-600 text-white text-center py-4 rounded-2xl font-black">
+                                Place Order & Track
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}"
+                               class="bg-orange-500 hover:bg-orange-600 text-white text-center py-4 rounded-2xl font-black">
+                                Login to Order
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    {% if not request.user.is_authenticated %}
+                        <p class="text-sm text-slate-500">
+                            No account?
+                            <a href="{% url 'register' %}" class="text-orange-600 font-black">
+                                Create account
+                            </a>
+                            to place an order and track status.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-6">
+            <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 mb-4">
+                    Product Details
+                </h3>
+
+                <p class="text-slate-600 leading-relaxed">
+                    {{ product.description }}
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 mb-4">
+                    Order Terms
+                </h3>
+
+                <div class="space-y-4 text-sm text-slate-600">
+                    <p>A 20% deposit is required after confirmation on WhatsApp.</p>
+                    <p>The balance is paid when the goods arrive in Zambia.</p>
+                    <p>
+                        Deposit is refundable only if the item is not delivered within the agreed delivery period,
+                        becomes unavailable before purchase, or the seller fails to fulfil the order.
+                    </p>
+
+                    <a href="{% url 'order_policy' %}" class="inline-block text-orange-600 font-black">
+                        Read full policy →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 grid grid-cols-2 gap-3 md:hidden z-50">
+        <a href="https://wa.me/260970261322?text=Hello,%20I%20want%20to%20ask%20about%20{{ product.name }}.%20Price:%20K{{ product.selling_price|floatformat:2 }}.%20Deposit:%20K{{ product.deposit_amount|floatformat:2 }}.%20Balance:%20K{{ product.balance_amount|floatformat:2 }}"
+           target="_blank"
+           class="bg-green-500 text-white text-center py-3 rounded-xl font-black">
+            WhatsApp
+        </a>
+
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'place_order' product.id %}"
+               class="bg-orange-500 text-white text-center py-3 rounded-xl font-black">
+                Order
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}"
+               class="bg-orange-500 text-white text-center py-3 rounded-xl font-black">
+                Login
+            </a>
+        {% endif %}
+    </div>
+
+    <script>
+        function changeMainImage(imageUrl) {
+            const mainImage = document.getElementById("mainProductImage");
+            if (mainImage) {
+                mainImage.src = imageUrl;
+            }
+        }
+    </script>
+
+</body>
+</html>

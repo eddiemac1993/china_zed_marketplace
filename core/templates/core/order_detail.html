@@ -1,0 +1,306 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #{{ order.id }} - China Zed Marketplace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-slate-900">
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+    <div class="mb-4">
+        <a href="{% url 'profile' %}" class="text-sm text-slate-500 hover:text-orange-600">
+            ← Back to My Orders
+        </a>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6">
+            <div class="flex items-center gap-3">
+                <img src="{% static 'core/images/china-zed-logo.png' %}"
+                     class="h-14 w-14 bg-white rounded-xl object-contain p-1">
+
+                <div>
+                    <h1 class="text-2xl font-black">Order #{{ order.id }}</h1>
+                    <p class="text-orange-50 text-sm">China Zed Marketplace Tracking</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+
+            <!-- Product Summary -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+
+                <div class="md:col-span-1">
+                    <div class="h-40 bg-slate-100 rounded-2xl overflow-hidden">
+                        {% if order.product.image %}
+                            <img src="{{ order.product.image.url }}"
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="h-full flex items-center justify-center text-slate-400">
+                                No Image
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="md:col-span-3">
+                    <h2 class="text-2xl font-black text-slate-900">
+                        {{ order.product.name }}
+                    </h2>
+
+                    <p class="text-slate-500 mt-1">
+                        Status:
+                        <span class="font-black text-orange-600">
+                            {% if order.is_delayed %}
+                                Delayed
+                            {% else %}
+                                {{ order.get_status_display }}
+                            {% endif %}
+                        </span>
+                    </p>
+
+                    <p class="text-slate-500 mt-1">
+                        Expected Arrival:
+                        <span class="font-bold text-slate-800">
+                            {{ order.estimated_arrival_start }} to {{ order.estimated_arrival_end }}
+                        </span>
+                    </p>
+
+                    {% if order.arrival_date %}
+                        <p class="text-green-600 mt-1 font-bold">
+                            Arrival Date: {{ order.arrival_date }}
+                        </p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Tracking Timeline -->
+            <div class="mb-8">
+                <h3 class="text-xl font-black mb-5">Tracking Timeline</h3>
+
+                <div class="space-y-5">
+
+                    <!-- Pending -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'pending' or order.status == 'confirmed' or order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}
+                                    bg-orange-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                1
+                            </div>
+                            <div class="w-1 h-12 bg-slate-200"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">Order Placed</h4>
+                            <p class="text-sm text-slate-500">
+                                Your order request has been created.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Confirmed -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'confirmed' or order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}
+                                    bg-orange-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                2
+                            </div>
+                            <div class="w-1 h-12 bg-slate-200"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">Confirmed</h4>
+                            <p class="text-sm text-slate-500">
+                                Order has been confirmed after WhatsApp/deposit verification.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Purchased -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}
+                                    bg-orange-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                3
+                            </div>
+                            <div class="w-1 h-12 bg-slate-200"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">Purchased in China</h4>
+                            <p class="text-sm text-slate-500">
+                                Item has been purchased from supplier.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Shipped -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}
+                                    bg-orange-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                4
+                            </div>
+                            <div class="w-1 h-12 bg-slate-200"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">Shipped</h4>
+                            <p class="text-sm text-slate-500">
+                                Item has left supplier/logistics point.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- In Transit -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}
+                                    bg-orange-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                5
+                            </div>
+                            <div class="w-1 h-12 bg-slate-200"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">In Transit</h4>
+                            <p class="text-sm text-slate-500">
+                                Goods are on the way to Zambia.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Arrived -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}
+                                    bg-green-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                6
+                            </div>
+                            <div class="w-1 h-12 bg-slate-200"></div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">Arrived in Zambia</h4>
+                            <p class="text-sm text-slate-500">
+                                Goods have arrived in Zambia.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Ready / Successful -->
+                    <div class="flex gap-4">
+                        <div class="flex flex-col items-center">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
+                                {% if order.status == 'ready' or order.status == 'successful' %}
+                                    bg-green-500 text-white
+                                {% else %}
+                                    bg-slate-200 text-slate-500
+                                {% endif %}">
+                                7
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-black">Ready / Completed</h4>
+                            <p class="text-sm text-slate-500">
+                                Order is ready for collection/delivery or has been completed.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="bg-orange-50 rounded-3xl p-5 mb-6">
+                <h3 class="text-lg font-black mb-4">Payment Summary</h3>
+
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Total Price</span>
+                        <span class="font-black">K{{ order.total_price }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Deposit</span>
+                        <span class="font-black">K{{ order.deposit_amount }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Balance</span>
+                        <span class="font-black">K{{ order.balance_amount }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+                <a href="https://wa.me/260970261322?text=Hello,%20I%20want%20to%20ask%20about%20Order%20%23{{ order.id }}"
+                   target="_blank"
+                   class="bg-green-500 hover:bg-green-600 text-white text-center py-3 rounded-2xl font-black">
+                    WhatsApp
+                </a>
+
+                <a href="{% url 'profile' %}"
+                   class="bg-slate-900 hover:bg-slate-800 text-white text-center py-3 rounded-2xl font-black">
+                    My Orders
+                </a>
+
+                {% if order.status == "arrived" or order.status == "ready" or order.status == "successful" %}
+                    <a href="{% url 'receipt' order.id %}"
+                       class="bg-orange-500 hover:bg-orange-600 text-white text-center py-3 rounded-2xl font-black">
+                        Receipt
+                    </a>
+                {% else %}
+                    <button disabled
+                            class="bg-slate-200 text-slate-500 py-3 rounded-2xl font-black">
+                        Receipt Pending
+                    </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

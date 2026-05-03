@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial;
+            font-size: 12px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid black;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .row {
+            margin-bottom: 8px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .total {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>China Zed Marketplace</h2>
+    <p>Receipt</p>
+</div>
+
+<div class="row"><span class="label">Receipt No:</span> {{ order.receipt_number }}</div>
+<div class="row"><span class="label">Customer:</span> {{ order.user.username }}</div>
+<div class="row"><span class="label">Phone:</span> {{ order.customer_phone }}</div>
+<div class="row"><span class="label">Product:</span> {{ order.product.name }}</div>
+<div class="row"><span class="label">Order Date:</span> {{ order.order_date }}</div>
+
+<div class="row">
+    <span class="label">Expected Arrival:</span>
+    {{ order.estimated_arrival_start }} - {{ order.estimated_arrival_end }}
+</div>
+
+<div class="row"><span class="label">Status:</span> {{ order.get_status_display }}</div>
+
+<hr>
+
+<div class="row"><span class="label">Total:</span> K{{ order.total_price }}</div>
+<div class="row"><span class="label">Deposit:</span> K{{ order.deposit_amount }}</div>
+<div class="row"><span class="label">Balance:</span> K{{ order.balance_amount }}</div>
+
+<div class="total">
+    TOTAL: K{{ order.total_price }}
+</div>
+
+</body>
+</html>

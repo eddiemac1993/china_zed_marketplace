@@ -1,0 +1,169 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Policy - China Zed Marketplace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
+
+        <img src="{% static 'core/images/china-zed-logo.png' %}"
+             class="h-14 w-14 object-contain">
+
+        <div>
+            <h1 class="text-xl font-black text-orange-600">
+                China Zed Marketplace
+            </h1>
+            <p class="text-xs text-slate-500">
+                Order from China. Receive in Zambia.
+            </p>
+        </div>
+
+    </div>
+</header>
+
+<!-- CONTENT -->
+<main class="max-w-4xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-3xl shadow-sm p-6 md:p-10">
+
+        <h1 class="text-3xl md:text-4xl font-black mb-6 text-slate-900">
+            Order Policy
+        </h1>
+
+        <!-- INTRO BOX -->
+        <div class="bg-orange-50 border border-orange-100 p-5 rounded-2xl mb-8">
+            <p class="text-sm text-slate-700">
+                Please read and understand how our China-to-Zambia ordering system works before placing an order.
+            </p>
+        </div>
+
+        <!-- SECTION -->
+        <div class="space-y-8 text-sm md:text-base text-slate-700">
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900 mb-2">
+                    1. Order Confirmation
+                </h2>
+                <p>
+                    After placing an order on the website, the customer must confirm the order through WhatsApp.
+                    Orders are only processed after manual confirmation to ensure accuracy and availability.
+                </p>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900 mb-2">
+                    2. Deposit Requirement
+                </h2>
+                <p>
+                    A 20% deposit is required to process any order. This confirms commitment and allows us to secure the item from China.
+                </p>
+                <p class="mt-2">
+                    The remaining 80% balance is paid after the goods arrive in Zambia.
+                </p>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900 mb-2">
+                    3. Refund Policy
+                </h2>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
+                    <li>Refund applies if the supplier fails to fulfill the order.</li>
+                    <li>Refund applies if the product becomes unavailable before purchase.</li>
+                </ul>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900 mb-2">
+                    4. Delivery Timeline
+                </h2>
+                <p>
+                    Each product has an estimated delivery range displayed on the website.
+                </p>
+                <p class="mt-2">
+                    Delivery times may vary due to:
+                </p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Shipping delays</li>
+                    <li>Customs clearance</li>
+                    <li>Supplier processing time</li>
+                    <li>Logistics and transport conditions</li>
+                </ul>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900 mb-2">
+                    5. Order Tracking
+                </h2>
+                <p>
+                    Customers can log in to their profile to track order progress, including:
+                </p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Confirmed</li>
+                    <li>Purchased</li>
+                    <li>Shipped</li>
+                    <li>In Transit</li>
+                    <li>Arrived in Zambia</li>
+                    <li>Ready for Collection</li>
+                    <li>Successful / Completed</li>
+                    <li>Delayed</li>
+                </ul>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-black text-slate-900 mb-2">
+                    6. Receipts
+                </h2>
+                <p>
+                    Customers can generate a receipt once the goods have arrived in Zambia or when the order is ready for collection or delivery.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- CTA -->
+        <div class="mt-10 flex flex-col sm:flex-row gap-4">
+            <a href="{% url 'home' %}"
+               class="bg-orange-500 hover:bg-orange-600 text-white text-center px-6 py-3 rounded-xl font-black">
+                Back to Home
+            </a>
+
+            <a href="https://wa.me/260970261322"
+               target="_blank"
+               class="bg-green-500 hover:bg-green-600 text-white text-center px-6 py-3 rounded-xl font-black">
+                Ask on WhatsApp
+            </a>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-white border-t border-slate-200 mt-10">
+    <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-500">
+        © 2026 China Zed Marketplace · chinatozambia.zm@gmail.com
+    </div>
+</footer>
+
+</body>
+</html>

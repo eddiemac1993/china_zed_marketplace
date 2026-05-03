@@ -1,0 +1,336 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - China Zed Marketplace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body class="text-slate-900">
+
+    <!-- TOP BAR -->
+    <div class="bg-white border-b border-slate-200 text-sm">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
+            <a href="{% url 'home' %}" class="text-slate-500 hover:text-orange-600">
+                ← Back to Marketplace
+            </a>
+
+            <div class="flex items-center gap-4">
+                <a href="{% url 'order_policy' %}" class="hover:text-orange-600">Order Policy</a>
+                <a href="{% url 'logout' %}" class="text-red-500 hover:text-red-600">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-white">
+        <div class="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <img src="{% static 'core/images/china-zed-logo.png' %}"
+                     alt="China Zed Marketplace Logo"
+                     class="h-14 w-14 object-contain">
+
+                <div>
+                    <h1 class="text-2xl font-black text-orange-600">
+                        My Orders
+                    </h1>
+                    <p class="text-xs text-slate-500">
+                        Track your China-to-Zambia orders.
+                    </p>
+                </div>
+            </div>
+
+            <a href="{% url 'home' %}"
+               class="hidden sm:inline-block bg-orange-500 hover:bg-orange-600 text-white px-5 py-3 rounded-2xl font-black">
+                Continue Shopping
+            </a>
+        </div>
+    </header>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 mt-5">
+            {% for message in messages %}
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl shadow-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- WELCOME CARD -->
+        <section class="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-3xl p-6 md:p-8 mb-6 shadow-sm">
+            <p class="text-orange-100 text-sm font-bold">Welcome back</p>
+            <h2 class="text-3xl md:text-4xl font-black mt-1">
+                {{ request.user.username }}
+            </h2>
+            <p class="text-orange-50 mt-2 max-w-2xl">
+                View your order status, confirm orders on WhatsApp, and generate receipts once goods arrive.
+            </p>
+        </section>
+
+        <!-- STATS -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <p class="text-sm text-slate-500 font-bold">Active Orders</p>
+                <h3 class="text-4xl font-black text-orange-600 mt-2">{{ active_orders_count }}</h3>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <p class="text-sm text-slate-500 font-bold">Successful Orders</p>
+                <h3 class="text-4xl font-black text-green-600 mt-2">{{ successful_orders.count }}</h3>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <p class="text-sm text-slate-500 font-bold">Delayed Orders</p>
+                <h3 class="text-4xl font-black text-red-600 mt-2">{{ delayed_orders_count }}</h3>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                <p class="text-sm text-slate-500 font-bold">Cancelled Orders</p>
+                <h3 class="text-4xl font-black text-slate-600 mt-2">{{ cancelled_orders.count }}</h3>
+            </div>
+        </section>
+
+        <!-- ORDERS -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-black text-slate-900">
+                    Order History
+                </h2>
+
+                <a href="{% url 'home' %}" class="text-orange-600 font-black text-sm">
+                    Shop More →
+                </a>
+            </div>
+
+            <div class="space-y-5">
+                {% for order in orders %}
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+
+                        <div class="p-5 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+                            <!-- PRODUCT IMAGE -->
+                            <div class="lg:col-span-2">
+                                <div class="h-40 lg:h-full min-h-[140px] rounded-2xl bg-slate-100 overflow-hidden">
+                                    {% if order.product.image %}
+                                        <img src="{{ order.product.image.url }}"
+                                             alt="{{ order.product.name }}"
+                                             class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-slate-400 text-sm">
+                                            No Image
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- ORDER DETAILS -->
+                            <div class="lg:col-span-7">
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    <h3 class="text-xl font-black text-slate-900">
+                                        <a href="{% url 'order_detail' order.id %}" class="hover:text-orange-600">
+    {{ order.product.name }}
+</a>
+                                    </h3>
+
+                                    {% if order.is_delayed %}
+                                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-black">
+                                            Delayed
+                                        </span>
+                                    {% elif order.status == "pending" %}
+                                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == "confirmed" %}
+                                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == "purchased" or order.status == "shipped" or order.status == "in_transit" %}
+                                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == "arrived" or order.status == "ready" %}
+                                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == "successful" %}
+                                        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == "cancelled" %}
+                                        <span class="bg-slate-200 text-slate-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-black">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="text-sm text-slate-500 mb-4">
+                                    Order ID: #{{ order.id }} · Ordered on {{ order.order_date|date:"d M Y" }}
+                                </p>
+
+                                <!-- TRACKING STEPS -->
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5 text-xs">
+                                    <div class="rounded-xl p-3 {% if order.status == 'pending' or order.status == 'confirmed' or order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-orange-50 text-orange-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+                                        <p class="font-black">1. Confirmed</p>
+                                    </div>
+
+                                    <div class="rounded-xl p-3 {% if order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-orange-50 text-orange-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+                                        <p class="font-black">2. Purchased</p>
+                                    </div>
+
+                                    <div class="rounded-xl p-3 {% if order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-orange-50 text-orange-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+                                        <p class="font-black">3. Shipped</p>
+                                    </div>
+
+                                    <div class="rounded-xl p-3 {% if order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-green-50 text-green-700{% else %}bg-slate-50 text-slate-400{% endif %}">
+                                        <p class="font-black">4. Arrived</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                    <div class="bg-slate-50 rounded-2xl p-4">
+                                        <p class="text-slate-500 font-bold">Expected Arrival</p>
+                                        <p class="font-black text-slate-900">
+                                            {{ order.estimated_arrival_start }} to {{ order.estimated_arrival_end }}
+                                        </p>
+                                    </div>
+
+                                    {% if order.arrival_date %}
+                                        <div class="bg-green-50 rounded-2xl p-4">
+                                            <p class="text-green-600 font-bold">Arrival Date</p>
+                                            <p class="font-black text-green-800">
+                                                {{ order.arrival_date }}
+                                            </p>
+                                        </div>
+                                    {% else %}
+                                        <div class="bg-slate-50 rounded-2xl p-4">
+                                            <p class="text-slate-500 font-bold">Customer Phone</p>
+                                            <p class="font-black text-slate-900">
+                                                {{ order.customer_phone }}
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- PAYMENT / ACTIONS -->
+                            <div class="lg:col-span-3">
+                                <div class="bg-orange-50 border border-orange-100 rounded-3xl p-5 h-full flex flex-col justify-between">
+
+                                    <div>
+                                        <p class="text-xs text-orange-600 font-black uppercase">
+                                            Order Amount
+                                        </p>
+
+                                        <p class="text-3xl font-black text-orange-600 mt-1">
+                                            K{{ order.total_price }}
+                                        </p>
+
+                                        <div class="mt-4 space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-slate-500">Deposit</span>
+                                                <span class="font-black">K{{ order.deposit_amount }}</span>
+                                            </div>
+
+                                            <div class="flex justify-between border-t border-orange-100 pt-2">
+                                                <span class="text-slate-500">Balance</span>
+                                                <span class="font-black">K{{ order.balance_amount }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+    <div class="rounded-2xl p-4 {% if order.deposit_confirmed %}bg-green-50{% else %}bg-yellow-50{% endif %}">
+        <p class="{% if order.deposit_confirmed %}text-green-700{% else %}text-yellow-700{% endif %} font-black">
+            Deposit
+        </p>
+
+        <p class="font-bold">
+            {% if order.deposit_confirmed %}
+                Confirmed
+            {% else %}
+                Awaiting confirmation
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="rounded-2xl p-4 {% if order.balance_paid %}bg-green-50{% else %}bg-slate-50{% endif %}">
+        <p class="{% if order.balance_paid %}text-green-700{% else %}text-slate-500{% endif %} font-black">
+            Balance
+        </p>
+
+        <p class="font-bold">
+            {% if order.balance_paid %}
+                Paid
+            {% else %}
+                Due on arrival
+            {% endif %}
+        </p>
+    </div>
+</div>
+                                    </div>
+
+                                    <div class="mt-5 space-y-3">
+                                        <a class="block bg-green-500 hover:bg-green-600 text-white text-center py-3 rounded-2xl font-black"
+                                           target="_blank"
+                                           href="https://wa.me/260970261322?text=Hello,%20I%20want%20to%20confirm%20my%20order.%0A%0AOrder%20ID:%20{{ order.id }}%0AProduct:%20{{ order.product.name }}%0ATotal:%20K{{ order.total_price }}%0ADeposit:%20K{{ order.deposit_amount }}%0ABalance:%20K{{ order.balance_amount }}%0APhone:%20{{ order.customer_phone }}">
+                                            Confirm on WhatsApp
+                                        </a>
+
+                                        {% if order.status == "arrived" or order.status == "ready" or order.status == "successful" %}
+                                            <a href="{% url 'receipt' order.id %}"
+                                               class="block bg-slate-950 hover:bg-slate-800 text-white text-center py-3 rounded-2xl font-black">
+                                                Generate Receipt
+                                            </a>
+                                        {% else %}
+                                            <p class="text-xs text-slate-500 text-center">
+                                                Receipt will be available once goods arrive.
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="bg-white rounded-3xl p-10 text-center border border-slate-100 shadow-sm">
+                        <h3 class="text-2xl font-black text-slate-800">
+                            No orders yet
+                        </h3>
+
+                        <p class="text-slate-500 mt-2">
+                            Start shopping and your orders will appear here.
+                        </p>
+
+                        <a href="{% url 'home' %}"
+                           class="inline-block mt-5 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl font-black">
+                            Browse Products
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
