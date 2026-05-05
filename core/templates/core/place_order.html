@@ -1,80 +1,153 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Place Order</title>
+    <meta charset="UTF-8">
+    <title>Confirm Order | China Zed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f6f8;
-        }
-
-        .box {
-            max-width: 650px;
-            margin: 50px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 14px;
-        }
-
-        button, .btn {
-            display: inline-block;
-            background: #111827;
-            color: white;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .summary {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .price {
-            font-size: 22px;
-            font-weight: bold;
-            color: #0f766e;
+            background: #f5f5f5;
         }
     </style>
 </head>
-<body>
 
-<div class="box">
-    <a href="{% url 'product_detail' product.id %}">← Back to product</a>
+<body class="text-slate-900">
 
-    <h2>Confirm Your Order</h2>
-{% if messages %}
-    {% for message in messages %}
-        <div style="background:#dcfce7; color:#166534; padding:12px; border-radius:8px; margin-bottom:10px;">
-            {{ message }}
+<!-- HEADER -->
+<div class="bg-white shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <h1 class="text-xl font-black text-orange-500">
+            China Zed Marketplace
+        </h1>
+
+        <a href="{% url 'product_detail' product.slug %}"
+           class="text-sm font-bold text-slate-600 hover:text-orange-500">
+            ← Back to product
+        </a>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+    <!-- TITLE -->
+    <h2 class="text-2xl font-black mb-5">
+        Confirm Your Order
+    </h2>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- PRODUCT SUMMARY -->
+        <div class="bg-white rounded-3xl p-5 shadow-sm">
+
+            <!-- IMAGE -->
+            <div class="h-48 bg-slate-100 rounded-xl overflow-hidden mb-4">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}"
+                         class="w-full h-full object-cover">
+                {% else %}
+                    <div class="h-full flex items-center justify-center text-slate-400">
+                        No Image
+                    </div>
+                {% endif %}
+            </div>
+
+            <h3 class="text-lg font-black mb-2">
+                {{ product.name }}
+            </h3>
+
+            <p class="text-3xl font-black text-orange-600">
+                K{{ product.selling_price|floatformat:2 }}
+            </p>
+
+            <div class="mt-4 space-y-2 text-sm">
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Deposit (20%)</span>
+                    <span class="font-bold">
+                        K{{ product.deposit_amount|floatformat:2 }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Balance</span>
+                    <span class="font-bold">
+                        K{{ product.balance_amount|floatformat:2 }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Delivery</span>
+                    <span class="font-bold text-blue-600">
+                        {{ product.delivery_range }}
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- TRUST BADGES -->
+            <div class="flex gap-2 mt-5 text-xs font-black flex-wrap">
+                <span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-full">
+                    20% Deposit
+                </span>
+                <span class="bg-green-50 text-green-600 px-3 py-1 rounded-full">
+                    Pay on Arrival
+                </span>
+                <span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full">
+                    China → Zambia
+                </span>
+            </div>
+
         </div>
-    {% endfor %}
-{% endif %}
-    <div class="summary">
-        <h3>{{ product.name }}</h3>
-        <p class="price">Total Price: K{{ product.selling_price|floatformat:2 }}</p>
-        <p><strong>Deposit Required:</strong> K{{ product.deposit_amount|floatformat:2 }}</p>
-        <p><strong>Balance on Arrival:</strong> K{{ product.balance_amount|floatformat:2 }}</p>
-        <p><strong>Estimated Delivery:</strong> {{ product.delivery_range }}</p>
+
+        <!-- FORM -->
+        <div class="bg-white rounded-3xl p-5 shadow-sm">
+
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+
+                <!-- PHONE -->
+                <div>
+                    <label class="block text-sm font-bold mb-1">
+                        Phone Number
+                    </label>
+                    {{ form.customer_phone }}
+                </div>
+
+                <!-- NOTE -->
+                <div>
+                    <label class="block text-sm font-bold mb-1">
+                        Order Note
+                    </label>
+                    {{ form.customer_note }}
+                </div>
+
+                <!-- BUTTON -->
+                <button type="submit"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white font-black py-3 rounded-xl mt-4">
+                    Submit Order & Continue to WhatsApp
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-
-        <button type="submit">Submit Order Request</button>
-    </form>
 </div>
 
 </body>

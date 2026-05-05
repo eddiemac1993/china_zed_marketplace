@@ -19,7 +19,11 @@ class MultipleFileField(forms.FileField):
 
 class SupplierProductRequestForm(forms.ModelForm):
     images = MultipleFileField(
-        widget=MultipleFileInput(attrs={"multiple": True}),
+        widget=MultipleFileInput(attrs={
+            "multiple": True,
+            "class": "form-control",
+            "accept": "image/*",
+        }),
         required=False
     )
 
@@ -31,7 +35,37 @@ class SupplierProductRequestForm(forms.ModelForm):
             "product_name",
             "description",
             "rmb_price",
+            "image",
         ]
+
+        widgets = {
+            "supplier_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Supplier name or shop name",
+            }),
+            "supplier_contact": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Phone, WhatsApp or WeChat",
+            }),
+            "product_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Product name",
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Describe the product (size, colour, model, etc.)",
+            }),
+            "rmb_price": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Price in RMB",
+                "step": "0.01",
+            }),
+            "image": forms.ClearableFileInput(attrs={
+                "class": "form-control",
+                "accept": "image/*",
+            }),
+        }
 
 
 class OrderForm(forms.Form):

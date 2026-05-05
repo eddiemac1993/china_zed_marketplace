@@ -1,5 +1,5 @@
-from datetime import date, timedelta
-from django.urls import reverse
+from urllib.parse import quote
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -7,21 +7,28 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
+from django.urls import reverse
 
 from xhtml2pdf import pisa
-from urllib.parse import quote
-from .forms import OrderForm
-from .models import Product, Order, Category, SupplierProductRequestImage
 
 from .forms import OrderForm, SupplierProductRequestForm
+from .models import Product, Order, Category, SupplierProductRequestImage
+
+
+WHATSAPP_NUMBER = "260772447190"
+
 
 def home(request):
-    query = request.GET.get("q", "")
-    category_id = request.GET.get("category", "")
+    query = request.GET.get("q", "").strip()
+    category_id = request.GET.get("category", "").strip()
 
     products = Product.objects.filter(is_available=True).order_by("-created_at")
     categories = Category.objects.all().order_by("name")
-    featured_products = Product.objects.filter(is_available=True, is_featured=True).order_by("-created_at")[:8]
+
+    featured_products = Product.objects.filter(
+        is_available=True,
+        is_featured=True
+    ).order_by("-created_at")[:8]
 
     if query:
         products = products.filter(name__icontains=query)
@@ -38,8 +45,12 @@ def home(request):
     })
 
 
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id, is_available=True)
+def product_detail(request, slug):
+    product = get_object_or_404(
+        Product,
+        slug=slug,
+        is_available=True
+    )
 
     return render(request, "core/product_detail.html", {
         "product": product,
@@ -94,24 +105,20 @@ def profile_view(request):
 
 
 @login_required
-def place_order_view(request, product_id):
-    product = get_object_or_404(Product, id=product_id, is_available=True)
+def place_order_view(request, slug):
+    product = get_object_or_404(
+        Product,
+        slug=slug,
+        is_available=True
+    )
 
     if request.method == "POST":
         form = OrderForm(request.POST)
 
         if form.is_valid():
-            arrival_start = date.today() + timedelta(days=14)
-            arrival_end = date.today() + timedelta(days=30)
-
             order = Order.objects.create(
                 user=request.user,
                 product=product,
-                total_price=product.selling_price(),
-                deposit_amount=product.deposit_amount(),
-                balance_amount=product.balance_amount(),
-                estimated_arrival_start=arrival_start,
-                estimated_arrival_end=arrival_end,
                 customer_phone=form.cleaned_data["customer_phone"],
                 customer_note=form.cleaned_data["customer_note"],
             )
@@ -138,7 +145,7 @@ Track here:
 {order_link}
 """
 
-            whatsapp_url = f"https://wa.me/260772447190?text={quote(whatsapp_message)}"
+            whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(whatsapp_message)}"
 
             return redirect(whatsapp_url)
 
@@ -150,18 +157,27 @@ Track here:
         "product": product,
     })
 
+
 @login_required
 def order_detail_view(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
 
     return render(request, "core/order_detail.html", {
-        "order": order
+        "order": order,
     })
 
 
 @login_required
 def receipt_view(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
 
     allowed_statuses = ["arrived", "ready", "successful"]
 
@@ -180,7 +196,11 @@ def receipt_view(request, order_id):
 
 @login_required
 def receipt_pdf_view(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
 
     allowed_statuses = ["arrived", "ready", "successful"]
 
@@ -198,7 +218,9 @@ def receipt_pdf_view(request, order_id):
     })
 
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="receipt-{order.receipt_number}.pdf"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="receipt-{order.receipt_number}.pdf"'
+    )
 
     pisa_status = pisa.CreatePDF(html, dest=response)
 
@@ -210,6 +232,7 @@ def receipt_pdf_view(request, order_id):
 
 def order_policy(request):
     return render(request, "core/order_policy.html")
+
 
 def supplier_submit_product(request):
     if request.method == "POST":
@@ -228,9 +251,9 @@ def supplier_submit_product(request):
 
             messages.success(request, "Product submitted successfully.")
             return redirect("supplier_submit_product")
-        else:
-            print(form.errors)
-            messages.error(request, form.errors)
+
+        messages.error(request, "Please check the form and try again.")
+
     else:
         form = SupplierProductRequestForm()
 

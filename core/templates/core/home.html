@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,19 +26,33 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-card:hover img {
+            transform: scale(1.06);
+        }
     </style>
 </head>
 
 <body class="text-slate-900">
 
     <!-- TOP BAR -->
-    <div class="bg-white border-b border-slate-200 text-sm">
+    <div class="bg-white text-xs border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-            <div class="text-slate-500 hidden sm:block">
-                Zambia Marketplace · Order from China
-            </div>
+            <p class="text-slate-500 hidden sm:block">
+                China to Zambia pre-order marketplace
+            </p>
 
             <div class="flex items-center gap-4 ml-auto">
+                <a href="{% url 'order_policy' %}" class="hover:text-orange-600">Order Policy</a>
+                <a href="{% url 'supplier_submit_product' %}" class="font-bold text-orange-600">Supplier</a>
+
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'profile' %}" class="hover:text-orange-600">My Orders</a>
                     <a href="{% url 'logout' %}" class="hover:text-orange-600">Logout</a>
@@ -45,46 +60,40 @@
                     <a href="{% url 'login' %}" class="hover:text-orange-600">Login</a>
                     <a href="{% url 'register' %}" class="hover:text-orange-600">Register</a>
                 {% endif %}
-                <a href="{% url 'order_policy' %}" class="hover:text-orange-600">Order Policy</a>
             </div>
         </div>
     </div>
 
     <!-- HEADER / SEARCH -->
-    <header class="bg-white">
-        <div class="max-w-7xl mx-auto px-4 py-5 grid grid-cols-1 lg:grid-cols-5 gap-5 items-center">
-            <form method="GET" class="lg:col-span-3">
-                <div class="flex border-2 border-orange-500 rounded-full overflow-hidden bg-white">
+    <header class="bg-white sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+
+            <form method="GET">
+                <div class="flex bg-white border-2 border-orange-500 rounded-full p-1 shadow-sm">
                     <input
                         type="text"
                         name="q"
-                        placeholder="Search products from China..."
+                        placeholder="Search phones, clothes, gadgets, home items..."
                         value="{{ query|default:'' }}"
-                        class="flex-1 px-5 py-3 outline-none text-sm"
+                        class="flex-1 bg-transparent px-5 py-3 outline-none text-sm"
                     >
 
                     {% if category_id %}
                         <input type="hidden" name="category" value="{{ category_id }}">
                     {% endif %}
 
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 font-black">
-                        Search
+                    <button type="submit"
+                            class="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-9 rounded-full font-black transition">
+                        Go
                     </button>
                 </div>
             </form>
 
-            <div class="hidden lg:flex justify-end">
-                <a href="{% url 'profile' %}"
-                   class="bg-orange-50 text-orange-600 px-5 py-3 rounded-2xl font-bold hover:bg-orange-100">
-                    Track Orders
-                </a>
-            </div>
         </div>
 
-        <!-- TAOBAO STYLE CATEGORY BAR -->
-        <div class="border-t border-slate-100 border-b border-slate-200 bg-white">
+        <!-- CATEGORY BAR -->
+        <div class="border-t border-slate-100">
             <div class="max-w-7xl mx-auto px-4">
-
                 <div class="flex items-center gap-3 py-3 overflow-x-auto hide-scrollbar">
 
                     <a href="{% url 'home' %}"
@@ -110,7 +119,6 @@
                     {% endfor %}
 
                 </div>
-
             </div>
         </div>
     </header>
@@ -119,346 +127,282 @@
     {% if messages %}
         <div class="max-w-7xl mx-auto px-4 mt-4">
             {% for message in messages %}
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl shadow-sm">
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl shadow-sm">
                     {{ message }}
                 </div>
             {% endfor %}
         </div>
     {% endif %}
 
-    <!-- MAIN LAYOUT -->
     <main class="max-w-7xl mx-auto px-4 py-5">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
-            <!-- LEFT CATEGORIES -->
-            <aside class="lg:col-span-2 bg-white rounded-2xl p-4 shadow-sm hidden lg:block">
-                <h2 class="font-black text-orange-600 mb-4">Categories</h2>
-
-                <a href="{% url 'home' %}"
-                   class="block py-2 text-sm border-b border-slate-100
-                   {% if not category_id %}text-orange-600 font-black{% else %}hover:text-orange-600{% endif %}">
-                    All Categories
+        <!-- MOBILE QUICK CATEGORIES -->
+        <section class="lg:hidden bg-white rounded-3xl p-4 shadow-sm mb-5">
+            <div class="grid grid-cols-5 gap-3 text-center text-xs font-bold">
+                <a href="{% url 'home' %}">
+                    <div class="h-12 w-12 mx-auto rounded-full bg-orange-100 flex items-center justify-center text-2xl">🔥</div>
+                    <p class="mt-1">Hot</p>
                 </a>
 
-                {% for category in categories %}
-                    <a href="?category={{ category.id }}"
-                       class="block py-2 text-sm border-b border-slate-100
-                       {% if category_id == category.id|stringformat:'s' %}
-                            text-orange-600 font-black
-                       {% else %}
-                            hover:text-orange-600
-                       {% endif %}">
-                        {{ category.name }}
-                    </a>
-                {% endfor %}
-            </aside>
+                <a href="?q=phones">
+                    <div class="h-12 w-12 mx-auto rounded-full bg-blue-100 flex items-center justify-center text-2xl">📱</div>
+                    <p class="mt-1">Phones</p>
+                </a>
 
-            <!-- CENTER CONTENT -->
-            <section class="lg:col-span-7">
+                <a href="?q=clothes">
+                    <div class="h-12 w-12 mx-auto rounded-full bg-pink-100 flex items-center justify-center text-2xl">👕</div>
+                    <p class="mt-1">Clothes</p>
+                </a>
 
-                <!-- BANNER SLIDER -->
-                <div class="relative rounded-3xl overflow-hidden mb-5 shadow-sm">
-                    <div id="bannerSlider" class="flex transition-transform duration-500">
+                <a href="?q=electronics">
+                    <div class="h-12 w-12 mx-auto rounded-full bg-purple-100 flex items-center justify-center text-2xl">💻</div>
+                    <p class="mt-1">Tech</p>
+                </a>
 
-                        <div class="min-w-full bg-gradient-to-r from-orange-500 to-red-500 p-8 text-white min-h-[240px] flex flex-col justify-center relative overflow-hidden">
-                            <div class="relative z-10">
-                                <p class="font-bold bg-white/20 inline-block px-3 py-1 rounded-full text-sm mb-3">
-                                    China-to-Zambia Pre-order
-                                </p>
-                                <h2 class="text-3xl md:text-5xl font-black mb-3">Browse. Order. Track.</h2>
-                                <p class="text-orange-50 max-w-xl">
-                                    Confirm through WhatsApp and track your goods until they arrive in Zambia.
-                                </p>
-                            </div>
-                            <div class="absolute right-6 bottom-2 text-white/20 text-8xl font-black hidden md:block">CZ</div>
-                        </div>
+                <a href="?q=home">
+                    <div class="h-12 w-12 mx-auto rounded-full bg-green-100 flex items-center justify-center text-2xl">🏠</div>
+                    <p class="mt-1">Home</p>
+                </a>
+            </div>
+        </section>
 
-                        <div class="min-w-full bg-gradient-to-r from-slate-900 to-teal-700 p-8 text-white min-h-[240px] flex flex-col justify-center relative overflow-hidden">
-                            <div class="relative z-10">
-                                <p class="font-bold bg-white/20 inline-block px-3 py-1 rounded-full text-sm mb-3">
-                                    20% Deposit
-                                </p>
-                                <h2 class="text-3xl md:text-5xl font-black mb-3">Pay small, track easy.</h2>
-                                <p class="text-slate-100 max-w-xl">
-                                    Pay the balance after your goods arrive in Zambia.
-                                </p>
-                            </div>
-                            <div class="absolute right-6 bottom-2 text-white/10 text-8xl font-black hidden md:block">20%</div>
-                        </div>
+        <!-- TAOBAO-LIKE INTRO STRIP -->
+        <section class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
 
-                        <div class="min-w-full bg-gradient-to-r from-yellow-500 to-orange-500 p-8 text-white min-h-[240px] flex flex-col justify-center relative overflow-hidden">
-                            <div class="relative z-10">
-                                <p class="font-bold bg-white/20 inline-block px-3 py-1 rounded-full text-sm mb-3">
-                                    Hot China Items
-                                </p>
-                                <h2 class="text-3xl md:text-5xl font-black mb-3">New arrivals every week.</h2>
-                                <p class="text-orange-50 max-w-xl">
-                                    Phones, accessories, clothes, gadgets, home items and more.
-                                </p>
-                            </div>
-                            <div class="absolute right-6 bottom-2 text-white/20 text-8xl font-black hidden md:block">HOT</div>
-                        </div>
+            <div class="lg:col-span-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-3xl p-6 text-white shadow-sm">
+                <p class="text-sm font-bold opacity-90">China → Zambia Shopping</p>
+                <h1 class="text-3xl md:text-5xl font-black mt-2 leading-tight">
+                    Order selected products from China
+                </h1>
+                <p class="mt-3 text-sm md:text-base opacity-95 max-w-2xl">
+                    Pay 20% deposit, we confirm your order, then you pay the balance when your goods arrive in Zambia.
+                </p>
 
-                    </div>
-
-                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                        <span class="h-2 w-2 rounded-full bg-white/80"></span>
-                        <span class="h-2 w-2 rounded-full bg-white/50"></span>
-                        <span class="h-2 w-2 rounded-full bg-white/50"></span>
-                    </div>
+                <div class="flex flex-wrap gap-3 mt-5 text-xs font-black">
+                    <span class="bg-white text-orange-600 px-4 py-2 rounded-full">20% Deposit</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full">WhatsApp Order</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full">14–30 Days</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full">Pay Balance on Arrival</span>
                 </div>
-                <!-- HOT ITEMS / FLASH DEALS -->
-                <div class="bg-white rounded-2xl p-4 shadow-sm mb-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-black text-orange-600">
-                            🔥 Hot Items / Flash Deals
-                        </h2>
-                        <span class="text-xs text-slate-400">Limited availability</span>
-                    </div>
+            </div>
+        </section>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {% for product in featured_products %}
-                            <a href="{% url 'product_detail' product.id %}"
-                               class="border border-orange-100 rounded-2xl overflow-hidden hover:shadow-lg transition bg-orange-50/30">
 
-                                <div class="h-32 bg-slate-100">
-                                    {% if product.image %}
-                                        <img src="{{ product.image.url }}"
-                                             alt="{{ product.name }}"
-                                             class="w-full h-full object-cover">
-                                    {% else %}
-                                        <div class="h-full flex items-center justify-center text-slate-400 text-xs">
-                                            No Image
-                                        </div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="p-3">
-                                    <h3 class="text-xs font-bold text-slate-800 line-clamp-2 min-h-[32px]">
-                                        {{ product.name }}
-                                    </h3>
-
-                                    <p class="text-orange-600 font-black mt-2">
-                                        K{{ product.selling_price|floatformat:2 }}
-                                    </p>
-
-                                    <p class="text-[11px] text-slate-500">
-                                        Deposit: K{{ product.deposit_amount|floatformat:2 }}
-                                    </p>
-                                </div>
-                            </a>
-                        {% empty %}
-                            <p class="text-slate-400 text-sm">No hot items yet.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- PRODUCTS -->
-                <div class="bg-white rounded-2xl p-4 shadow-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-black">
-                            {% if category_id %}
-                                Filtered Products
-                            {% else %}
-                                Recommended Products
-                            {% endif %}
-                        </h2>
-
-                        <a href="{% url 'home' %}" class="text-sm text-orange-600 font-bold">
-                            Reset
-                        </a>
-                    </div>
-
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {% for product in products %}
-                            <a href="{% url 'product_detail' product.id %}"
-                               class="group bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg transition">
-
-                                <div class="relative h-40 md:h-48 bg-slate-100 overflow-hidden">
-                                    {% if product.image %}
-                                        <img src="{{ product.image.url }}"
-                                             alt="{{ product.name }}"
-                                             class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                                    {% else %}
-                                        <div class="h-full flex items-center justify-center text-slate-400 text-sm">
-                                            No Image
-                                        </div>
-                                    {% endif %}
-
-                                    {% if product.category %}
-                                        <span class="absolute top-2 left-2 bg-white/95 text-slate-700 px-2 py-1 rounded-full text-[10px] font-bold">
-                                            {{ product.category.name }}
-                                        </span>
-                                    {% endif %}
-                                </div>
-
-                                <div class="p-3">
-                                    <h3 class="text-sm font-semibold text-slate-800 line-clamp-2 min-h-[40px]">
-                                        {{ product.name }}
-                                    </h3>
-
-                                    <p class="text-xs text-slate-400 mt-1">
-                                        {{ product.delivery_range }}
-                                    </p>
-
-                                    <p class="mt-2 text-orange-600 font-black text-xl">
-                                        K{{ product.selling_price|floatformat:2 }}
-                                    </p>
-
-                                    <div class="text-[11px] text-slate-500 mt-1">
-                                        Deposit: K{{ product.deposit_amount|floatformat:2 }}
-                                    </div>
-                                </div>
-                            </a>
-                        {% empty %}
-                            <div class="col-span-full text-center py-16 text-slate-400">
-                                No products available at the moment.
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </section>
-
-            <!-- RIGHT USER PANEL -->
-            <aside class="lg:col-span-3 space-y-5">
-
-                <div class="bg-white rounded-2xl p-5 shadow-sm">
-                    {% if request.user.is_authenticated %}
-                        <h3 class="font-black text-lg mb-2">
-                            Welcome back
-                        </h3>
-
-                        <p class="text-slate-500 text-sm mb-4">
-                            {{ request.user.username }}
-                        </p>
-
-                        <a href="{% url 'profile' %}"
-                           class="block bg-orange-500 hover:bg-orange-600 text-white text-center py-3 rounded-xl font-black">
-                            View My Orders
-                        </a>
-                    {% else %}
-                        <h3 class="font-black text-lg mb-2">
-                            Welcome
-                        </h3>
-
-                        <p class="text-slate-500 text-sm mb-4">
-                            Login to place orders and track deliveries.
-                        </p>
-
-                        <a href="{% url 'login' %}"
-                           class="block bg-orange-500 hover:bg-orange-600 text-white text-center py-3 rounded-xl font-black mb-3">
-                            Login
-                        </a>
-
-                        <a href="{% url 'register' %}"
-                           class="block bg-orange-50 hover:bg-orange-100 text-orange-600 text-center py-3 rounded-xl font-black">
-                            Create Account
-                        </a>
-                    {% endif %}
-                </div>
-
-                <div class="bg-white rounded-2xl p-5 shadow-sm">
-                    <h3 class="font-black text-lg mb-4">
-                        How It Works
-                    </h3>
-
-                    <div class="space-y-4 text-sm">
-                        <div>
-                            <p class="font-bold">1. Choose Product</p>
-                            <p class="text-slate-500">Browse items listed from China.</p>
-                        </div>
-
-                        <div>
-                            <p class="font-bold">2. Confirm on WhatsApp</p>
-                            <p class="text-slate-500">Order is confirmed manually.</p>
-                        </div>
-
-                        <div>
-                            <p class="font-bold">3. Track Order</p>
-                            <p class="text-slate-500">Follow status from your profile.</p>
-                        </div>
-
-                        <div>
-                            <p class="font-bold">4. Generate Receipt</p>
-                            <p class="text-slate-500">Available once goods arrive.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-                    <h3 class="font-black text-orange-700 mb-2">
-                        Need help?
-                    </h3>
-
-                    <p class="text-sm text-slate-600 mb-4">
-                        Contact us on WhatsApp before placing an order.
+        <!-- HOT ITEMS -->
+        <section class="bg-white rounded-3xl p-5 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">
+                        🔥 Hot Items
+                    </h2>
+                    <p class="text-sm text-slate-500">
+                        Popular products customers are checking now
                     </p>
-
-                    <a href="https://wa.me/260970261322"
-                       target="_blank"
-                       class="block bg-green-500 hover:bg-green-600 text-white text-center py-3 rounded-xl font-black">
-                        WhatsApp Us
-                    </a>
                 </div>
-            </aside>
-        </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {% for product in featured_products %}
+                    <div class="product-card group rounded-3xl overflow-hidden border border-slate-100 bg-white hover:shadow-lg transition">
+
+                        <a href="{% url 'product_detail' product.slug %}">
+                            <div class="h-36 bg-slate-100 overflow-hidden">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}"
+                                         alt="{{ product.name }}"
+                                         class="w-full h-full object-cover transition duration-300">
+                                {% else %}
+                                    <div class="h-full flex items-center justify-center text-slate-400 text-xs">
+                                        No Image
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </a>
+
+                        <div class="p-3">
+                            <a href="{% url 'product_detail' product.slug %}">
+                                <h3 class="text-xs font-bold text-slate-800 line-clamp-2 min-h-[34px]">
+                                    {{ product.name }}
+                                </h3>
+                            </a>
+
+                            <p class="text-orange-600 font-black mt-2 text-l">
+                                K{{ product.selling_price|floatformat:2|intcomma }}
+                            </p>
+
+                            <p class="text-[11px] text-slate-500 mb-3">
+                                Deposit: K{{ product.deposit_amount|floatformat:2|intcomma }}
+                            </p>
+
+                            <a href="{% url 'place_order' product.slug %}"
+                               class="block bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-xl text-xs font-black">
+                                Order
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-slate-400 text-sm">No hot items yet.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- QUICK DEAL TABS -->
+        <section class="bg-white rounded-3xl p-4 shadow-sm mb-6">
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar text-sm font-black">
+                <a href="{% url 'home' %}" class="shrink-0 bg-orange-500 text-white px-5 py-3 rounded-2xl">
+                    ❤️ You might like
+                </a>
+                <a href="?q=electronics" class="shrink-0 bg-slate-100 hover:bg-orange-50 px-5 py-3 rounded-2xl">
+                    Electronics
+                </a>
+                <a href="?q=clothes" class="shrink-0 bg-slate-100 hover:bg-orange-50 px-5 py-3 rounded-2xl">
+                    Fashion
+                </a>
+                <a href="?q=home" class="shrink-0 bg-slate-100 hover:bg-orange-50 px-5 py-3 rounded-2xl">
+                    Home Items
+                </a>
+                <a href="?q=office" class="shrink-0 bg-slate-100 hover:bg-orange-50 px-5 py-3 rounded-2xl">
+                    Office
+                </a>
+                <a href="?q=car" class="shrink-0 bg-slate-100 hover:bg-orange-50 px-5 py-3 rounded-2xl">
+                    Car Accessories
+                </a>
+            </div>
+        </section>
+
+        <!-- ALL PRODUCTS FEED -->
+        <section id="products" class="bg-white rounded-3xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-2xl font-black">
+                        {% if category_id %}
+                            Filtered Products
+                        {% else %}
+                            Recommended Products
+                        {% endif %}
+                    </h2>
+                    <p class="text-sm text-slate-500">
+                        Choose a product and order on WhatsApp
+                    </p>
+                </div>
+
+                <a href="{% url 'home' %}" class="text-sm text-orange-600 font-black">
+                    Reset
+                </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {% for product in products %}
+                    <div class="product-card group bg-white border border-slate-100 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition">
+
+                        <a href="{% url 'product_detail' product.slug %}">
+                            <div class="relative h-44 md:h-52 bg-slate-100 overflow-hidden">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}"
+                                         alt="{{ product.name }}"
+                                         class="w-full h-full object-cover transition duration-300">
+                                {% else %}
+                                    <div class="h-full flex items-center justify-center text-slate-400 text-sm">
+                                        No Image
+                                    </div>
+                                {% endif %}
+
+                                {% if product.category %}
+                                    <span class="absolute top-3 left-3 bg-white/95 text-slate-700 px-3 py-1 rounded-full text-[10px] font-black shadow-sm">
+                                        {{ product.category.name }}
+                                    </span>
+                                {% endif %}
+
+                                {% if product.is_featured %}
+                                    <span class="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black shadow-sm">
+                                        HOT
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </a>
+
+                        <div class="p-4">
+                            <a href="{% url 'product_detail' product.slug %}">
+                                <h3 class="text-sm font-bold text-slate-800 line-clamp-2 min-h-[40px]">
+                                    {{ product.name }}
+                                </h3>
+                            </a>
+
+                            <div class="mt-2">
+                                <span class="text-[11px] bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-bold">
+                                    {{ product.delivery_range }}
+                                </span>
+                            </div>
+
+                            <p class="mt-3 text-orange-600 font-black text-l">
+                                K{{ product.selling_price|floatformat:2|intcomma }}
+                            </p>
+
+                            <div class="mt-2 flex items-center justify-between">
+                                <span class="text-[11px] text-slate-500">
+                                    Deposit
+                                </span>
+                                <span class="text-[11px] font-black text-slate-800">
+                                    K{{ product.deposit_amount|floatformat:2|intcomma }}
+                                </span>
+                            </div>
+
+                            <a href="{% url 'place_order' product.slug %}"
+                               class="block mt-3 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-xl text-xs font-black">
+                                Order on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-full text-center py-16">
+                        <p class="text-slate-400 font-bold">
+                            No products available at the moment.
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-white border-t border-slate-200 mt-10">
+    <footer class="bg-slate-950 text-white mt-10">
         <div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
 
             <div>
-                <div class="flex items-center gap-3 mb-3">
-                    <img src="{% static 'core/images/china-zed-logo.png' %}"
-                         alt="China Zed Marketplace Logo"
-                         class="h-12 w-12 object-contain">
-
-                    <div>
-                        <h3 class="font-black text-orange-600 text-lg">
-                            China Zed Marketplace
-                        </h3>
-                        <p class="text-xs text-slate-500">
-                            Order from China. Receive in Zambia.
-                        </p>
-                    </div>
-                </div>
-
-                <p class="text-slate-500">
-                    Zambia-based marketplace for pre-ordering selected products from China.
+                <h3 class="font-black text-orange-400 text-lg">
+                    China to Zambia Marketplace
+                </h3>
+                <p class="text-xs text-slate-400 mt-2">
+                    Order selected products from China and receive them in Zambia.
                 </p>
             </div>
 
             <div>
                 <h4 class="font-black mb-3">Contact</h4>
-                <p class="text-slate-500">Phone: +260 970261322</p>
-                <p class="text-slate-500">Email: chinatozambia.zm@gmail.com</p>
+                <p class="text-slate-400">Phone: +260 969274458</p>
+                <p class="text-slate-400">Email: chinatozambia.zm@gmail.com</p>
             </div>
 
             <div>
                 <h4 class="font-black mb-3">Quick Links</h4>
-                <p><a href="{% url 'home' %}" class="text-slate-500 hover:text-orange-600">Home</a></p>
-                <p><a href="{% url 'order_policy' %}" class="text-slate-500 hover:text-orange-600">Order Policy</a></p>
-                <p><a href="{% url 'profile' %}" class="text-slate-500 hover:text-orange-600">Track Orders</a></p>
+                <p><a href="{% url 'home' %}" class="text-slate-400 hover:text-orange-400">Home</a></p>
+                <p><a href="{% url 'order_policy' %}" class="text-slate-400 hover:text-orange-400">Order Policy</a></p>
+
+                {% if request.user.is_authenticated %}
+                    <p><a href="{% url 'profile' %}" class="text-slate-400 hover:text-orange-400">Track Orders</a></p>
+                {% else %}
+                    <p><a href="{% url 'login' %}" class="text-slate-400 hover:text-orange-400">Track Orders</a></p>
+                {% endif %}
+
+                <p><a href="{% url 'supplier_submit_product' %}" class="text-slate-400 hover:text-orange-400">Supplier</a></p>
             </div>
         </div>
 
-        <div class="text-center text-xs text-slate-400 pb-6">
-            © 2026 China Zed Marketplace. All rights reserved.
+        <div class="text-center text-xs text-slate-500 pb-6">
+            © 2026 China to Zambia Marketplace. All rights reserved.
         </div>
     </footer>
-
-    <script>
-        let currentSlide = 0;
-        const slider = document.getElementById("bannerSlider");
-        const totalSlides = 3;
-
-        setInterval(() => {
-            currentSlide = (currentSlide + 1) % totalSlides;
-            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-        }, 3500);
-    </script>
 
 </body>
 </html>
