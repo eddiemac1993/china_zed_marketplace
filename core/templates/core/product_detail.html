@@ -6,180 +6,1132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ product.name }} - China Zed Marketplace</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ product.name }} · ChinaZed 中赞商城</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --orange: #FF6600;
+            --orange-light: #FF8C00;
+            --gold: #FFC107;
+            --yellow: #FFE500;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --card-radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        .noscroll::-webkit-scrollbar { display: none; }
+        .noscroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ── UTILITY BAR ── */
+        .utility-bar {
+            background: #1a1a1a;
+            color: #999;
+            font-size: 11px;
+            padding: 6px 0;
+        }
+        .utility-bar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .03em; }
+        .utility-bar-links { display: flex; align-items: center; }
+        .utility-bar a { color: #888; transition: color .15s; padding: 0 8px; border-right: 1px solid #333; }
+        .utility-bar a:last-child { border-right: none; }
+        .utility-bar a:hover { color: #fff; }
+        .utility-bar a.highlight { color: var(--gold); font-weight: 600; }
+
+        /* ── MAIN HEADER ── */
+        .main-header {
+            background: var(--red);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .site-logo {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub {
+            font-size: 9px;
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .search-bar {
+            flex: 1;
+            display: flex;
+            min-width: 0;
+            max-width: 600px;
+        }
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            padding: 0 14px;
+            font-size: 13px;
+            font-family: inherit;
+            height: 40px;
+            border-radius: 4px 0 0 4px;
+            color: var(--ink);
+            background: #fff;
+        }
+        .search-btn {
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            padding: 0 18px;
+            height: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            font-family: inherit;
+            transition: background .15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .search-btn:hover { background: #d95500; }
+        .header-actions {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hdr-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: rgba(255,255,255,.85);
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background .15s;
+            white-space: nowrap;
+        }
+        .hdr-link:hover { background: rgba(255,255,255,.15); color: #fff; }
+        .hdr-link .hdr-icon { font-size: 18px; line-height: 1; }
+        .hdr-cart {
+            background: var(--orange);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background .15s;
+        }
+        .hdr-cart:hover { background: #d95500; }
+
+        /* CAT NAV / BREADCRUMB */
+        .cat-nav {
+            background: rgba(0,0,0,0.18);
+            border-top: 1px solid rgba(255,255,255,.1);
+        }
+        .cat-nav-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+        .cat-nav-inner::-webkit-scrollbar { display: none; }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 0;
+            font-size: 12px;
+            color: rgba(255,255,255,.65);
+            flex-wrap: wrap;
+        }
+        .breadcrumb a {
+            color: rgba(255,255,255,.65);
+            transition: color .15s;
+        }
+        .breadcrumb a:hover { color: #fff; }
+        .breadcrumb .sep { color: rgba(255,255,255,.35); }
+        .breadcrumb .current { color: rgba(255,255,255,.9); font-weight: 700; }
+
+        /* MOBILE MENU */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+        .mobile-menu-btn span { display: block; height: 2px; background: #fff; border-radius: 2px; }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 12px 16px;
+        }
+
+        /* ── MESSAGES ── */
+        .msg-strip {
+            background: #F0FFF4;
+            border: 1px solid #B7EBC5;
+            color: #1D6A34;
+            padding: 10px 16px;
+            font-size: 13px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        /* ── PRODUCT LAYOUT ── */
+        .product-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 12px;
+            align-items: start;
+        }
+
+        /* ── IMAGE PANEL ── */
+        .image-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+        }
+        .main-image-box {
+            position: relative;
+            background: #F8F8F8;
+            overflow: hidden;
+            aspect-ratio: 1;
+        }
+        .main-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .4s ease;
+            display: block;
+        }
+        .main-image-box:hover img { transform: scale(1.04); }
+        .main-no-img {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #CCC;
+        }
+
+        /* PRODUCT TYPE WATERMARK */
+        .img-type-stamp {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 3px;
+            letter-spacing: .04em;
+            z-index: 2;
+        }
+        .stamp-local { background: #00A854; color: #fff; }
+        .stamp-china { background: #1677FF; color: #fff; }
+        .stamp-hot { position: absolute; top: 12px; right: 12px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 3px; z-index: 2; }
+
+        /* THUMBNAILS */
+        .thumb-row {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            border-top: 1px solid var(--border);
+        }
+        .thumb-row::-webkit-scrollbar { display: none; }
+        .thumb {
+            flex-shrink: 0;
+            width: 64px;
+            height: 64px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color .15s;
+            background: #F8F8F8;
+        }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .thumb:hover { border-color: var(--orange); }
+        .thumb.active { border-color: var(--red); }
+
+        /* ── INFO PANEL ── */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* PRODUCT TITLE CARD */
+        .title-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 16px 18px;
+        }
+        .product-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 2px;
+        }
+        .tag-cat { background: #FFF0F0; color: var(--red); }
+        .tag-local { background: #F0FFF4; color: #00A854; }
+        .tag-china { background: #EFF6FF; color: #1677FF; }
+        .tag-out { background: #FFF0F0; color: #C00; }
+        .tag-stock { background: #F5F5F5; color: var(--muted); }
+
+        .product-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--ink);
+            line-height: 1.15;
+            letter-spacing: -.3px;
+            margin-bottom: 10px;
+        }
+        .product-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        /* PRICE CARD */
+        .price-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+        }
+        .price-card-head {
+            background: var(--red);
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .price-card-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255,255,255,.7);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .price-card-body { padding: 16px 18px; }
+
+        .final-price-row { display: flex; align-items: baseline; gap: 4px; margin-bottom: 14px; }
+        .final-curr { font-size: 16px; font-weight: 700; color: var(--red); }
+        .final-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 42px;
+            color: var(--red);
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .price-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .price-split-box {
+            background: #F8F8F8;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 12px;
+        }
+        .psb-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+        .psb-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            color: var(--ink);
+            line-height: 1;
+        }
+        .psb-deposit .psb-amount { color: var(--orange); }
+
+        /* DELIVERY BOX */
+        .delivery-box {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 4px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .delivery-icon { font-size: 20px; flex-shrink: 0; }
+        .delivery-text h4 { font-size: 12px; font-weight: 700; color: #1E40AF; }
+        .delivery-text p { font-size: 11px; color: #3B82F6; margin-top: 2px; }
+
+        /* QTY + CTA */
+        .qty-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .qty-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+        .qty-input {
+            width: 70px;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            color: var(--ink);
+            outline: none;
+            transition: border-color .15s;
+        }
+        .qty-input:focus { border-color: var(--red); }
+
+        .btn-add-cart {
+            display: block;
+            width: 100%;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 13px 0;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: background .15s, transform .1s;
+            margin-bottom: 8px;
+        }
+        .btn-add-cart:hover { background: var(--red-dark, #B50F14); }
+        .btn-add-cart:active { transform: scale(.98); }
+        .btn-add-cart:disabled {
+            background: #DDD;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .btn-whatsapp {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #25D366;
+            color: #fff;
+            border: none;
+            padding: 11px 0;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: background .15s;
+        }
+        .btn-whatsapp:hover { background: #1DA851; }
+        .btn-buy-now {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ink);
+            color: #fff;
+            border: none;
+            padding: 11px 0;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: background .15s;
+        }
+        .btn-buy-now:hover { background: #333; }
+        .btn-login-cta {
+            display: block;
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            padding: 13px 0;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: background .15s;
+        }
+        .btn-login-cta:hover { background: var(--orange-light, #FF8C00); }
+
+        /* TRUST PILLS */
+        .trust-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #F0F0F0;
+        }
+        .trust-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #F8F8F8;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 2px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        /* ── RELATED PRODUCTS ── */
+        .related-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px 10px;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        .section-head-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 17px;
+            color: var(--red);
+            letter-spacing: .5px;
+        }
+        .section-head-more {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 4px;
+            transition: all .15s;
+        }
+        .section-head-more:hover { border-color: var(--red); color: var(--red); }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+        }
+        .prod-card {
+            border-right: 1px solid #F0F0F0;
+            border-bottom: 1px solid #F0F0F0;
+            position: relative;
+            cursor: pointer;
+            background: #fff;
+            transition: box-shadow .2s;
+        }
+        .prod-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,.14); z-index: 10; }
+        .prod-card:hover .prod-card-img { transform: scale(1.06); }
+        .prod-card:nth-child(5n) { border-right: none; }
+        .prod-img-box { position: relative; overflow: hidden; aspect-ratio: 1; background: #F8F8F8; }
+        .prod-card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; display: block; }
+        .prod-no-img-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #CCC; font-size: 11px; }
+        .badge { position: absolute; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; z-index: 2; }
+        .b-tl { top: 6px; left: 6px; }
+        .b-china { background: #1677FF; color: #fff; }
+        .b-local { background: #00A854; color: #fff; }
+        .prod-info { padding: 8px 10px 10px; }
+        .prod-name-link { display: block; font-size: 12px; color: var(--ink); line-height: 1.4; margin-bottom: 6px; transition: color .15s; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .prod-name-link:hover { color: var(--red); }
+        .price-row { display: flex; align-items: baseline; gap: 3px; margin-bottom: 6px; }
+        .price-curr { font-size: 11px; color: var(--red); font-weight: 700; }
+        .price-main { font-size: 16px; font-weight: 900; color: var(--red); font-family: 'Barlow Condensed', sans-serif; letter-spacing: -.5px; line-height: 1; }
+        .btn-cart { display: block; width: 100%; background: var(--red); color: #fff; border: none; padding: 7px 0; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; font-family: inherit; text-align: center; transition: background .15s; }
+        .btn-cart:hover { background: var(--red-dark, #B50F14); }
+        .btn-login { display: block; width: 100%; background: var(--orange); color: #fff; border: none; padding: 7px 0; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; font-family: inherit; text-align: center; transition: background .15s; }
+
+        /* ── FOOTER ── */
+        .site-footer { background: #1A1A1A; margin-top: 24px; }
+        .footer-top {
+            padding: 24px 20px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 32px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .footer-logo-text { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; color: var(--red); }
+        .footer-tagline { font-size: 10px; color: #555; margin-top: 2px; letter-spacing: .08em; text-transform: uppercase; }
+        .footer-desc { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.7; }
+        .footer-contact { margin-top: 14px; }
+        .footer-contact div { font-size: 12px; color: #777; margin-bottom: 5px; }
+        .footer-col h4 { font-size: 11px; font-weight: 700; color: #aaa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .1em; padding-bottom: 8px; border-bottom: 1px solid #2D2D2D; }
+        .footer-col a { display: block; font-size: 12px; color: #666; margin-bottom: 7px; transition: color .15s; }
+        .footer-col a:hover { color: var(--red); }
+        .footer-bottom { border-top: 1px solid #2D2D2D; padding: 14px 20px; text-align: center; font-size: 11px; color: #444; max-width: 1280px; margin: 0 auto; }
+
+        /* ── FLOATING ── */
+        .wa-btn { position: fixed; bottom: 76px; right: 16px; background: #25D366; color: #fff; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 16px rgba(37,211,102,.45); z-index: 300; transition: transform .15s; }
+        .wa-btn:hover { transform: scale(1.1); }
+        .back-top { position: fixed; bottom: 16px; right: 16px; background: rgba(0,0,0,.45); color: #fff; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 300; cursor: pointer; transition: background .15s; }
+        .back-top:hover { background: var(--red); }
+
+        /* ── MOBILE BOTTOM NAV ── */
+        .mobile-bottom-nav { display: none; position: fixed; left: 10px; right: 10px; bottom: 10px; z-index: 500; background: #fff; border-radius: 22px; box-shadow: 0 10px 35px rgba(0,0,0,0.14); padding: 6px; }
+        .mobile-bottom-nav-inner { width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; }
+        .mbn-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 0; color: #777; font-size: 10px; font-weight: 700; border-radius: 16px; }
+        .mbn-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 13px; background: #f4f4f4; font-size: 16px; }
+        .mbn-item.active { color: var(--red); }
+        .mbn-item.active .mbn-icon { background: linear-gradient(135deg, var(--red), #ff5b5b); color: #fff; box-shadow: 0 5px 14px rgba(229,20,26,0.28); }
+        .mbn-cart-badge { position: relative; }
+        .mbn-badge { position: absolute; top: -4px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--red); color: #fff; font-size: 8px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+
+        /* MOBILE STICKY BUY BAR */
+        .mobile-buy-bar {
+            display: none;
+            position: fixed;
+            bottom: 82px;
+            left: 10px;
+            right: 10px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            z-index: 490;
+            box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+            align-items: center;
+            gap: 10px;
+        }
+        .mbb-price { flex: 1; }
+        .mbb-label { font-size: 10px; color: var(--muted); font-weight: 600; }
+        .mbb-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 22px; color: var(--red); }
+        .mbb-btn {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .15s;
+        }
+        .mbb-btn:hover { background: var(--red-dark, #B50F14); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1100px) {
+            .related-grid { grid-template-columns: repeat(4, 1fr); }
+            .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
+            .prod-card:nth-child(4n) { border-right: none; }
+        }
+        @media (max-width: 900px) {
+            .product-layout { grid-template-columns: 1fr; }
+            .utility-bar-brand { display: none; }
+            .related-grid { grid-template-columns: repeat(3, 1fr); }
+            .prod-card:nth-child(4n) { border-right: 1px solid #F0F0F0; }
+            .prod-card:nth-child(3n) { border-right: none; }
+            .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; }
+            .footer-top > div:first-child { grid-column: 1 / -1; }
+        }
+        @media (max-width: 640px) {
+            .utility-bar, .logo-sub, .header-actions { display: none; }
+            .header-top { gap: 8px; padding: 8px 12px; }
+            .logo-main { font-size: 22px; }
+            .search-input { height: 38px; padding: 0 10px; }
+            .search-btn { padding: 0 12px; height: 38px; font-size: 12px; }
+            .mobile-menu-btn { display: flex; }
+            .page-body { padding: 8px 12px 160px; }
+            .product-title { font-size: 20px; }
+            .final-amount { font-size: 32px; }
+            .related-grid { grid-template-columns: repeat(2, 1fr); }
+            .prod-card:nth-child(3n), .prod-card:nth-child(4n) { border-right: 1px solid #F0F0F0; }
+            .prod-card:nth-child(2n) { border-right: none; }
+            .footer-top { grid-template-columns: 1fr; gap: 20px; }
+            .footer-top > div:first-child { grid-column: auto; }
+            .mobile-bottom-nav { display: block; }
+            .mobile-buy-bar { display: flex; }
+            .wa-btn { bottom: 168px; right: 12px; width: 44px; height: 44px; font-size: 20px; }
+            .back-top { display: none; }
+            .btn-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
+<body>
 
-<body class="text-slate-900">
-
-<!-- TOP BAR -->
-<div class="bg-white border-b border-slate-200 text-sm">
-    <div class="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-        <a href="{% url 'home' %}" class="text-slate-500 hover:text-orange-600">
-            ← Back to Marketplace
-        </a>
-
-        <div class="flex items-center gap-4">
-            <a href="{% url 'order_policy' %}" class="hover:text-orange-600">Order Policy</a>
-
+<!-- UTILITY BAR -->
+<div class="utility-bar">
+    <div class="utility-bar-inner">
+        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
+        <div class="utility-bar-links">
             {% if request.user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="hover:text-orange-600">My Orders</a>
-                <a href="{% url 'logout' %}" class="hover:text-orange-600">Logout</a>
+                <a href="{% url 'profile' %}">My Account</a>
+                <a href="{% url 'cart' %}" class="highlight">Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+                <a href="{% url 'logout' %}">Logout</a>
             {% else %}
-                <a href="{% url 'login' %}" class="hover:text-orange-600">Login</a>
-                <a href="{% url 'register' %}" class="hover:text-orange-600">Register</a>
+                <a href="{% url 'login' %}">Sign In</a>
+                <a href="{% url 'register' %}" class="highlight">Register Free</a>
             {% endif %}
+            <a href="{% url 'supplier_submit_product' %}" style="color:#FFA500;">Sell on ChinaZed</a>
+            <a href="{% url 'order_policy' %}">Policy</a>
         </div>
     </div>
 </div>
 
-<!-- HEADER -->
-<header class="bg-white">
-    <div class="max-w-7xl mx-auto px-4 py-5 flex items-center gap-3">
-        <img src="{% static 'core/images/china-zed-logo.png' %}"
-             class="h-14 w-14 object-contain">
+<!-- MAIN HEADER -->
+<div class="main-header">
+    <div class="header-top">
+        <button class="mobile-menu-btn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
 
-        <div>
-            <h1 class="text-2xl font-black text-orange-600">
-                China Zed Marketplace
-            </h1>
-            <p class="text-xs text-slate-500">
-                Order from China. Receive in Zambia.
-            </p>
+        <a href="{% url 'home' %}" class="site-logo">
+            <div class="logo-main">CHINAZED</div>
+            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
+        </a>
+
+        <form method="GET" action="{% url 'home' %}" class="search-bar">
+            <input type="text" class="search-input" name="q" placeholder="Search phones, electronics, fashion…">
+            <button type="submit" class="search-btn">🔍 SEARCH</button>
+        </form>
+
+        <div class="header-actions">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="hdr-link">
+                    <span class="hdr-icon">👤</span>
+                    <span>Orders</span>
+                </a>
+                <a href="{% url 'cart' %}" class="hdr-cart">
+                    🛒 Cart{% if cart_count %} <span style="background:rgba(255,255,255,.25); padding:0 6px; border-radius:10px;">{{ cart_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'logout' %}" class="hdr-link">
+                    <span class="hdr-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="hdr-link">
+                    <span class="hdr-icon">🔑</span>
+                    <span>Sign In</span>
+                </a>
+                <a href="{% url 'register' %}" class="hdr-cart" style="background:var(--yellow); color:var(--red-dark, #B50F14);">
+                    Join Free
+                </a>
+            {% endif %}
         </div>
     </div>
-</header>
 
-<main class="max-w-7xl mx-auto px-4 py-6 pb-24 md:pb-6">
-
-    <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-2">
-
-            <!-- IMAGE -->
-            <div class="p-6 border-r border-slate-100">
-                <div class="bg-slate-100 rounded-3xl overflow-hidden">
-                    {% if product.image %}
-                        <img id="mainProductImage"
-                             src="{{ product.image.url }}"
-                             class="w-full h-[500px] object-cover">
-                    {% else %}
-                        <div class="h-[500px] flex items-center justify-center text-slate-400">
-                            No Image
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- GALLERY -->
-                <div class="grid grid-cols-5 gap-2 mt-4">
-                    {% if product.image %}
-                        <img onclick="changeMainImage('{{ product.image.url }}')"
-                             src="{{ product.image.url }}"
-                             class="h-20 object-cover rounded-xl border-2 border-orange-500 cursor-pointer">
-                    {% endif %}
-
-                    {% for img in product.gallery_images.all %}
-                        <img onclick="changeMainImage('{{ img.image.url }}')"
-                             src="{{ img.image.url }}"
-                             class="h-20 object-cover rounded-xl border cursor-pointer hover:border-orange-500">
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- DETAILS -->
-            <div class="p-8">
-
+    <!-- BREADCRUMB -->
+    <div class="cat-nav">
+        <div class="cat-nav-inner noscroll">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Home</a>
+                <span class="sep">›</span>
                 {% if product.category %}
-                    <span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-xs font-black">
-                        {{ product.category.name }}
-                    </span>
+                    <a href="{% url 'home' %}?category={{ product.category.id }}">{{ product.category.name }}</a>
+                    <span class="sep">›</span>
+                {% endif %}
+                <span class="current">{{ product.name|truncatechars:40 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div style="max-width:1280px; margin:10px auto 0; padding:0 16px;">
+    {% for message in messages %}
+        <div class="msg-strip">✓ {{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+    <div class="product-layout">
+
+        <!-- LEFT: IMAGE PANEL -->
+        <div class="image-panel">
+            <div class="main-image-box">
+                {% if product.image %}
+                    <img id="mainProductImage" src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <div class="main-no-img">No Image Available</div>
                 {% endif %}
 
-                <h2 class="text-3xl font-black mt-3">
-                    {{ product.name }}
-                </h2>
+                {% if product.product_type == "local" %}
+                    <span class="img-type-stamp stamp-local">🇿🇲 ZM STOCK</span>
+                {% else %}
+                    <span class="img-type-stamp stamp-china">🇨🇳 CHINA</span>
+                {% endif %}
+                {% if product.is_featured %}
+                    <span class="stamp-hot">🔥 HOT</span>
+                {% endif %}
+            </div>
 
-                <p class="text-slate-500 mt-3">
-                    {{ product.description }}
-                </p>
-
-                <!-- PRICE -->
-                <div class="bg-orange-50 p-6 rounded-3xl mt-5">
-
-                    <p class="text-xs font-black text-orange-500">FINAL PRICE</p>
-
-                    <p class="text-2xl font-black text-orange-600">
-                        K{{ product.selling_price|intcomma }}
-                    </p>
-
-                    <div class="grid grid-cols-2 gap-4 mt-5">
-
-                        <div class="bg-white p-4 rounded-xl">
-                            <p class="text-xs text-slate-500">Deposit</p>
-                            <p class="text-l font-black">
-                                K{{ product.deposit_amount|intcomma }}
-                            </p>
-                        </div>
-
-                        <div class="bg-white p-4 rounded-xl">
-                            <p class="text-xs text-slate-500">Balance</p>
-                            <p class="text-l font-black">
-                                K{{ product.balance_amount|intcomma }}
-                            </p>
-                        </div>
-
+            <!-- THUMBNAILS -->
+            {% if product.image or product.gallery_images.all %}
+            <div class="thumb-row">
+                {% if product.image %}
+                    <div class="thumb active" onclick="setMainImage(this, '{{ product.image.url }}')">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
                     </div>
-                </div>
+                {% endif %}
+                {% for img in product.gallery_images.all %}
+                    <div class="thumb" onclick="setMainImage(this, '{{ img.image.url }}')">
+                        <img src="{{ img.image.url }}" alt="{{ product.name }}">
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
 
-                <!-- DELIVERY -->
-                <div class="bg-slate-50 p-5 rounded-2xl mt-5">
-                    <p class="font-black">Delivery</p>
-                    <p class="text-sm text-slate-500">
-                        {{ product.delivery_range }}
-                    </p>
-                </div>
+        <!-- RIGHT: INFO PANEL -->
+        <div class="info-panel">
 
-                <!-- ACTIONS -->
-                <div class="grid grid-cols-2 gap-3 mt-6">
-
-                    <a href="https://wa.me/260969274458?text=Hello%20I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                       class="bg-green-500 hover:bg-green-600 text-white text-center py-4 rounded-xl font-black">
-                        WhatsApp
-                    </a>
-
-                    {% if request.user.is_authenticated %}
-                        <a href="{% url 'place_order' product.slug %}"
-                           class="bg-orange-500 hover:bg-orange-600 text-white text-center py-4 rounded-xl font-black">
-                            Place Order
-                        </a>
+            <!-- TITLE CARD -->
+            <div class="title-card">
+                <div class="product-tags">
+                    {% if product.category %}
+                        <span class="tag tag-cat">{{ product.category.name }}</span>
+                    {% endif %}
+                    {% if product.product_type == "local" %}
+                        {% if product.stock_quantity > 0 %}
+                            <span class="tag tag-local">🇿🇲 In Zambia</span>
+                            <span class="tag tag-stock">Stock: {{ product.stock_quantity }}</span>
+                        {% else %}
+                            <span class="tag tag-out">Out of Stock</span>
+                        {% endif %}
                     {% else %}
-                        <a href="{% url 'login' %}"
-                           class="bg-orange-500 text-white text-center py-4 rounded-xl font-black">
-                            Login to Order
-                        </a>
+                        <span class="tag tag-china">🇨🇳 Pre-order</span>
                     {% endif %}
                 </div>
 
+                <h1 class="product-title">{{ product.name }}</h1>
+
+                {% if product.description %}
+                    <p class="product-desc">{{ product.description }}</p>
+                {% endif %}
             </div>
 
+            <!-- PRICE CARD -->
+            <div class="price-card">
+                <div class="price-card-head">
+                    <span class="price-card-label">Final Price</span>
+                    {% if product.product_type == "preorder" %}
+                        <span style="font-size:10px; color:rgba(255,255,255,.7); font-weight:700;">20% deposit secures order</span>
+                    {% endif %}
+                </div>
+                <div class="price-card-body">
+
+                    <div class="final-price-row">
+                        <span class="final-curr">K</span>
+                        <span class="final-amount">{{ product.selling_price|floatformat:0|intcomma }}</span>
+                    </div>
+
+                    <div class="price-split">
+                        <div class="price-split-box psb-deposit">
+                            <div class="psb-label">💰 Deposit Now</div>
+                            <div class="psb-amount">K{{ product.deposit_amount|floatformat:0|intcomma }}</div>
+                        </div>
+                        <div class="price-split-box">
+                            <div class="psb-label">📦 Balance on Arrival</div>
+                            <div class="psb-amount">K{{ product.balance_amount|floatformat:0|intcomma }}</div>
+                        </div>
+                    </div>
+
+                    {% if product.delivery_range %}
+                    <div class="delivery-box">
+                        <span class="delivery-icon">✈️</span>
+                        <div class="delivery-text">
+                            <h4>Delivery: {{ product.delivery_range }}</h4>
+                            <p>Ships from China · Track in your profile</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if request.user.is_authenticated %}
+                        <form method="POST" action="{% url 'add_to_cart' product.slug %}">
+                            {% csrf_token %}
+
+                            <div class="qty-row">
+                                <span class="qty-label">Qty:</span>
+                                <input type="number" name="quantity" value="1" min="1"
+                                       {% if product.product_type == "local" %}max="{{ product.stock_quantity }}"{% endif %}
+                                       class="qty-input">
+                            </div>
+
+                            {% if product.product_type == "local" and product.stock_quantity <= 0 %}
+                                <button disabled class="btn-add-cart" style="background:#DDD; color:#999; cursor:not-allowed;">
+                                    Out of Stock
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn-add-cart">🛒 Add to Cart</button>
+                            {% endif %}
+                        </form>
+
+                        <div class="btn-row">
+                            <a href="https://wa.me/260969274458?text=Hello%20I%20am%20interested%20in%20{{ product.name|urlencode }}"
+                               target="_blank" class="btn-whatsapp">💬 Ask on WhatsApp</a>
+
+                            {% if product.product_type == "local" and product.stock_quantity <= 0 %}
+                                <button disabled class="btn-buy-now" style="opacity:.5; cursor:not-allowed;">Buy Now</button>
+                            {% else %}
+                                <a href="{% url 'place_order' product.slug %}" class="btn-buy-now">⚡ Buy Now</a>
+                            {% endif %}
+                        </div>
+
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn-login-cta">🔑 Login to Add to Cart</a>
+                        <div class="btn-row" style="margin-top:8px;">
+                            <a href="https://wa.me/260969274458?text=Hello%20I%20am%20interested%20in%20{{ product.name|urlencode }}"
+                               target="_blank" class="btn-whatsapp">💬 Ask on WhatsApp</a>
+                            <a href="{% url 'register' %}" class="btn-buy-now">📝 Register Free</a>
+                        </div>
+                    {% endif %}
+
+                    <div class="trust-pills">
+                        <span class="trust-pill">✅ 20% Deposit Only</span>
+                        <span class="trust-pill">💬 WhatsApp Confirm</span>
+                        <span class="trust-pill">📦 Real-time Tracking</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- end info-panel -->
+    </div><!-- end product-layout -->
+
+    <!-- RELATED PRODUCTS -->
+    {% if related_products %}
+    <div class="related-panel">
+        <div class="section-head">
+            <span class="section-head-title">🛍️ YOU MAY ALSO LIKE</span>
+            {% if product.category %}
+                <a href="{% url 'home' %}?category={{ product.category.id }}" class="section-head-more">View All ›</a>
+            {% else %}
+                <a href="{% url 'home' %}" class="section-head-more">View All ›</a>
+            {% endif %}
+        </div>
+        <div class="related-grid">
+            {% for rel in related_products %}
+                <div class="prod-card">
+                    <a href="{% url 'product_detail' rel.slug %}">
+                        <div class="prod-img-box">
+                            {% if rel.image %}
+                                <img src="{{ rel.image.url }}" alt="{{ rel.name }}" class="prod-card-img" loading="lazy">
+                            {% else %}
+                                <div class="prod-no-img-box">No Image</div>
+                            {% endif %}
+                            {% if rel.product_type == "local" %}
+                                <span class="badge b-tl b-local">ZM</span>
+                            {% else %}
+                                <span class="badge b-tl b-china">CN</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div class="prod-info">
+                        <a href="{% url 'product_detail' rel.slug %}" class="prod-name-link">{{ rel.name }}</a>
+                        <div class="price-row">
+                            <span class="price-curr">K</span>
+                            <span class="price-main">{{ rel.selling_price|floatformat:0|intcomma }}</span>
+                        </div>
+                        {% if request.user.is_authenticated %}
+                            <form method="POST" action="{% url 'add_to_cart' rel.slug %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-cart">Add to Cart</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn-login">Login to Order</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
+    {% endif %}
 
-</main>
+</div><!-- end page-body -->
+
+<!-- MOBILE STICKY BUY BAR -->
+<div class="mobile-buy-bar">
+    <div class="mbb-price">
+        <div class="mbb-label">Price</div>
+        <div class="mbb-amount">K{{ product.selling_price|floatformat:0|intcomma }}</div>
+    </div>
+    {% if request.user.is_authenticated %}
+        <form method="POST" action="{% url 'add_to_cart' product.slug %}">
+            {% csrf_token %}
+            {% if product.product_type == "local" and product.stock_quantity <= 0 %}
+                <button disabled class="mbb-btn" style="background:#DDD; color:#999;">Out of Stock</button>
+            {% else %}
+                <button type="submit" class="mbb-btn">🛒 Add to Cart</button>
+            {% endif %}
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}" class="mbb-btn" style="display:inline-block; text-align:center;">Login to Order</a>
+    {% endif %}
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-top">
+        <div>
+            <div class="footer-logo-text">CHINAZED</div>
+            <div class="footer-tagline">中赞商城 · Marketplace</div>
+            <div class="footer-desc">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</div>
+            <div class="footer-contact">
+                <div>📞 +260 969 274 458</div>
+                <div>✉️ chinatozambia.zm@gmail.com</div>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Buyer</h4>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'home' %}?type=local">Local Stock</a>
+            <a href="{% url 'home' %}?type=preorder">Pre-order China</a>
+            <a href="{% url 'order_policy' %}">Order Policy</a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}">Track Orders</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Sign In</a>
+                <a href="{% url 'register' %}">Register Free</a>
+            {% endif %}
+        </div>
+        <div class="footer-col">
+            <h4>Seller</h4>
+            <a href="{% url 'supplier_submit_product' %}">Submit a Product</a>
+            <a href="{% url 'supplier_submit_product' %}">Become a Supplier</a>
+            <a href="{% url 'order_policy' %}">Supplier Policy</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
+    </div>
+</footer>
+
+<!-- FLOATING -->
+<a href="https://wa.me/260969274458" class="wa-btn" title="WhatsApp" aria-label="WhatsApp">💬</a>
+<div class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav">
+    <div class="mobile-bottom-nav-inner">
+        <a href="{% url 'home' %}" class="mbn-item">
+            <span class="mbn-icon">🏠</span>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'home' %}?type=local" class="mbn-item">
+            <span class="mbn-icon">🇿🇲</span>
+            <span>Zambia</span>
+        </a>
+        <a href="{% url 'home' %}?type=preorder" class="mbn-item">
+            <span class="mbn-icon">🇨🇳</span>
+            <span>China</span>
+        </a>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'cart' %}" class="mbn-item">
+            <span class="mbn-icon mbn-cart-badge">
+                🛒
+                {% if cart_count %}<span class="mbn-badge">{{ cart_count }}</span>{% endif %}
+            </span>
+            <span>Cart</span>
+        </a>
+        <a href="{% url 'profile' %}" class="mbn-item">
+            <span class="mbn-icon">👤</span>
+            <span>Me</span>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="mbn-item">
+            <span class="mbn-icon">🔑</span>
+            <span>Login</span>
+        </a>
+        <a href="{% url 'register' %}" class="mbn-item">
+            <span class="mbn-icon">✨</span>
+            <span>Join</span>
+        </a>
+        {% endif %}
+    </div>
+</nav>
 
 <script>
-function changeMainImage(url) {
-    document.getElementById("mainProductImage").src = url;
+function setMainImage(thumbEl, url) {
+    document.getElementById('mainProductImage').src = url;
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    thumbEl.classList.add('active');
 }
+window.addEventListener('scroll', () => {
+    const btn = document.querySelector('.back-top');
+    if (btn) btn.style.opacity = window.scrollY > 400 ? '1' : '0';
+});
 </script>
 
 </body>

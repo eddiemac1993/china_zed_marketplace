@@ -4,7 +4,6 @@ from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
 from django.utils import timezone
 from django.utils.text import slugify
-from django.urls import reverse
 
 
 def money(value):
@@ -50,6 +49,11 @@ class Product(models.Model):
         ("other", "Other"),
     ]
 
+    PRODUCT_TYPE_CHOICES = [
+        ("preorder", "Pre-order from China"),
+        ("local", "Available in Zambia"),
+    ]
+
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=230, unique=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
@@ -58,6 +62,14 @@ class Product(models.Model):
     rmb_price = models.DecimalField(max_digits=12, decimal_places=2)
 
     image = models.ImageField(upload_to="products/", blank=True, null=True)
+
+    product_type = models.CharField(
+        max_length=20,
+        choices=PRODUCT_TYPE_CHOICES,
+        default="preorder"
+    )
+
+    stock_quantity = models.PositiveIntegerField(default=0)
 
     is_available = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
@@ -118,10 +130,27 @@ class Product(models.Model):
     def delivery_range(self):
         return f"{self.delivery_min_days} to {self.delivery_max_days} days"
 
+    def is_local_stock(self):
+        return self.product_type == "local"
+
+    def in_stock(self):
+        if self.product_type == "local":
+            return self.stock_quantity > 0
+        return True
+
+    def stock_status(self):
+        if self.product_type == "preorder":
+            return "Pre-order"
+
+        if self.stock_quantity > 0:
+            return f"In stock: {self.stock_quantity}"
+
+        return "Out of stock"
+
     def whatsapp_link(self):
         phone = "260969274458"
         message = (
-            f"Hello, I want to order this product:%0A"
+            f"Hello, I want to ask about this product:%0A"
             f"Product: {self.name}%0A"
             f"Price: K{self.selling_price()}%0A"
             f"Deposit: K{self.deposit_amount()}%0A"
@@ -145,6 +174,64 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="cart"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def total_price(self):
+        return money(sum(item.line_total() for item in self.items.all()))
+
+    def deposit_amount(self):
+        return money(self.total_price() * Decimal("0.20"))
+
+    def balance_amount(self):
+        return money(self.total_price() * Decimal("0.80"))
+
+    def total_items(self):
+        return sum(item.quantity for item in self.items.all())
+
+    def is_empty(self):
+        return self.items.count() == 0
+
+    def clear(self):
+        self.items.all().delete()
+
+    def __str__(self):
+        return f"Cart - {self.user.username}"
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(
+        Cart,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("cart", "product")
+        ordering = ["-added_at"]
+
+    def line_total(self):
+        return money(self.product.selling_price() * self.quantity)
+
+    def can_order_quantity(self):
+        if self.product.product_type == "local":
+            return self.quantity <= self.product.stock_quantity
+        return True
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
 
 
 class SupplierProductRequest(models.Model):
@@ -209,11 +296,11 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
-    total_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True)
-    deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True)
-    balance_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True)
+    # models.py — Order model fields
+    total_price    = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    balance_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     exchange_rate_used = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     markup_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
@@ -234,20 +321,13 @@ class Order(models.Model):
     customer_phone = models.CharField(max_length=20)
     customer_note = models.TextField(blank=True)
 
+    stock_reduced = models.BooleanField(default=False)
+
     class Meta:
         ordering = ["-order_date"]
 
     def save(self, *args, **kwargs):
         rate = Product.active_exchange_rate()
-
-        if not self.total_price:
-            self.total_price = self.product.selling_price()
-
-        if not self.deposit_amount:
-            self.deposit_amount = money(self.total_price * Decimal("0.20"))
-
-        if not self.balance_amount:
-            self.balance_amount = money(self.total_price * Decimal("0.80"))
 
         if rate:
             if not self.exchange_rate_used:
@@ -258,15 +338,40 @@ class Order(models.Model):
         today = timezone.now().date()
 
         if not self.estimated_arrival_start:
-            self.estimated_arrival_start = today + timedelta(days=self.product.delivery_min_days)
+            self.estimated_arrival_start = today + timedelta(days=14)
 
         if not self.estimated_arrival_end:
-            self.estimated_arrival_end = today + timedelta(days=self.product.delivery_max_days)
+            self.estimated_arrival_end = today + timedelta(days=30)
 
         if self.status == "arrived" and not self.arrival_date:
             self.arrival_date = today
 
         super().save(*args, **kwargs)
+
+    def recalculate_totals(self):
+        total = sum(item.line_total for item in self.items.all())
+
+        self.total_price = money(total)
+        self.deposit_amount = money(self.total_price * Decimal("0.20"))
+        self.balance_amount = money(self.total_price * Decimal("0.80"))
+        self.save()
+
+    def reduce_local_stock(self):
+        if self.stock_reduced:
+            return
+
+        for item in self.items.all():
+            product = item.product
+
+            if product.product_type == "local":
+                if product.stock_quantity < item.quantity:
+                    raise ValueError(f"Not enough stock for {product.name}")
+
+                product.stock_quantity -= item.quantity
+                product.save()
+
+        self.stock_reduced = True
+        self.save()
 
     def is_delayed(self):
         active_statuses = ["pending", "confirmed", "purchased", "shipped", "in_transit"]
@@ -313,5 +418,49 @@ class Order(models.Model):
     def amount_remaining(self):
         return money(self.total_price - self.amount_paid())
 
+    def has_local_items(self):
+        return self.items.filter(product_type="local").exists()
+
+    def has_preorder_items(self):
+        return self.items.filter(product_type="preorder").exists()
+
     def __str__(self):
-        return f"{self.user.username} - {self.product.name}"
+        return f"Order #{self.id} - {self.user.username}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+
+    product_name = models.CharField(max_length=200)
+    quantity = models.PositiveIntegerField(default=1)
+
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2)
+    line_total = models.DecimalField(max_digits=12, decimal_places=2)
+
+    product_type = models.CharField(max_length=20, default="preorder")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def save(self, *args, **kwargs):
+        if not self.product_name:
+            self.product_name = self.product.name
+
+        if not self.unit_price:
+            self.unit_price = self.product.selling_price()
+
+        self.line_total = money(self.unit_price * self.quantity)
+        self.product_type = self.product.product_type
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product_name}"

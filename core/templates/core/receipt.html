@@ -1,105 +1,318 @@
 {% load static %}
+{% load humanize %}
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Receipt</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt {{ order.receipt_number }} · ChinaZed 中赞商城</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --orange: #FF6600;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --r: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* PAGE */
+        .page { max-width: 740px; margin: 16px auto; padding: 0 14px 40px; }
+
+        /* RECEIPT CARD */
+        .receipt {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+        }
+
+        /* HEAD */
+        .receipt-head {
+            background: var(--red);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub { font-size: 9px; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: uppercase; }
+        .receipt-no-label { font-size: 10px; color: rgba(255,255,255,.65); font-weight: 700; text-align: right; letter-spacing: .04em; text-transform: uppercase; }
+        .receipt-no {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 18px;
+            color: #fff;
+            text-align: right;
+        }
+
+        /* META GRID */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--border);
+        }
+        .meta-cell { padding: 12px 16px; border-right: 1px solid var(--border); }
+        .meta-cell:last-child { border-right: none; }
+        .meta-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+        .meta-val { font-weight: 700; font-size: 12px; }
+        .meta-status { color: var(--red); }
+
+        /* ITEMS */
+        .items-head {
+            background: #FAFAFA;
+            border-bottom: 1px solid var(--border);
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            display: flex;
+            justify-content: space-between;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 16px;
+            border-bottom: 1px solid #F5F5F5;
+            gap: 12px;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-name { font-weight: 700; font-size: 12px; margin-bottom: 3px; }
+        .item-sub { font-size: 11px; color: var(--muted); }
+        .item-type { font-size: 10px; color: var(--muted); margin-top: 2px; }
+        .item-price {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 16px;
+            color: var(--red);
+            white-space: nowrap;
+        }
+        .no-items { padding: 12px 16px; font-size: 12px; color: var(--red); font-weight: 700; }
+
+        /* DELIVERY */
+        .delivery-box {
+            background: #EFF6FF;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 11px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .delivery-icon { font-size: 18px; flex-shrink: 0; }
+        .delivery-label { font-size: 10px; color: #1E40AF; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+        .delivery-val { font-weight: 700; font-size: 12px; color: #1E3A8A; }
+        .arrival-ok { color: #00A854; font-weight: 700; font-size: 12px; margin-top: 3px; }
+
+        /* TOTALS */
+        .totals { padding: 14px 16px; }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 5px 0;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .total-row:last-child { border-bottom: none; }
+        .total-label { color: var(--muted); }
+        .total-val { font-weight: 700; }
+        .total-paid .total-val { color: #00A854; }
+
+        .total-final {
+            background: var(--red);
+            border-radius: 4px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .tf-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 15px;
+            color: #fff;
+            letter-spacing: .3px;
+        }
+        .tf-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        /* ACTIONS */
+        .actions {
+            padding: 14px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 9px 18px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            transition: background .15s;
+        }
+        .btn-back   { background: var(--ink); color: #fff; }
+        .btn-back:hover  { background: #333; }
+        .btn-pdf    { background: var(--orange); color: #fff; }
+        .btn-pdf:hover   { background: #d95500; }
+        .btn-print  { background: #25D366; color: #fff; }
+        .btn-print:hover { background: #1DA851; }
+
+        /* PRINT */
+        @media print {
+            body { background: #fff; }
+            .page { margin: 0; padding: 0; max-width: 100%; }
+            .receipt { border: none; box-shadow: none; }
+            .actions { display: none; }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 580px) {
+            .meta-grid { grid-template-columns: repeat(2, 1fr); }
+            .meta-cell:nth-child(2) { border-right: none; }
+            .meta-cell:nth-child(3) { border-top: 1px solid var(--border); }
+            .meta-cell:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-gray-100">
+<div class="page">
+    <div class="receipt">
 
-<div class="max-w-3xl mx-auto mt-10 bg-white rounded-2xl shadow p-6">
-
-    <!-- HEADER -->
-    <div class="flex items-center justify-between border-b pb-4 mb-6">
-        <div class="flex items-center gap-3">
-            <img src="{% static 'core/images/china-zed-logo.png' %}" class="h-12">
+        <!-- HEAD -->
+        <div class="receipt-head">
             <div>
-                <h1 class="font-bold text-lg">China Zed Marketplace</h1>
-                <p class="text-sm text-gray-500">Customer Receipt</p>
+                <div class="logo-main">CHINAZED</div>
+                <div class="logo-sub">中赞商城 · Customer Receipt</div>
+            </div>
+            <div>
+                <div class="receipt-no-label">Receipt No.</div>
+                <div class="receipt-no">{{ order.receipt_number }}</div>
             </div>
         </div>
 
-        <div class="text-right">
-            <p class="text-sm text-gray-500">Receipt No</p>
-            <p class="font-bold">{{ order.receipt_number }}</p>
-        </div>
-    </div>
-
-    <!-- DETAILS -->
-    <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
-        <div>
-            <p class="text-gray-500">Customer</p>
-            <p class="font-bold">{{ order.user.username }}</p>
-        </div>
-
-        <div>
-            <p class="text-gray-500">Phone</p>
-            <p class="font-bold">{{ order.customer_phone }}</p>
-        </div>
-
-        <div>
-            <p class="text-gray-500">Order Date</p>
-            <p class="font-bold">{{ order.order_date|date:"d M Y" }}</p>
+        <!-- META -->
+        <div class="meta-grid">
+            <div class="meta-cell">
+                <div class="meta-label">Customer</div>
+                <div class="meta-val">{{ order.user.username }}</div>
+            </div>
+            <div class="meta-cell">
+                <div class="meta-label">Phone</div>
+                <div class="meta-val">{{ order.customer_phone }}</div>
+            </div>
+            <div class="meta-cell">
+                <div class="meta-label">Order Date</div>
+                <div class="meta-val">{{ order.order_date|date:"d M Y" }}</div>
+            </div>
+            <div class="meta-cell">
+                <div class="meta-label">Status</div>
+                <div class="meta-val meta-status">{{ order.get_status_display }}</div>
+            </div>
         </div>
 
-        <div>
-            <p class="text-gray-500">Status</p>
-            <p class="font-bold text-orange-600">{{ order.get_status_display }}</p>
-        </div>
-    </div>
-
-    <!-- PRODUCT -->
-    <div class="border rounded-xl p-4 mb-6">
-        <p class="font-bold text-lg">{{ order.product.name }}</p>
-        <p class="text-sm text-gray-500">
-            Delivery: {{ order.estimated_arrival_start }} - {{ order.estimated_arrival_end }}
-        </p>
-    </div>
-
-    <!-- PAYMENT -->
-    <div class="bg-orange-50 rounded-xl p-5 mb-6">
-        <div class="flex justify-between mb-2">
+        <!-- ITEMS -->
+        <div class="items-head">
+            <span>Items Purchased</span>
             <span>Total</span>
-            <span class="font-bold">K{{ order.total_price }}</span>
         </div>
 
-        <div class="flex justify-between mb-2">
-            <span>Deposit</span>
-            <span class="font-bold">K{{ order.deposit_amount }}</span>
+        {% for item in order.items.all %}
+            <div class="item-row">
+                <div>
+                    <div class="item-name">{{ item.product_name }}</div>
+                    <div class="item-sub">Qty: {{ item.quantity }} · Unit: K{{ item.unit_price|floatformat:0|intcomma }}</div>
+                    <div class="item-type">{{ item.product_type|title }}</div>
+                </div>
+                <div class="item-price">K{{ item.line_total|floatformat:0|intcomma }}</div>
+            </div>
+        {% empty %}
+            <div class="no-items">No items found for this order.</div>
+        {% endfor %}
+
+        <!-- DELIVERY -->
+        <div class="delivery-box">
+            <span class="delivery-icon">✈️</span>
+            <div>
+                <div class="delivery-label">Delivery / Arrival Window</div>
+                <div class="delivery-val">{{ order.estimated_arrival_start }} – {{ order.estimated_arrival_end }}</div>
+                {% if order.arrival_date %}
+                    <div class="arrival-ok">✅ Arrived: {{ order.arrival_date }}</div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="flex justify-between mb-2">
-            <span>Balance</span>
-            <span class="font-bold">K{{ order.balance_amount }}</span>
+        <!-- TOTALS -->
+        <div class="totals">
+            <div class="total-row">
+                <span class="total-label">Total Price</span>
+                <span class="total-val">K{{ order.total_price|floatformat:0|intcomma }}</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Deposit (20%)</span>
+                <span class="total-val">K{{ order.deposit_amount|floatformat:0|intcomma }}</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Balance on Arrival</span>
+                <span class="total-val">K{{ order.balance_amount|floatformat:0|intcomma }}</span>
+            </div>
+            <div class="total-row total-paid">
+                <span class="total-label">Amount Paid</span>
+                <span class="total-val">K{{ order.amount_paid|floatformat:0|intcomma }}</span>
+            </div>
+            <div class="total-final">
+                <span class="tf-label">RECEIPT TOTAL</span>
+                <span class="tf-amount">K{{ order.total_price|floatformat:0|intcomma }}</span>
+            </div>
         </div>
 
-        <div class="border-t mt-3 pt-3 flex justify-between text-lg font-bold text-orange-600">
-            <span>Total</span>
-            <span>K{{ order.total_price }}</span>
+        <!-- ACTIONS -->
+        <div class="actions">
+            <a href="{% url 'profile' %}" class="btn btn-back">← Back to Orders</a>
+            <a href="{% url 'receipt_pdf' order.id %}" class="btn btn-pdf">⬇ Download PDF</a>
+            <button onclick="window.print()" class="btn btn-print">🖨 Print</button>
         </div>
+
     </div>
-
-    <!-- ACTIONS -->
-    <div class="flex gap-3">
-        <a href="{% url 'profile' %}"
-           class="bg-gray-800 text-white px-4 py-2 rounded-xl font-bold">
-            Back
-        </a>
-
-        <a href="{% url 'receipt_pdf' order.id %}"
-           class="bg-orange-500 text-white px-4 py-2 rounded-xl font-bold">
-            Download PDF
-        </a>
-
-        <button onclick="window.print()"
-                class="bg-green-500 text-white px-4 py-2 rounded-xl font-bold">
-            Print
-        </button>
-    </div>
-
 </div>
 
 </body>

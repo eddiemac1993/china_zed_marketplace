@@ -5,168 +5,626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - China Zed Marketplace</title>
+    <title>Create Account · ChinaZed 中赞商城</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --red-bright: #FF2D2D;
+            --orange: #FF6600;
+            --orange-light: #FF8C00;
+            --gold: #FFC107;
+            --gold-dark: #E6A800;
+            --yellow: #FFE500;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --card-radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ── UTILITY BAR ── */
+        .utility-bar {
+            background: #1a1a1a;
+            color: #999;
+            font-size: 11px;
+            padding: 6px 0;
+        }
+        .utility-bar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .03em; }
+        .utility-bar-links { display: flex; align-items: center; }
+        .utility-bar a { color: #888; transition: color .15s; padding: 0 8px; border-right: 1px solid #333; }
+        .utility-bar a:last-child { border-right: none; }
+        .utility-bar a:hover { color: #fff; }
+        .utility-bar a.highlight { color: var(--gold); font-weight: 600; }
+
+        /* ── HEADER ── */
+        .main-header {
+            background: var(--red);
+            box-shadow: 0 2px 12px rgba(0,0,0,.25);
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .site-logo {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub {
+            font-size: 9px;
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .header-spacer { flex: 1; }
+        .hdr-back {
+            color: rgba(255,255,255,.85);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 14px;
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 4px;
+            transition: background .15s;
+        }
+        .hdr-back:hover { background: rgba(255,255,255,.15); color: #fff; }
+        .hdr-login {
+            background: var(--yellow);
+            color: var(--red-dark);
+            font-weight: 900;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background .15s;
+            font-family: 'Barlow Condensed', sans-serif;
+            letter-spacing: .5px;
+        }
+        .hdr-login:hover { background: #ffe033; }
+
+        /* ── PAGE ── */
+        .page-body {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── LEFT PROMO ── */
+        .promo-panel {
+            background: linear-gradient(135deg, #C00E13 0%, #E5141A 40%, #FF4500 75%, #FF6600 100%);
+            border-radius: var(--card-radius);
+            padding: 32px 28px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            align-self: stretch;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .promo-panel::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            background: rgba(255,255,255,.05);
+            border-radius: 50%;
+            top: -250px; right: 80px;
+            pointer-events: none;
+        }
+        .promo-panel::after {
+            content: '中赞';
+            position: absolute;
+            right: -10px; bottom: -10px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 140px;
+            color: rgba(255,255,255,.06);
+            line-height: 1;
+            pointer-events: none;
+        }
+        .promo-badge {
+            display: inline-block;
+            background: var(--yellow);
+            color: var(--red-dark);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 13px;
+            padding: 4px 12px;
+            border-radius: 2px;
+            letter-spacing: .5px;
+            margin-bottom: 16px;
+            width: fit-content;
+        }
+        .promo-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 38px;
+            line-height: 1.05;
+            letter-spacing: -.5px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,.8);
+            line-height: 1.7;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-tile {
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.2);
+            border-radius: 6px;
+            padding: 14px 12px;
+            text-align: center;
+            transition: background .15s;
+        }
+        .promo-tile:hover { background: rgba(255,255,255,.2); }
+        .promo-tile-icon { font-size: 22px; margin-bottom: 6px; }
+        .promo-tile-label { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+        .promo-tile-sub { font-size: 10px; color: rgba(255,255,255,.65); }
+        .promo-trust {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,.15);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+        .promo-trust-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: rgba(255,255,255,.8);
+        }
+        .promo-trust-item .pt-icon {
+            font-size: 14px;
+        }
+
+        /* ── REGISTER CARD ── */
+        .register-card {
+            background: var(--white);
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--red);
+            padding: 20px 24px;
+            text-align: center;
+        }
+        .card-header-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: #fff;
+            letter-spacing: .5px;
+            line-height: 1;
+        }
+        .card-header-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,.75);
+            margin-top: 4px;
+        }
+
+        .card-body { padding: 24px; }
+
+        /* ERROR BOX */
+        .error-box {
+            background: #FFF0F0;
+            border: 1px solid #FFCDD2;
+            border-left: 3px solid var(--red);
+            color: #B71C1C;
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-bottom: 18px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* FORM */
+        .form-group { margin-bottom: 14px; }
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            background: #FAFAFA;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--ink);
+            transition: border-color .15s, box-shadow .15s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px rgba(229,20,26,.08);
+            background: #fff;
+        }
+        .form-input::placeholder { color: #BBB; }
+
+        .input-hint {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* SUBMIT */
+        .btn-submit {
+            display: block;
+            width: 100%;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 13px 0;
+            font-size: 14px;
+            font-weight: 900;
+            font-family: 'Barlow Condensed', sans-serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            transition: background .15s, transform .1s;
+            margin-top: 6px;
+        }
+        .btn-submit:hover { background: var(--red-dark); }
+        .btn-submit:active { transform: scale(.99); }
+
+        /* DIVIDER */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .divider span { font-size: 10px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+
+        /* LOGIN LINK */
+        .login-strip {
+            background: #FFF8E1;
+            border: 1px solid #FFE082;
+            border-radius: 4px;
+            padding: 12px 14px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .login-strip a {
+            color: var(--red);
+            font-weight: 900;
+        }
+        .login-strip a:hover { text-decoration: underline; }
+
+        /* BACK LINK */
+        .back-link {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 14px;
+            transition: color .15s;
+        }
+        .back-link:hover { color: var(--red); }
+
+        /* STEPS STRIP */
+        .steps-strip {
+            background: #F9F9F9;
+            border-top: 1px solid var(--border);
+            padding: 14px 24px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step-num {
+            width: 22px;
+            height: 22px;
+            background: var(--red);
+            color: #fff;
+            border-radius: 50%;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .step-text { font-size: 10px; color: #555; line-height: 1.4; font-weight: 600; }
+
+        /* ── FOOTER ── */
+        .site-footer { background: #1A1A1A; margin-top: 24px; }
+        .footer-bottom {
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #444;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 800px) {
+            .page-body {
+                grid-template-columns: 1fr;
+                padding: 12px 12px 32px;
+            }
+            .promo-panel { display: none; }
+            .utility-bar { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .steps-strip { grid-template-columns: 1fr; gap: 6px; }
+            .promo-grid { grid-template-columns: repeat(3, 1fr); }
+            .logo-sub { display: none; }
         }
     </style>
 </head>
+<body>
 
-<body class="min-h-screen text-slate-900">
+<!-- UTILITY BAR -->
+<div class="utility-bar">
+    <div class="utility-bar-inner">
+        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
+        <div class="utility-bar-links">
+            <a href="{% url 'login' %}">Sign In</a>
+            <a href="{% url 'register' %}" class="highlight">Register Free</a>
+            <a href="{% url 'order_policy' %}">Policy</a>
+        </div>
+    </div>
+</div>
 
-    <!-- MOBILE TOP BAR -->
-    <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-        <a href="{% url 'home' %}" class="flex items-center gap-2">
-            <img src="{% static 'core/images/china-zed-logo.png' %}"
-                 class="h-10 w-10 object-contain">
+<!-- HEADER -->
+<div class="main-header">
+    <div class="header-top">
+        <a href="{% url 'home' %}" class="site-logo">
+            <div class="logo-main">CHINAZED</div>
+            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
+        </a>
+        <div class="header-spacer"></div>
+        <a href="{% url 'home' %}" class="hdr-back">← Back to Shop</a>
+        <a href="{% url 'login' %}" class="hdr-login">SIGN IN</a>
+    </div>
+</div>
 
-            <div>
-                <h1 class="text-lg font-black text-orange-600 leading-none">China Zed</h1>
-                <p class="text-[11px] text-slate-500">Marketplace</p>
+<!-- PAGE -->
+<div class="page-body">
+
+    <!-- LEFT PROMO -->
+    <div class="promo-panel">
+        <div>
+            <div class="promo-badge">🔥 JOIN CHINAZED FREE</div>
+            <h2 class="promo-title">Start ordering<br>from China today.</h2>
+            <p class="promo-desc">
+                Create your free account to browse thousands of products, pay just 20% deposit, and get goods delivered from China directly to Zambia in 14–30 days.
+            </p>
+            <div class="promo-grid">
+                <div class="promo-tile">
+                    <div class="promo-tile-icon">🛍️</div>
+                    <div class="promo-tile-label">Browse</div>
+                    <div class="promo-tile-sub">All products</div>
+                </div>
+                <div class="promo-tile">
+                    <div class="promo-tile-icon">💬</div>
+                    <div class="promo-tile-label">Order</div>
+                    <div class="promo-tile-sub">Via WhatsApp</div>
+                </div>
+                <div class="promo-tile">
+                    <div class="promo-tile-icon">📦</div>
+                    <div class="promo-tile-label">Track</div>
+                    <div class="promo-tile-sub">From profile</div>
+                </div>
             </div>
-        </a>
+        </div>
 
-        <a href="{% url 'login' %}"
-           class="text-sm font-black text-orange-600">
-            Login
-        </a>
+        <div class="promo-trust">
+            <div class="promo-trust-item">
+                <span class="pt-icon">💰</span>
+                <span>20% deposit only</span>
+            </div>
+            <div class="promo-trust-item">
+                <span class="pt-icon">✈️</span>
+                <span>14–30 day delivery</span>
+            </div>
+            <div class="promo-trust-item">
+                <span class="pt-icon">🔒</span>
+                <span>Secure &amp; trusted</span>
+            </div>
+            <div class="promo-trust-item">
+                <span class="pt-icon">🇿🇲</span>
+                <span>Local Zambia stock too</span>
+            </div>
+        </div>
     </div>
 
-    <!-- PAGE -->
-    <main class="min-h-[calc(100vh-65px)] flex items-center justify-center px-4 py-8">
+    <!-- REGISTER CARD -->
+    <div class="register-card">
 
-        <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card-header">
+            <div class="card-header-title">CREATE YOUR ACCOUNT</div>
+            <div class="card-header-sub">Join thousands of buyers ordering from China</div>
+        </div>
 
-            <!-- LEFT PROMO (DESKTOP ONLY) -->
-            <section class="hidden lg:flex bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl p-10 text-white flex-col justify-center relative overflow-hidden shadow-sm">
+        <div class="card-body">
 
-                <div class="relative z-10">
-                    <p class="inline-block bg-white/20 px-4 py-2 rounded-full text-sm font-bold mb-5">
-                        Join China Zed
-                    </p>
+            {% if form.errors %}
+            <div class="error-box">
+                ⚠️ Please fix the errors below and try again.
+            </div>
+            {% endif %}
 
-                    <h2 class="text-5xl font-black leading-tight mb-5">
-                        Start ordering from China today.
-                    </h2>
+            <form method="POST">
+                {% csrf_token %}
 
-                    <p class="text-orange-50 text-lg max-w-lg">
-                        Create an account to browse products, confirm orders via WhatsApp, and track deliveries easily.
-                    </p>
-
-                    <div class="grid grid-cols-3 gap-3 mt-8">
-                        <div class="bg-white/15 rounded-2xl p-4">
-                            <p class="font-black">Browse</p>
-                            <p class="text-xs text-orange-50">Products</p>
-                        </div>
-
-                        <div class="bg-white/15 rounded-2xl p-4">
-                            <p class="font-black">Order</p>
-                            <p class="text-xs text-orange-50">Via WhatsApp</p>
-                        </div>
-
-                        <div class="bg-white/15 rounded-2xl p-4">
-                            <p class="font-black">Track</p>
-                            <p class="text-xs text-orange-50">From profile</p>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username"
+                           class="form-input"
+                           placeholder="e.g. john_doe"
+                           value="{{ form.username.value|default:'' }}"
+                           required>
+                    {% if form.username.errors %}
+                        <div class="input-hint" style="color:var(--red);">{{ form.username.errors.0 }}</div>
+                    {% else %}
+                        <div class="input-hint">Used to log in — no spaces allowed.</div>
+                    {% endif %}
                 </div>
 
-                <div class="absolute right-8 bottom-2 text-white/20 text-9xl font-black">
-                    CZ
-                </div>
-            </section>
-
-            <!-- REGISTER CARD -->
-            <section class="bg-white rounded-3xl shadow-sm border border-slate-100 p-5 sm:p-8">
-
-                <div class="text-center mb-7">
-                    <img src="{% static 'core/images/china-zed-logo.png' %}"
-                         class="h-16 w-16 mx-auto mb-3">
-
-                    <h2 class="text-3xl font-black text-slate-900">
-                        Create Account
-                    </h2>
-
-                    <p class="text-sm text-slate-500 mt-1">
-                        Join and start ordering from China.
-                    </p>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email"
+                           class="form-input"
+                           placeholder="you@example.com"
+                           value="{{ form.email.value|default:'' }}"
+                           required>
+                    {% if form.email.errors %}
+                        <div class="input-hint" style="color:var(--red);">{{ form.email.errors.0 }}</div>
+                    {% endif %}
                 </div>
 
-                {% if form.errors %}
-                    <div class="bg-red-50 border border-red-100 text-red-700 p-4 rounded-2xl mb-5 text-sm">
-                        Please fix the errors below.
-                    </div>
-                {% endif %}
-
-                <form method="POST" class="space-y-5">
-                    {% csrf_token %}
-
-                    <!-- Username -->
-                    <div>
-                        <label class="block text-sm font-black mb-2">Username</label>
-                        <input type="text" name="username"
-                               class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none text-base"
-                               required>
-                    </div>
-
-                    <!-- Email -->
-                    <div>
-                        <label class="block text-sm font-black mb-2">Email</label>
-                        <input type="email" name="email"
-                               class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none text-base"
-                               required>
-                    </div>
-
-                    <!-- Password -->
-                    <div>
-                        <label class="block text-sm font-black mb-2">Password</label>
-                        <input type="password" name="password1"
-                               class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none text-base"
-                               required>
-                    </div>
-
-                    <!-- Confirm Password -->
-                    <div>
-                        <label class="block text-sm font-black mb-2">Confirm Password</label>
-                        <input type="password" name="password2"
-                               class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none text-base"
-                               required>
-                    </div>
-
-                    <!-- BUTTON -->
-                    <button type="submit"
-                            class="w-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white py-4 rounded-2xl font-black text-base transition">
-                        Create Account
-                    </button>
-                </form>
-
-                <!-- LINKS -->
-                <div class="mt-6 bg-orange-50 border border-orange-100 rounded-2xl p-4 text-center">
-                    <p class="text-sm text-slate-600">
-                        Already have an account?
-                        <a href="{% url 'login' %}" class="text-orange-600 font-black hover:underline">
-                            Login
-                        </a>
-                    </p>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password1"
+                           class="form-input"
+                           placeholder="Min. 8 characters"
+                           required>
+                    {% if form.password1.errors %}
+                        <div class="input-hint" style="color:var(--red);">{{ form.password1.errors.0 }}</div>
+                    {% else %}
+                        <div class="input-hint">Use letters, numbers, and symbols.</div>
+                    {% endif %}
                 </div>
 
-                <div class="mt-5 text-center">
-                    <a href="{% url 'home' %}" class="text-sm text-slate-500 hover:text-orange-600">
-                        ← Back to marketplace
-                    </a>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="password2"
+                           class="form-input"
+                           placeholder="Re-enter your password"
+                           required>
+                    {% if form.password2.errors %}
+                        <div class="input-hint" style="color:var(--red);">{{ form.password2.errors.0 }}</div>
+                    {% endif %}
                 </div>
 
-            </section>
+                <button type="submit" class="btn-submit">
+                    CREATE ACCOUNT →
+                </button>
+            </form>
+
+            <div class="divider"><span>ALREADY HAVE AN ACCOUNT?</span></div>
+
+            <div class="login-strip">
+                Sign in to your existing account —
+                <a href="{% url 'login' %}">Login here</a>
+            </div>
+
+            <a href="{% url 'home' %}" class="back-link">← Back to marketplace</a>
 
         </div>
-    </main>
+
+        <!-- STEPS STRIP -->
+        <div class="steps-strip">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-text">Register &amp; browse products</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-text">Pay 20% deposit to order</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-text">Receive in 14–30 days</div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-bottom">
+        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
+    </div>
+</footer>
 
 </body>
 </html>

@@ -5,6 +5,7 @@
         body {
             font-family: Arial;
             font-size: 12px;
+            color: #111827;
         }
 
         .header {
@@ -22,41 +23,130 @@
             font-weight: bold;
         }
 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 6px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #d1d5db;
+            padding: 6px;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .summary {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .summary td {
+            border: none;
+            padding: 4px;
+        }
+
         .total {
             margin-top: 20px;
             font-size: 16px;
             font-weight: bold;
+            border-top: 2px solid black;
+            padding-top: 10px;
         }
     </style>
 </head>
+
 <body>
 
 <div class="header">
     <h2>China Zed Marketplace</h2>
-    <p>Receipt</p>
+    <p>Customer Receipt</p>
 </div>
 
 <div class="row"><span class="label">Receipt No:</span> {{ order.receipt_number }}</div>
+<div class="row"><span class="label">Order ID:</span> #{{ order.id }}</div>
 <div class="row"><span class="label">Customer:</span> {{ order.user.username }}</div>
 <div class="row"><span class="label">Phone:</span> {{ order.customer_phone }}</div>
-<div class="row"><span class="label">Product:</span> {{ order.product.name }}</div>
-<div class="row"><span class="label">Order Date:</span> {{ order.order_date }}</div>
+<div class="row"><span class="label">Order Date:</span> {{ order.order_date|date:"d M Y" }}</div>
+<div class="row"><span class="label">Status:</span> {{ order.get_status_display }}</div>
 
 <div class="row">
     <span class="label">Expected Arrival:</span>
     {{ order.estimated_arrival_start }} - {{ order.estimated_arrival_end }}
 </div>
 
-<div class="row"><span class="label">Status:</span> {{ order.get_status_display }}</div>
+{% if order.arrival_date %}
+<div class="row">
+    <span class="label">Arrival Date:</span> {{ order.arrival_date }}
+</div>
+{% endif %}
 
-<hr>
+<h3>Items Purchased</h3>
 
-<div class="row"><span class="label">Total:</span> K{{ order.total_price }}</div>
-<div class="row"><span class="label">Deposit:</span> K{{ order.deposit_amount }}</div>
-<div class="row"><span class="label">Balance:</span> K{{ order.balance_amount }}</div>
+<table>
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Type</th>
+            <th class="right">Qty</th>
+            <th class="right">Unit Price</th>
+            <th class="right">Line Total</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.product_type|title }}</td>
+                <td class="right">{{ item.quantity }}</td>
+                <td class="right">K{{ item.unit_price }}</td>
+                <td class="right">K{{ item.line_total }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">No items found for this order.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="summary">
+    <tr>
+        <td class="label">Total Price:</td>
+        <td class="right">K{{ order.total_price }}</td>
+    </tr>
+    <tr>
+        <td class="label">Deposit:</td>
+        <td class="right">K{{ order.deposit_amount }}</td>
+    </tr>
+    <tr>
+        <td class="label">Balance:</td>
+        <td class="right">K{{ order.balance_amount }}</td>
+    </tr>
+    <tr>
+        <td class="label">Amount Paid:</td>
+        <td class="right">K{{ order.amount_paid }}</td>
+    </tr>
+    <tr>
+        <td class="label">Amount Remaining:</td>
+        <td class="right">K{{ order.amount_remaining }}</td>
+    </tr>
+</table>
 
 <div class="total">
-    TOTAL: K{{ order.total_price }}
+    RECEIPT TOTAL: K{{ order.total_price }}
 </div>
 
 </body>

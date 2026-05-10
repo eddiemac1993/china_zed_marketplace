@@ -5,164 +5,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Policy - China Zed Marketplace</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Order Policy · ChinaZed 中赞商城</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --orange: #FF6600;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --r: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f5f5;
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* HEADER */
+        .main-header {
+            background: var(--red);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0,0,0,.25);
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub { font-size: 9px; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: uppercase; }
+        .hdr-btn {
+            background: var(--orange);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 12px;
+            transition: background .15s;
+        }
+        .hdr-btn:hover { background: #d95500; }
+
+        /* BODY */
+        .page-body {
+            max-width: 820px;
+            margin: 16px auto;
+            padding: 0 16px 40px;
+        }
+
+        /* INTRO BOX */
+        .intro-box {
+            background: #FFF8EE;
+            border: 1px solid #FFE0B0;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: #7C4A00;
+            line-height: 1.6;
+        }
+
+        /* POLICY CARDS */
+        .policy-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .policy-head {
+            background: var(--red);
+            padding: 10px 16px;
+        }
+        .policy-head-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 15px;
+            color: #fff;
+            letter-spacing: .3px;
+        }
+        .policy-body {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #444;
+            line-height: 1.75;
+        }
+        .policy-body p + p { margin-top: 8px; }
+        .policy-body ul {
+            margin-top: 8px;
+            padding-left: 18px;
+        }
+        .policy-body li { margin-bottom: 5px; }
+        .policy-body strong { font-weight: 700; color: var(--ink); }
+
+        /* CTA */
+        .cta-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
+            font-family: inherit;
+            text-align: center;
+            transition: background .15s;
+        }
+        .btn-home  { background: var(--red);    color: #fff; }
+        .btn-home:hover  { background: var(--red-dark); }
+        .btn-wa    { background: #25D366; color: #fff; }
+        .btn-wa:hover    { background: #1DA851; }
+
+        /* FOOTER */
+        .site-footer {
+            background: #1A1A1A;
+            padding: 16px;
+            text-align: center;
+            font-size: 11px;
+            color: #555;
+            margin-top: 24px;
+        }
+        .site-footer a { color: #666; transition: color .15s; }
+        .site-footer a:hover { color: var(--red); }
+
+        @media (max-width: 480px) {
+            .cta-row { flex-direction: column; }
+            .btn { text-align: center; }
         }
     </style>
 </head>
-
 <body>
 
 <!-- HEADER -->
-<header class="bg-white border-b border-slate-200">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
+<div class="main-header">
+    <a href="{% url 'home' %}" style="text-decoration:none;">
+        <div class="logo-main">CHINAZED</div>
+        <div class="logo-sub">中赞商城 · Order Policy</div>
+    </a>
+    <a href="{% url 'home' %}" class="hdr-btn">← Back to Home</a>
+</div>
 
-        <img src="{% static 'core/images/china-zed-logo.png' %}"
-             class="h-14 w-14 object-contain">
+<!-- PAGE BODY -->
+<div class="page-body">
 
-        <div>
-            <h1 class="text-xl font-black text-orange-600">
-                China Zed Marketplace
-            </h1>
-            <p class="text-xs text-slate-500">
-                Order from China. Receive in Zambia.
-            </p>
-        </div>
-
-    </div>
-</header>
-
-<!-- CONTENT -->
-<main class="max-w-4xl mx-auto px-4 py-10">
-
-    <div class="bg-white rounded-3xl shadow-sm p-6 md:p-10">
-
-        <h1 class="text-3xl md:text-4xl font-black mb-6 text-slate-900">
-            Order Policy
-        </h1>
-
-        <!-- INTRO BOX -->
-        <div class="bg-orange-50 border border-orange-100 p-5 rounded-2xl mb-8">
-            <p class="text-sm text-slate-700">
-                Please read and understand how our China-to-Zambia ordering system works before placing an order.
-            </p>
-        </div>
-
-        <!-- SECTION -->
-        <div class="space-y-8 text-sm md:text-base text-slate-700">
-
-            <div>
-                <h2 class="text-lg font-black text-slate-900 mb-2">
-                    1. Order Confirmation
-                </h2>
-                <p>
-                    After placing an order on the website, the customer must confirm the order through WhatsApp.
-                    Orders are only processed after manual confirmation to ensure accuracy and availability.
-                </p>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-black text-slate-900 mb-2">
-                    2. Deposit Requirement
-                </h2>
-                <p>
-                    A 20% deposit is required to process any order. This confirms commitment and allows us to secure the item from China.
-                </p>
-                <p class="mt-2">
-                    The remaining 80% balance is paid after the goods arrive in Zambia.
-                </p>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-black text-slate-900 mb-2">
-                    3. Refund Policy
-                </h2>
-                <ul class="list-disc pl-5 space-y-2">
-                    <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
-                    <li>Refund applies if the supplier fails to fulfill the order.</li>
-                    <li>Refund applies if the product becomes unavailable before purchase.</li>
-                </ul>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-black text-slate-900 mb-2">
-                    4. Delivery Timeline
-                </h2>
-                <p>
-                    Each product has an estimated delivery range displayed on the website.
-                </p>
-                <p class="mt-2">
-                    Delivery times may vary due to:
-                </p>
-                <ul class="list-disc pl-5 mt-2 space-y-1">
-                    <li>Shipping delays</li>
-                    <li>Customs clearance</li>
-                    <li>Supplier processing time</li>
-                    <li>Logistics and transport conditions</li>
-                </ul>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-black text-slate-900 mb-2">
-                    5. Order Tracking
-                </h2>
-                <p>
-                    Customers can log in to their profile to track order progress, including:
-                </p>
-                <ul class="list-disc pl-5 mt-2 space-y-1">
-                    <li>Confirmed</li>
-                    <li>Purchased</li>
-                    <li>Shipped</li>
-                    <li>In Transit</li>
-                    <li>Arrived in Zambia</li>
-                    <li>Ready for Collection</li>
-                    <li>Successful / Completed</li>
-                    <li>Delayed</li>
-                </ul>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-black text-slate-900 mb-2">
-                    6. Receipts
-                </h2>
-                <p>
-                    Customers can generate a receipt once the goods have arrived in Zambia or when the order is ready for collection or delivery.
-                </p>
-            </div>
-
-        </div>
-
-        <!-- CTA -->
-        <div class="mt-10 flex flex-col sm:flex-row gap-4">
-            <a href="{% url 'home' %}"
-               class="bg-orange-500 hover:bg-orange-600 text-white text-center px-6 py-3 rounded-xl font-black">
-                Back to Home
-            </a>
-
-            <a href="https://wa.me/260970261322"
-               target="_blank"
-               class="bg-green-500 hover:bg-green-600 text-white text-center px-6 py-3 rounded-xl font-black">
-                Ask on WhatsApp
-            </a>
-        </div>
-
+    <div class="intro-box">
+        📋 Please read and understand how our China-to-Zambia ordering system works before placing an order.
     </div>
 
-</main>
+    <div class="policy-card">
+        <div class="policy-head"><div class="policy-head-title">1. Order Confirmation</div></div>
+        <div class="policy-body">
+            <p>After placing an order on the website, the customer must confirm the order through WhatsApp. Orders are only processed after manual confirmation to ensure accuracy and availability.</p>
+        </div>
+    </div>
+
+    <div class="policy-card">
+        <div class="policy-head"><div class="policy-head-title">2. Deposit Requirement</div></div>
+        <div class="policy-body">
+            <p>A <strong>20% deposit</strong> is required to process any order. This confirms commitment and allows us to secure the item from China.</p>
+            <p>The remaining <strong>80% balance</strong> is paid after the goods arrive in Zambia.</p>
+        </div>
+    </div>
+
+    <div class="policy-card">
+        <div class="policy-head"><div class="policy-head-title">3. Refund Policy</div></div>
+        <div class="policy-body">
+            <ul>
+                <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
+                <li>Refund applies if the supplier fails to fulfill the order.</li>
+                <li>Refund applies if the product becomes unavailable before purchase.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="policy-card">
+        <div class="policy-head"><div class="policy-head-title">4. Delivery Timeline</div></div>
+        <div class="policy-body">
+            <p>Each product has an estimated delivery range displayed on the website. Delivery times may vary due to:</p>
+            <ul>
+                <li>Shipping delays</li>
+                <li>Customs clearance</li>
+                <li>Supplier processing time</li>
+                <li>Logistics and transport conditions</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="policy-card">
+        <div class="policy-head"><div class="policy-head-title">5. Order Tracking</div></div>
+        <div class="policy-body">
+            <p>Customers can log in to their profile to track order progress, including:</p>
+            <ul>
+                <li>Confirmed</li>
+                <li>Purchased</li>
+                <li>Shipped</li>
+                <li>In Transit</li>
+                <li>Arrived in Zambia</li>
+                <li>Ready for Collection</li>
+                <li>Successful / Completed</li>
+                <li>Delayed</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="policy-card">
+        <div class="policy-head"><div class="policy-head-title">6. Receipts</div></div>
+        <div class="policy-body">
+            <p>Customers can generate a receipt once the goods have arrived in Zambia or when the order is ready for collection or delivery.</p>
+        </div>
+    </div>
+
+    <div class="cta-row">
+        <a href="{% url 'home' %}" class="btn btn-home">← Back to Home</a>
+        <a href="https://wa.me/260969274458" target="_blank" class="btn btn-wa">💬 Ask on WhatsApp</a>
+    </div>
+
+</div>
 
 <!-- FOOTER -->
-<footer class="bg-white border-t border-slate-200 mt-10">
-    <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-500">
-        © 2026 China Zed Marketplace · chinatozambia.zm@gmail.com
-    </div>
+<footer class="site-footer">
+    © 2026 ChinaZed · China to Zambia Marketplace &nbsp;|&nbsp;
+    <a href="mailto:chinatozambia.zm@gmail.com">chinatozambia.zm@gmail.com</a>
+    &nbsp;|&nbsp; 中赞商城版权所有
 </footer>
 
 </body>

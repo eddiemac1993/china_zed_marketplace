@@ -5,113 +5,602 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Product - China Zed</title>
+    <title>Submit a Product · ChinaZed 中赞商城</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --orange: #FF6600;
+            --orange-light: #FF8C00;
+            --gold: #FFC107;
+            --yellow: #FFE500;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --card-radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ── UTILITY BAR ── */
+        .utility-bar {
+            background: #1a1a1a;
+            color: #999;
+            font-size: 11px;
+            padding: 6px 0;
+        }
+        .utility-bar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .03em; }
+        .utility-bar-links { display: flex; align-items: center; }
+        .utility-bar a { color: #888; transition: color .15s; padding: 0 8px; border-right: 1px solid #333; }
+        .utility-bar a:last-child { border-right: none; }
+        .utility-bar a:hover { color: #fff; }
+        .utility-bar a.highlight { color: var(--gold); font-weight: 600; }
+
+        /* ── HEADER ── */
+        .main-header {
+            background: var(--red);
+            box-shadow: 0 2px 12px rgba(0,0,0,.25);
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .site-logo {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub {
+            font-size: 9px;
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .header-spacer { flex: 1; }
+        .hdr-back {
+            color: rgba(255,255,255,.85);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 14px;
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 4px;
+            transition: background .15s;
+        }
+        .hdr-back:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+        /* ── PAGE WRAPPER ── */
+        .page-body {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--white);
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--orange);
+            padding: 18px 24px;
+        }
+        .card-header-eyebrow {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: rgba(255,255,255,.7);
+            margin-bottom: 4px;
+        }
+        .card-header-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: #fff;
+            letter-spacing: .5px;
+            line-height: 1;
+        }
+        .card-header-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,.8);
+            margin-top: 5px;
+        }
+
+        .card-body { padding: 24px; }
+
+        /* SUCCESS */
+        .success-box {
+            background: #F0FFF4;
+            border: 1px solid #B7EBC5;
+            border-left: 3px solid #00A854;
+            color: #1D6A34;
+            padding: 12px 14px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* SECTION DIVIDER */
+        .form-section-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 15px;
+            color: var(--orange);
+            letter-spacing: .5px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .form-section-title::before {
+            content: '';
+            display: block;
+            width: 3px;
+            height: 14px;
+            background: var(--orange);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .form-section { margin-bottom: 20px; }
+
+        /* FIELD */
+        .form-group { margin-bottom: 12px; }
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .form-label .req { color: var(--red); margin-left: 2px; }
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 13px;
+            background: #FAFAFA;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--ink);
+            transition: border-color .15s, box-shadow .15s;
+            outline: none;
+        }
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255,102,0,.08);
+            background: #fff;
+        }
+        .form-input::placeholder,
+        .form-textarea::placeholder { color: #BBB; }
+        .form-textarea { resize: vertical; min-height: 90px; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* FILE UPLOAD */
+        .file-drop {
+            border: 2px dashed var(--border);
+            border-radius: 4px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: border-color .15s, background .15s;
+            cursor: pointer;
+            position: relative;
+        }
+        .file-drop:hover {
+            border-color: var(--orange);
+            background: #FFF8F0;
+        }
+        .file-drop input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .file-drop-icon { font-size: 28px; margin-bottom: 6px; }
+        .file-drop-text { font-size: 12px; color: var(--ink); font-weight: 700; margin-bottom: 3px; }
+        .file-drop-hint { font-size: 11px; color: var(--muted); }
+
+        /* SUBMIT */
+        .btn-submit {
+            display: block;
+            width: 100%;
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            padding: 13px 0;
+            font-size: 15px;
+            font-weight: 900;
+            font-family: 'Barlow Condensed', sans-serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            transition: background .15s, transform .1s;
+            margin-top: 4px;
+        }
+        .btn-submit:hover { background: #D95500; }
+        .btn-submit:active { transform: scale(.99); }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 14px;
+            transition: color .15s;
+        }
+        .back-link:hover { color: var(--orange); }
+
+        /* ── SIDEBAR ── */
+        .sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+        .info-card {
+            background: var(--white);
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .info-card-header {
+            background: #1A1A1A;
+            padding: 11px 16px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 14px;
+            color: #fff;
+            letter-spacing: .5px;
+        }
+        .info-card-body { padding: 14px 16px; }
+
+        .info-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .info-step:last-child { margin-bottom: 0; }
+        .info-step-num {
+            width: 22px;
+            height: 22px;
+            background: var(--orange);
+            color: #fff;
+            border-radius: 50%;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .info-step-text h4 { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+        .info-step-text p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #F5F5F5;
+            font-size: 12px;
+        }
+        .contact-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .contact-row-icon { font-size: 18px; flex-shrink: 0; }
+        .contact-row a { color: var(--orange); font-weight: 700; }
+        .contact-row a:hover { text-decoration: underline; }
+
+        .tip-list { list-style: none; }
+        .tip-list li {
+            font-size: 11px;
+            color: #555;
+            padding: 5px 0;
+            border-bottom: 1px solid #F5F5F5;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            line-height: 1.5;
+        }
+        .tip-list li:last-child { border-bottom: none; }
+        .tip-list li::before { content: '✓'; color: #00A854; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+
+        /* ── FOOTER ── */
+        .site-footer { background: #1A1A1A; margin-top: 24px; }
+        .footer-bottom {
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #444;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 760px) {
+            .page-body {
+                grid-template-columns: 1fr;
+                padding: 12px 12px 32px;
+            }
+            .utility-bar { display: none; }
+            .logo-sub { display: none; }
+            .form-row { grid-template-columns: 1fr; gap: 12px; }
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-gradient-to-br from-orange-50 to-gray-100 text-slate-900">
+<!-- UTILITY BAR -->
+<div class="utility-bar">
+    <div class="utility-bar-inner">
+        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
+        <div class="utility-bar-links">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}">My Account</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Sign In</a>
+                <a href="{% url 'register' %}" class="highlight">Register Free</a>
+            {% endif %}
+            <a href="{% url 'home' %}">← Marketplace</a>
+        </div>
+    </div>
+</div>
 
-<div class="min-h-screen flex items-center justify-center px-4 py-10">
+<!-- HEADER -->
+<div class="main-header">
+    <div class="header-top">
+        <a href="{% url 'home' %}" class="site-logo">
+            <div class="logo-main">CHINAZED</div>
+            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
+        </a>
+        <div class="header-spacer"></div>
+        <a href="{% url 'home' %}" class="hdr-back">← Back to Shop</a>
+    </div>
+</div>
 
-    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-6 md:p-8">
+<!-- PAGE -->
+<div class="page-body">
 
-        <!-- HEADER -->
-        <div class="flex items-center gap-4 mb-8">
-            <img src="{% static 'core/images/china-zed-logo.png' %}"
-                 class="h-14 w-14 object-contain bg-white rounded-xl p-1 shadow">
+    <!-- FORM CARD -->
+    <div class="form-card">
 
-            <div>
-                <h1 class="text-3xl font-black text-orange-600">
-                    Submit Product
-                </h1>
-                <p class="text-sm text-gray-500">
-                    China suppliers / product scouts upload products here
-                </p>
+        <div class="card-header">
+            <div class="card-header-eyebrow">🏪 Supplier Portal</div>
+            <div class="card-header-title">SUBMIT A PRODUCT</div>
+            <div class="card-header-sub">China suppliers &amp; product scouts — list your products here for review.</div>
+        </div>
+
+        <div class="card-body">
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="success-box">
+                    ✓ {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- SUPPLIER INFO -->
+                <div class="form-section">
+                    <div class="form-section-title">Supplier Information</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Supplier Name <span class="req">*</span></label>
+                            <input type="text" name="supplier_name"
+                                   class="form-input"
+                                   placeholder="e.g. Chen Trading Co."
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact (WeChat / Phone) <span class="req">*</span></label>
+                            <input type="text" name="supplier_contact"
+                                   class="form-input"
+                                   placeholder="WeChat ID or phone number"
+                                   required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUCT INFO -->
+                <div class="form-section">
+                    <div class="form-section-title">Product Details</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product Name <span class="req">*</span></label>
+                        <input type="text" name="product_name"
+                               class="form-input"
+                               placeholder="e.g. Smart Watch Ultra Pro"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea name="description"
+                                  class="form-textarea"
+                                  placeholder="Describe the product — features, available sizes, colors, materials…"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Price (RMB ¥) <span class="req">*</span></label>
+                            <input type="number" step="0.01" name="rmb_price"
+                                   class="form-input"
+                                   placeholder="e.g. 120"
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Minimum Order Qty</label>
+                            <input type="number" name="moq"
+                                   class="form-input"
+                                   placeholder="e.g. 1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IMAGES -->
+                <div class="form-section">
+                    <div class="form-section-title">Product Images</div>
+
+                    <div class="file-drop">
+                        <input type="file" name="images" multiple accept="image/*">
+                        <div class="file-drop-icon">📷</div>
+                        <div class="file-drop-text">Click or drag images here</div>
+                        <div class="file-drop-hint">Upload 3–6 images · JPG, PNG, WEBP · Max 5MB each</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Submit Product for Review →
+                </button>
+            </form>
+
+            <a href="{% url 'home' %}" class="back-link">← Back to Marketplace</a>
+
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <!-- HOW IT WORKS -->
+        <div class="info-card">
+            <div class="info-card-header">HOW IT WORKS</div>
+            <div class="info-card-body">
+                <div class="info-step">
+                    <div class="info-step-num">1</div>
+                    <div class="info-step-text">
+                        <h4>Submit Your Product</h4>
+                        <p>Fill in details, price in RMB, and upload clear photos.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="info-step-num">2</div>
+                    <div class="info-step-text">
+                        <h4>We Review &amp; List</h4>
+                        <p>Our team checks and publishes your product on the marketplace.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="info-step-num">3</div>
+                    <div class="info-step-text">
+                        <h4>Buyers Place Orders</h4>
+                        <p>Zambian buyers pay a 20% deposit to confirm orders.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="info-step-num">4</div>
+                    <div class="info-step-text">
+                        <h4>You Get Paid</h4>
+                        <p>We coordinate shipping and settle with you on arrival.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- SUCCESS MESSAGE -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="bg-green-50 border border-green-200 text-green-700 p-4 rounded-2xl mb-6">
-                    {{ message }}
+        <!-- CONTACT -->
+        <div class="info-card">
+            <div class="info-card-header">NEED HELP?</div>
+            <div class="info-card-body">
+                <div class="contact-row">
+                    <span class="contact-row-icon">💬</span>
+                    <div>WhatsApp us at<br><a href="https://wa.me/260969274458">+260 969 274 458</a></div>
                 </div>
-            {% endfor %}
-        {% endif %}
-
-        <!-- FORM -->
-        <form method="POST" enctype="multipart/form-data" class="space-y-5">
-            {% csrf_token %}
-
-            <!-- Supplier Info -->
-            <div>
-                <label class="block text-sm font-bold mb-1">Supplier Name</label>
-                <input type="text" name="supplier_name"
-                       class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-400 outline-none"
-                       placeholder="e.g. Chen Trading">
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold mb-1">Contact (WeChat / Phone)</label>
-                <input type="text" name="supplier_contact"
-                       class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-400 outline-none"
-                       placeholder="WeChat ID or Phone">
-            </div>
-
-            <!-- Product Info -->
-            <div>
-                <label class="block text-sm font-bold mb-1">Product Name</label>
-                <input type="text" name="product_name"
-                       class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-400 outline-none"
-                       placeholder="e.g. Smart Watch Ultra">
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold mb-1">Description</label>
-                <textarea name="description"
-                          class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-400 outline-none"
-                          placeholder="Describe product features, sizes, colors..."></textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-bold mb-1">Price (RMB)</label>
-                <input type="number" step="0.01" name="rmb_price"
-                       class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-400 outline-none"
-                       placeholder="e.g. 120">
-            </div>
-
-            <!-- MULTIPLE IMAGE UPLOAD -->
-            <div>
-                <label class="block text-sm font-bold mb-2">Upload Product Images</label>
-
-                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition">
-                    <input type="file" name="images" multiple class="w-full">
-
-                    <p class="text-sm text-gray-500 mt-2">
-                        Upload multiple images (recommended 3–6)
-                    </p>
+                <div class="contact-row">
+                    <span class="contact-row-icon">✉️</span>
+                    <div><a href="mailto:chinatozambia.zm@gmail.com">chinatozambia.zm@gmail.com</a></div>
                 </div>
             </div>
+        </div>
 
-            <!-- SUBMIT -->
-            <button type="submit"
-                    class="w-full bg-orange-500 hover:bg-orange-600 transition text-white py-3 rounded-2xl font-black text-lg shadow">
-                Submit Product for Review
-            </button>
-
-        </form>
-
-        <!-- FOOTER -->
-        <div class="mt-6 text-center">
-            <a href="{% url 'home' %}"
-               class="text-sm text-gray-500 hover:text-orange-600">
-                ← Back to Marketplace
-            </a>
+        <!-- TIPS -->
+        <div class="info-card">
+            <div class="info-card-header">LISTING TIPS</div>
+            <div class="info-card-body">
+                <ul class="tip-list">
+                    <li>Use clear, well-lit photos on a white background</li>
+                    <li>Include all available colors and sizes</li>
+                    <li>Price in RMB — we handle ZMW conversion</li>
+                    <li>Mention delivery timeframe if you know it</li>
+                    <li>Upload at least 3 images for faster approval</li>
+                </ul>
+            </div>
         </div>
 
     </div>
 
 </div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-bottom">
+        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
+    </div>
+</footer>
 
 </body>
 </html>

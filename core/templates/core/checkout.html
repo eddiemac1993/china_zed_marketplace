@@ -1,0 +1,508 @@
+{% load static %}
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout · ChinaZed 中赞商城</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --orange: #FF6600;
+            --gold: #FFC107;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --r: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* TOP BAR */
+        .top-bar {
+            background: #1a1a1a;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-bar a { color: #888; font-size: 11px; font-weight: 600; transition: color .15s; }
+        .top-bar a:hover { color: #fff; }
+        .top-bar a.highlight { color: var(--orange); }
+
+        /* HEADER */
+        .main-header {
+            background: var(--red);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub { font-size: 9px; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: uppercase; }
+        .hdr-title { color: #fff; font-weight: 700; font-size: 16px; }
+        .hdr-sub { color: rgba(255,255,255,.65); font-size: 11px; margin-top: 2px; }
+
+        /* MESSAGES */
+        .msg-wrap { max-width: 1100px; margin: 12px auto 0; padding: 0 16px; }
+        .msg-strip {
+            background: #F0FFF4; border: 1px solid #B7EBC5; color: #1D6A34;
+            padding: 10px 16px; font-size: 13px; border-radius: 4px; margin-bottom: 8px;
+        }
+
+        /* LAYOUT */
+        .page-body {
+            max-width: 1100px;
+            margin: 16px auto;
+            padding: 0 16px 40px;
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 12px;
+            align-items: start;
+        }
+        .left-col { display: flex; flex-direction: column; gap: 12px; }
+
+        /* CARDS */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+        }
+        .card-head {
+            background: var(--red);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-head-title { font-weight: 700; font-size: 13px; color: #fff; letter-spacing: .03em; }
+        .card-head-badge {
+            background: rgba(255,255,255,.18);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+        }
+        .card-body { padding: 16px; }
+
+        /* FORM */
+        .form-group { margin-bottom: 14px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 5px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            color: var(--ink);
+            background: #FAFAFA;
+            transition: border-color .15s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--red);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(229,20,26,.1);
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+        .form-error { font-size: 11px; color: var(--red); font-weight: 700; margin-top: 3px; }
+
+        /* CART ITEMS */
+        .cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #F5F5F5;
+        }
+        .cart-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .item-img {
+            width: 68px;
+            height: 68px;
+            border-radius: 4px;
+            background: #F0F0F0;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .item-no-img {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #CCC;
+            font-size: 10px;
+        }
+        .item-details { flex: 1; min-width: 0; }
+        .item-name {
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 1.4;
+            margin-bottom: 5px;
+        }
+        .item-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 2px;
+        }
+        .tag-local { background: #F0FFF4; color: #00A854; }
+        .tag-china { background: #EFF6FF; color: #1677FF; }
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .item-qty { font-size: 11px; color: var(--muted); }
+        .item-price {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 15px;
+            color: var(--red);
+        }
+
+        /* SUMMARY SIDEBAR */
+        .summary-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            overflow: hidden;
+            position: sticky;
+            top: 12px;
+        }
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid #F5F5F5;
+            font-size: 12px;
+        }
+        .sum-row:last-child { border-bottom: none; }
+        .sum-label { color: var(--muted); }
+        .sum-val { font-weight: 700; }
+        .sum-total .sum-val {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            color: var(--red);
+        }
+
+        /* DEPOSIT BOX */
+        .deposit-box {
+            background: #FFF8EE;
+            border: 1px solid #FFE0B0;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin-top: 12px;
+        }
+        .deposit-label { font-size: 10px; font-weight: 700; color: #B45309; margin-bottom: 2px; }
+        .deposit-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--orange);
+            line-height: 1;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .bal-box {
+            background: #F8F8F8;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px 10px;
+        }
+        .bal-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+        .bal-val {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 16px;
+            color: var(--ink);
+        }
+
+        /* INFO BOX */
+        .info-box {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: #1E40AF;
+            line-height: 1.6;
+        }
+
+        /* BUTTONS */
+        .btn-submit {
+            display: block;
+            width: 100%;
+            background: #25D366;
+            color: #fff;
+            border: none;
+            padding: 13px 0;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 12px;
+            transition: background .15s, transform .1s;
+        }
+        .btn-submit:hover { background: #1DA851; }
+        .btn-submit:active { transform: scale(.98); }
+        .btn-edit {
+            display: block;
+            background: #F5F5F5;
+            color: var(--ink);
+            border: 1px solid var(--border);
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 8px;
+            transition: background .15s;
+        }
+        .btn-edit:hover { background: #EBEBEB; }
+
+        /* TRUST PILLS */
+        .trust-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #F0F0F0;
+        }
+        .trust-pill {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            background: #F8F8F8;
+            border: 1px solid var(--border);
+            padding: 3px 9px;
+            border-radius: 2px;
+        }
+        .disclaimer { font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+
+        /* RESPONSIVE */
+        @media (max-width: 700px) {
+            .page-body { grid-template-columns: 1fr; }
+            .summary-card { position: static; }
+            .top-bar .highlight { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+    <a href="{% url 'cart' %}">← Back to Cart</a>
+    <a href="{% url 'home' %}" class="highlight">Continue Shopping</a>
+</div>
+
+<!-- HEADER -->
+<div class="main-header">
+    <a href="{% url 'home' %}" style="text-decoration:none;">
+        <div class="logo-main">CHINAZED</div>
+        <div class="logo-sub">中赞商城 · Marketplace</div>
+    </a>
+    <div>
+        <div class="hdr-title">Checkout</div>
+        <div class="hdr-sub">Confirm your details before sending your order to WhatsApp.</div>
+    </div>
+</div>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div class="msg-wrap">
+    {% for message in messages %}
+        <div class="msg-strip">✓ {{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+    <form method="POST" style="display:contents;">
+        {% csrf_token %}
+
+        <!-- LEFT COLUMN -->
+        <div class="left-col">
+
+            <!-- CUSTOMER DETAILS -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-head-title">Customer Details</span>
+                </div>
+                <div class="card-body">
+
+                    {% if form.non_field_errors %}
+                        <div style="background:#FFF0F0; border:1px solid #FECACA; color:#991B1B; padding:10px 12px; border-radius:4px; font-size:12px; margin-bottom:12px;">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.customer_phone }}
+                        {% if form.customer_phone.errors %}
+                            <div class="form-error">{{ form.customer_phone.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Order Note</label>
+                        {{ form.customer_note }}
+                        {% if form.customer_note.errors %}
+                            <div class="form-error">{{ form.customer_note.errors|striptags }}</div>
+                        {% endif %}
+                        <div class="form-hint">Colour, size, model, delivery instructions, preferred pickup point.</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ORDER ITEMS -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-head-title">Order Items</span>
+                    <span class="card-head-badge">
+                        {{ cart.total_items }} item{% if cart.total_items != 1 %}s{% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                        <div class="cart-item">
+                            <div class="item-img">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% else %}
+                                    <div class="item-no-img">No Image</div>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <div class="item-name">{{ item.product.name }}</div>
+                                {% if item.product.product_type == "local" %}
+                                    <span class="item-tag tag-local">🇿🇲 In Zambia</span>
+                                {% else %}
+                                    <span class="item-tag tag-china">🇨🇳 Pre-order</span>
+                                {% endif %}
+                                <div class="item-meta">
+                                    <span class="item-qty">Qty: {{ item.quantity }}</span>
+                                    <span class="item-price">K{{ item.line_total|floatformat:0|intcomma }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SUMMARY SIDEBAR -->
+        <div class="summary-card">
+            <div class="card-head">
+                <span class="card-head-title">Payment Summary</span>
+            </div>
+            <div class="card-body">
+
+                <div class="sum-row">
+                    <span class="sum-label">Total Items</span>
+                    <span class="sum-val">{{ cart.total_items }}</span>
+                </div>
+                <div class="sum-row sum-total">
+                    <span class="sum-label">Total Price</span>
+                    <span class="sum-val">K{{ cart.total_price|floatformat:0|intcomma }}</span>
+                </div>
+
+                <div class="deposit-box">
+                    <div class="deposit-label">💰 Deposit Now (20%)</div>
+                    <div class="deposit-amount">K{{ cart.deposit_amount|floatformat:0|intcomma }}</div>
+                </div>
+
+                <div class="balance-grid">
+                    <div class="bal-box">
+                        <div class="bal-label">📦 Balance on Arrival</div>
+                        <div class="bal-val">K{{ cart.balance_amount|floatformat:0|intcomma }}</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    ✈️ After submitting, your order is created and you'll be redirected to WhatsApp to confirm availability and deposit instructions.
+                </div>
+
+                <button type="submit" class="btn-submit">💬 Submit Order &amp; Continue to WhatsApp</button>
+                <a href="{% url 'cart' %}" class="btn-edit">✏️ Edit Cart</a>
+
+                <div class="trust-pills">
+                    <span class="trust-pill">✅ 20% Deposit Only</span>
+                    <span class="trust-pill">💬 WhatsApp Confirm</span>
+                    <span class="trust-pill">📦 Real-time Tracking</span>
+                </div>
+
+                <div class="disclaimer">
+                    By placing an order you agree to the marketplace order terms, including 20% deposit and balance payment on arrival.
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>

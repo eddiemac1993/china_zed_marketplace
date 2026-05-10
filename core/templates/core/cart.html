@@ -1,0 +1,1210 @@
+{% load static %}
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart | ChinaZed · 中赞商城</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --red: #E5141A;
+            --red-dark: #B50F14;
+            --red-bright: #FF2D2D;
+            --orange: #FF6600;
+            --orange-light: #FF8C00;
+            --gold: #FFC107;
+            --gold-dark: #E6A800;
+            --yellow: #FFE500;
+            --bg: #F2F2F2;
+            --white: #FFFFFF;
+            --ink: #1A1A1A;
+            --muted: #888;
+            --border: #E0E0E0;
+            --card-radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        .noscroll::-webkit-scrollbar { display: none; }
+        .noscroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ── UTILITY BAR ── */
+        .utility-bar {
+            background: #1a1a1a;
+            color: #999;
+            font-size: 11px;
+            padding: 6px 0;
+        }
+        .utility-bar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .03em; }
+        .utility-bar-links { display: flex; align-items: center; }
+        .utility-bar a { color: #888; transition: color .15s; padding: 0 8px; border-right: 1px solid #333; }
+        .utility-bar a:last-child { border-right: none; }
+        .utility-bar a:hover { color: #fff; }
+        .utility-bar a.highlight { color: var(--gold); font-weight: 600; }
+
+        /* ── MAIN HEADER ── */
+        .main-header {
+            background: var(--red);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .site-logo {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+        }
+        .logo-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: #fff;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .logo-sub {
+            font-size: 9px;
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .search-bar {
+            flex: 1;
+            display: flex;
+            min-width: 0;
+            max-width: 600px;
+        }
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            padding: 0 14px;
+            font-size: 13px;
+            font-family: inherit;
+            height: 40px;
+            border-radius: 4px 0 0 4px;
+            color: var(--ink);
+            background: #fff;
+        }
+        .search-btn {
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            padding: 0 18px;
+            height: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            font-family: inherit;
+            transition: background .15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .search-btn:hover { background: #d95500; }
+        .header-actions {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hdr-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: rgba(255,255,255,.85);
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background .15s;
+            white-space: nowrap;
+        }
+        .hdr-link:hover { background: rgba(255,255,255,.15); color: #fff; }
+        .hdr-link .hdr-icon { font-size: 18px; line-height: 1; }
+        .hdr-cart {
+            background: var(--orange);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: background .15s;
+        }
+        .hdr-cart:hover { background: #d95500; }
+
+        /* CAT NAV */
+        .cat-nav {
+            background: rgba(0,0,0,0.18);
+            border-top: 1px solid rgba(255,255,255,.1);
+        }
+        .cat-nav-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+        .cat-nav-inner::-webkit-scrollbar { display: none; }
+        .cat-nav a {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 13px;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255,255,255,.8);
+            white-space: nowrap;
+            transition: all .15s;
+            border-bottom: 2px solid transparent;
+            gap: 4px;
+        }
+        .cat-nav a:hover, .cat-nav a.active {
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            border-bottom-color: var(--yellow);
+        }
+        .cat-nav-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 0;
+            font-size: 12px;
+            color: rgba(255,255,255,.65);
+            margin-right: auto;
+        }
+        .cat-nav-breadcrumb a { color: rgba(255,255,255,.65); padding: 0; border: none; }
+        .cat-nav-breadcrumb a:hover { color: #fff; background: none; border: none; }
+        .cat-nav-breadcrumb span { color: rgba(255,255,255,.4); }
+
+        /* MOBILE MENU */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+        .mobile-menu-btn span {
+            display: block;
+            height: 2px;
+            background: #fff;
+            border-radius: 2px;
+        }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 12px 16px;
+        }
+
+        /* ── PAGE HEADER STRIP ── */
+        .page-header-strip {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .page-header-left { display: flex; align-items: center; gap: 12px; }
+        .page-header-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 22px;
+            color: var(--red);
+            letter-spacing: .5px;
+        }
+        .page-header-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .cart-count-badge {
+            background: var(--red);
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .continue-shopping {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: 4px;
+            transition: all .15s;
+        }
+        .continue-shopping:hover { border-color: var(--red); color: var(--red); }
+
+        /* ── MESSAGES ── */
+        .msg-strip {
+            background: #F0FFF4;
+            border: 1px solid #B7EBC5;
+            color: #1D6A34;
+            padding: 10px 16px;
+            font-size: 13px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        /* ── TWO-COL LAYOUT ── */
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 12px;
+            align-items: start;
+        }
+
+        /* ── CART ITEMS PANEL ── */
+        .cart-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+        }
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px 10px;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        .section-head-left { display: flex; align-items: center; gap: 10px; }
+        .section-head-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 17px;
+            color: var(--red);
+            letter-spacing: .5px;
+        }
+        .section-head-sub { font-size: 11px; color: var(--muted); }
+
+        /* ── CART ITEM ROW ── */
+        .cart-item {
+            display: flex;
+            gap: 14px;
+            padding: 16px;
+            border-bottom: 1px solid #F5F5F5;
+            transition: background .15s;
+        }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item:hover { background: #FAFAFA; }
+
+        .item-img-box {
+            flex-shrink: 0;
+            width: 90px;
+            height: 90px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #F8F8F8;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .item-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .3s ease;
+        }
+        .cart-item:hover .item-img-box img { transform: scale(1.06); }
+        .item-no-img {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #CCC;
+        }
+
+        .item-type-badge {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+        .badge-local { background: #00A854; color: #fff; }
+        .badge-china { background: #1677FF; color: #fff; }
+
+        .item-body { flex: 1; min-width: 0; }
+        .item-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.4;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: color .15s;
+        }
+        .item-name:hover { color: var(--red); }
+
+        .item-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 2px;
+        }
+        .pill-local { background: #F0FFF4; color: #00A854; }
+        .pill-china { background: #EFF6FF; color: #1677FF; }
+        .pill-stock { background: #F5F5F5; color: var(--muted); }
+
+        .item-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .item-price-block {}
+        .item-unit-label { font-size: 10px; color: var(--muted); margin-bottom: 2px; }
+        .item-price-row { display: flex; align-items: baseline; gap: 2px; }
+        .item-price-curr { font-size: 11px; font-weight: 700; color: var(--red); }
+        .item-price-main {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            color: var(--red);
+            letter-spacing: -.5px;
+            line-height: 1;
+        }
+        .item-line-total { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .item-line-total strong { color: var(--ink); font-weight: 700; }
+
+        /* QTY CONTROLS */
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #F8F8F8;
+            color: var(--ink);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s;
+            font-family: inherit;
+        }
+        .qty-btn:hover { background: var(--red); color: #fff; }
+        .qty-display {
+            width: 38px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            background: #fff;
+        }
+
+        /* REMOVE */
+        .item-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .btn-remove {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s;
+        }
+        .btn-remove:hover { border-color: var(--red); color: var(--red); background: #FFF0F0; }
+
+        /* CLEAR CART ROW */
+        .cart-footer-row {
+            padding: 12px 16px;
+            border-top: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn-clear {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s;
+        }
+        .btn-clear:hover { border-color: #C00; color: #C00; background: #FFF0F0; }
+        .cart-item-count-note { font-size: 11px; color: var(--muted); }
+
+        /* ── SUMMARY SIDEBAR ── */
+        .summary-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            position: sticky;
+            top: 120px;
+        }
+        .summary-head {
+            background: var(--red);
+            color: #fff;
+            padding: 12px 16px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 17px;
+            letter-spacing: .5px;
+        }
+        .summary-body { padding: 16px; }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 0;
+            border-bottom: 1px solid #F5F5F5;
+            font-size: 13px;
+        }
+        .summary-row:last-of-type { border-bottom: none; }
+        .summary-label { color: var(--muted); }
+        .summary-val { font-weight: 700; color: var(--ink); }
+        .summary-val.red { color: var(--red); font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 900; }
+
+        .summary-divider {
+            border: none;
+            border-top: 2px dashed #F0F0F0;
+            margin: 4px 0 12px;
+        }
+
+        .deposit-highlight {
+            background: #FFF8E1;
+            border: 1px solid #FFE082;
+            border-radius: 4px;
+            padding: 10px 14px;
+            margin: 12px 0;
+        }
+        .deposit-highlight .dh-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #8B6914;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 4px;
+        }
+        .deposit-highlight .dh-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--orange);
+            line-height: 1;
+        }
+        .deposit-highlight .dh-note { font-size: 11px; color: #8B6914; margin-top: 3px; }
+
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+        .balance-row span { font-weight: 700; color: var(--ink); }
+
+        .btn-checkout {
+            display: block;
+            width: 100%;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: background .15s, transform .1s;
+            margin-bottom: 8px;
+        }
+        .btn-checkout:hover { background: var(--red-dark); }
+        .btn-checkout:active { transform: scale(.98); }
+
+        .btn-shop-more {
+            display: block;
+            width: 100%;
+            background: #F8F8F8;
+            color: var(--ink);
+            border: 1px solid var(--border);
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            transition: all .15s;
+        }
+        .btn-shop-more:hover { border-color: var(--red); color: var(--red); }
+
+        .summary-note {
+            margin-top: 12px;
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 11px;
+            color: #1E40AF;
+            line-height: 1.5;
+        }
+
+        /* ── HOW IT WORKS STRIP ── */
+        .how-strip {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .how-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-right: 1px solid var(--border);
+        }
+        .how-item:last-child { border-right: none; }
+        .how-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--red);
+            color: #fff;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .how-text h4 { font-size: 12px; font-weight: 700; color: var(--ink); }
+        .how-text p { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+        /* ── EMPTY STATE ── */
+        .empty-cart {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .empty-cart-icon { font-size: 56px; margin-bottom: 16px; }
+        .empty-cart h2 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+        .empty-cart p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+        .btn-start-shopping {
+            display: inline-block;
+            background: var(--red);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: background .15s;
+        }
+        .btn-start-shopping:hover { background: var(--red-dark); }
+
+        /* ── FOOTER ── */
+        .site-footer { background: #1A1A1A; margin-top: 24px; }
+        .footer-top {
+            padding: 24px 20px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 32px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .footer-logo-text {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--red);
+        }
+        .footer-tagline { font-size: 10px; color: #555; margin-top: 2px; letter-spacing: .08em; text-transform: uppercase; }
+        .footer-desc { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.7; }
+        .footer-contact { margin-top: 14px; }
+        .footer-contact div { font-size: 12px; color: #777; margin-bottom: 5px; }
+        .footer-col h4 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #aaa;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #2D2D2D;
+        }
+        .footer-col a { display: block; font-size: 12px; color: #666; margin-bottom: 7px; transition: color .15s; }
+        .footer-col a:hover { color: var(--red); }
+        .footer-bottom {
+            border-top: 1px solid #2D2D2D;
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #444;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* ── FLOATING ── */
+        .wa-btn {
+            position: fixed;
+            bottom: 76px;
+            right: 16px;
+            background: #25D366;
+            color: #fff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 16px rgba(37,211,102,.45);
+            z-index: 300;
+            transition: transform .15s;
+        }
+        .wa-btn:hover { transform: scale(1.1); }
+
+        /* ── MOBILE BOTTOM NAV ── */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            z-index: 500;
+            background: #fff;
+            border-radius: 22px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.14);
+            padding: 6px;
+        }
+        .mobile-bottom-nav-inner {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: center;
+        }
+        .mbn-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 0;
+            color: #777;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 16px;
+        }
+        .mbn-icon {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 13px;
+            background: #f4f4f4;
+            font-size: 16px;
+        }
+        .mbn-item.active { color: var(--red); }
+        .mbn-item.active .mbn-icon {
+            background: linear-gradient(135deg, var(--red), #ff5b5b);
+            color: #fff;
+            box-shadow: 0 5px 14px rgba(229,20,26,0.28);
+        }
+        .mbn-cart-badge { position: relative; }
+        .mbn-badge {
+            position: absolute;
+            top: -4px;
+            right: -5px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: var(--red);
+            color: #fff;
+            font-size: 8px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .cart-layout { grid-template-columns: 1fr; }
+            .summary-panel { position: static; }
+            .how-strip { grid-template-columns: repeat(2, 1fr); }
+            .how-item:nth-child(2) { border-right: none; }
+            .how-item:nth-child(3) { border-top: 1px solid var(--border); }
+            .how-item:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+            .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; }
+            .footer-top > div:first-child { grid-column: 1 / -1; }
+        }
+
+        @media (max-width: 640px) {
+            .utility-bar, .logo-sub, .header-actions { display: none; }
+            .header-top { gap: 8px; padding: 8px 12px; }
+            .logo-main { font-size: 22px; }
+            .search-input { height: 38px; padding: 0 10px; }
+            .search-btn { padding: 0 12px; height: 38px; font-size: 12px; }
+            .mobile-menu-btn { display: flex; }
+            .page-body { padding: 8px 12px 80px; }
+            .page-header-strip { flex-wrap: wrap; gap: 8px; }
+            .how-strip { grid-template-columns: 1fr; }
+            .how-item { border-right: none; border-bottom: 1px solid var(--border); }
+            .how-item:last-child { border-bottom: none; }
+            .item-img-box { width: 70px; height: 70px; }
+            .item-price-main { font-size: 17px; }
+            .footer-top { grid-template-columns: 1fr; gap: 20px; }
+            .footer-top > div:first-child { grid-column: auto; }
+            .mobile-bottom-nav { display: block; }
+            .wa-btn { bottom: 86px; right: 12px; width: 44px; height: 44px; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- UTILITY BAR -->
+<div class="utility-bar">
+    <div class="utility-bar-inner">
+        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
+        <div class="utility-bar-links">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}">My Account</a>
+                <a href="{% url 'cart' %}" class="highlight">Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Sign In</a>
+                <a href="{% url 'register' %}" class="highlight">Register Free</a>
+            {% endif %}
+            <a href="{% url 'supplier_submit_product' %}" style="color:#FFA500;">Sell on ChinaZed</a>
+            <a href="{% url 'order_policy' %}">Policy</a>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN HEADER -->
+<div class="main-header">
+    <div class="header-top">
+        <button class="mobile-menu-btn" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <a href="{% url 'home' %}" class="site-logo">
+            <div class="logo-main">CHINAZED</div>
+            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
+        </a>
+
+        <form method="GET" action="{% url 'home' %}" class="search-bar">
+            <input type="text" class="search-input" name="q" placeholder="Search phones, electronics, fashion…">
+            <button type="submit" class="search-btn">🔍 SEARCH</button>
+        </form>
+
+        <div class="header-actions">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="hdr-link">
+                    <span class="hdr-icon">👤</span>
+                    <span>Orders</span>
+                </a>
+                <a href="{% url 'cart' %}" class="hdr-cart">
+                    🛒 Cart{% if cart_count %} <span style="background:rgba(255,255,255,.25); padding:0 6px; border-radius:10px;">{{ cart_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'logout' %}" class="hdr-link">
+                    <span class="hdr-icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BREADCRUMB IN CAT NAV -->
+    <div class="cat-nav">
+        <div class="cat-nav-inner noscroll">
+            <div class="cat-nav-breadcrumb">
+                <a href="{% url 'home' %}">Home</a>
+                <span>›</span>
+                <span style="color:rgba(255,255,255,.9); font-weight:700;">My Cart</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div style="max-width:1280px; margin:10px auto 0; padding:0 16px;">
+    {% for message in messages %}
+        <div class="msg-strip">✓ {{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header-strip">
+        <div class="page-header-left">
+            <div>
+                <div class="page-header-title">🛒 MY CART</div>
+                <div class="page-header-sub">Review your items · Checkout once · One combined order</div>
+            </div>
+            <span class="cart-count-badge">{{ cart.total_items }} item{% if cart.total_items != 1 %}s{% endif %}</span>
+        </div>
+        <a href="{% url 'home' %}" class="continue-shopping">← Continue Shopping</a>
+    </div>
+
+    {% if cart_items %}
+
+    <div class="cart-layout">
+
+        <!-- CART ITEMS -->
+        <div>
+            <div class="cart-panel">
+                <div class="section-head">
+                    <div class="section-head-left">
+                        <span class="section-head-title">CART ITEMS</span>
+                        <span class="section-head-sub">{{ cart.total_items }} product{% if cart.total_items != 1 %}s{% endif %} selected</span>
+                    </div>
+                </div>
+
+                {% for item in cart_items %}
+                <div class="cart-item">
+
+                    <!-- IMAGE -->
+                    <a href="{% url 'product_detail' item.product.slug %}" class="item-img-box">
+                        {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                        {% else %}
+                            <div class="item-no-img">No Image</div>
+                        {% endif %}
+                        {% if item.product.product_type == "local" %}
+                            <span class="item-type-badge badge-local">ZM</span>
+                        {% else %}
+                            <span class="item-type-badge badge-china">CN</span>
+                        {% endif %}
+                    </a>
+
+                    <!-- BODY -->
+                    <div class="item-body">
+                        <a href="{% url 'product_detail' item.product.slug %}" class="item-name">{{ item.product.name }}</a>
+
+                        <div class="item-meta">
+                            {% if item.product.product_type == "local" %}
+                                <span class="meta-pill pill-local">🇿🇲 Available in Zambia</span>
+                                <span class="meta-pill pill-stock">Stock: {{ item.product.stock_quantity }}</span>
+                            {% else %}
+                                <span class="meta-pill pill-china">🇨🇳 Pre-order from China</span>
+                                {% if item.product.delivery_range %}
+                                    <span class="meta-pill" style="background:#EFF6FF; color:#1677FF;">✈ {{ item.product.delivery_range }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                        <div class="item-bottom">
+
+                            <!-- PRICE -->
+                            <div class="item-price-block">
+                                <div class="item-unit-label">Unit Price</div>
+                                <div class="item-price-row">
+                                    <span class="item-price-curr">K</span>
+                                    <span class="item-price-main">{{ item.product.selling_price|floatformat:0|intcomma }}</span>
+                                </div>
+                                <div class="item-line-total">
+                                    Line total: <strong>K{{ item.line_total|floatformat:0|intcomma }}</strong>
+                                </div>
+                            </div>
+
+                            <!-- QTY + REMOVE -->
+                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                <div class="qty-controls">
+                                    <form method="POST" action="{% url 'update_cart_item' item.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="decrease">
+                                        <button type="submit" class="qty-btn">−</button>
+                                    </form>
+                                    <div class="qty-display">{{ item.quantity }}</div>
+                                    <form method="POST" action="{% url 'update_cart_item' item.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="increase">
+                                        <button type="submit" class="qty-btn">+</button>
+                                    </form>
+                                </div>
+
+                                <form method="POST" action="{% url 'remove_cart_item' item.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-remove">✕ Remove</button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+
+                <div class="cart-footer-row">
+                    <form method="POST" action="{% url 'clear_cart' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-clear">🗑 Clear Cart</button>
+                    </form>
+                    <span class="cart-item-count-note">{{ cart.total_items }} item{% if cart.total_items != 1 %}s{% endif %} · Total K{{ cart.total_price|floatformat:0|intcomma }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY SIDEBAR -->
+        <div>
+            <div class="summary-panel">
+                <div class="summary-head">ORDER SUMMARY</div>
+                <div class="summary-body">
+
+                    <div class="summary-row">
+                        <span class="summary-label">Items</span>
+                        <span class="summary-val">{{ cart.total_items }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Total Price</span>
+                        <span class="summary-val red">K{{ cart.total_price|floatformat:0|intcomma }}</span>
+                    </div>
+
+                    <hr class="summary-divider">
+
+                    <div class="deposit-highlight">
+                        <div class="dh-label">💰 Deposit Required Now</div>
+                        <div class="dh-amount">K{{ cart.deposit_amount|floatformat:0|intcomma }}</div>
+                        <div class="dh-note">20% of total · Secures your order</div>
+                    </div>
+
+                    <div class="balance-row">
+                        <span>Balance on Arrival</span>
+                        <span>K{{ cart.balance_amount|floatformat:0|intcomma }}</span>
+                    </div>
+
+                    <a href="{% url 'checkout_cart' %}" class="btn-checkout">
+                        Proceed to Checkout →
+                    </a>
+                    <a href="{% url 'home' %}" class="btn-shop-more">+ Add More Products</a>
+
+                    <div class="summary-note">
+                        💡 One checkout creates one combined order for all products in your cart.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- HOW IT WORKS STRIP -->
+    <div class="how-strip">
+        <div class="how-item">
+            <div class="how-num">1</div>
+            <div class="how-text">
+                <h4>Pay 20% Deposit</h4>
+                <p>Secure your order with a small upfront payment</p>
+            </div>
+        </div>
+        <div class="how-item">
+            <div class="how-num">2</div>
+            <div class="how-text">
+                <h4>WhatsApp Confirm</h4>
+                <p>We contact you to confirm details</p>
+            </div>
+        </div>
+        <div class="how-item">
+            <div class="how-num">3</div>
+            <div class="how-text">
+                <h4>We Ship It</h4>
+                <p>China orders dispatched in 1–3 days</p>
+            </div>
+        </div>
+        <div class="how-item">
+            <div class="how-num">4</div>
+            <div class="how-text">
+                <h4>Pay Balance & Collect</h4>
+                <p>14–30 days · Pay rest on arrival</p>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+
+    <!-- EMPTY CART -->
+    <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h2>Your Cart is Empty</h2>
+        <p>Browse our products and add items to your cart to place a combined order.</p>
+        <a href="{% url 'home' %}" class="btn-start-shopping">Start Shopping</a>
+    </div>
+
+    {% endif %}
+
+</div><!-- end page-body -->
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-top">
+        <div>
+            <div class="footer-logo-text">CHINAZED</div>
+            <div class="footer-tagline">中赞商城 · Marketplace</div>
+            <div class="footer-desc">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</div>
+            <div class="footer-contact">
+                <div>📞 +260 969 274 458</div>
+                <div>✉️ chinatozambia.zm@gmail.com</div>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Buyer</h4>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'home' %}?type=local">Local Stock</a>
+            <a href="{% url 'home' %}?type=preorder">Pre-order China</a>
+            <a href="{% url 'order_policy' %}">Order Policy</a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}">Track Orders</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Sign In</a>
+                <a href="{% url 'register' %}">Register Free</a>
+            {% endif %}
+        </div>
+        <div class="footer-col">
+            <h4>Seller</h4>
+            <a href="{% url 'supplier_submit_product' %}">Submit a Product</a>
+            <a href="{% url 'supplier_submit_product' %}">Become a Supplier</a>
+            <a href="{% url 'order_policy' %}">Supplier Policy</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
+    </div>
+</footer>
+
+<!-- FLOATING -->
+<a href="https://wa.me/260969274458" class="wa-btn" title="Chat on WhatsApp" aria-label="WhatsApp">💬</a>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav">
+    <div class="mobile-bottom-nav-inner">
+        <a href="{% url 'home' %}" class="mbn-item">
+            <span class="mbn-icon">🏠</span>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'home' %}?type=local" class="mbn-item">
+            <span class="mbn-icon">🇿🇲</span>
+            <span>Zambia</span>
+        </a>
+        <a href="{% url 'home' %}?type=preorder" class="mbn-item">
+            <span class="mbn-icon">🇨🇳</span>
+            <span>China</span>
+        </a>
+        <a href="{% url 'cart' %}" class="mbn-item active">
+            <span class="mbn-icon mbn-cart-badge">
+                🛒
+                {% if cart_count %}
+                <span class="mbn-badge">{{ cart_count }}</span>
+                {% endif %}
+            </span>
+            <span>Cart</span>
+        </a>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="mbn-item">
+            <span class="mbn-icon">👤</span>
+            <span>Me</span>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="mbn-item">
+            <span class="mbn-icon">🔑</span>
+            <span>Login</span>
+        </a>
+        {% endif %}
+    </div>
+</nav>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,11 +13,15 @@
 
 <body class="bg-gray-100 text-slate-900">
 
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="max-w-5xl mx-auto px-4 py-8">
 
-    <div class="mb-4">
+    <div class="mb-4 flex justify-between items-center">
         <a href="{% url 'profile' %}" class="text-sm text-slate-500 hover:text-orange-600">
             ← Back to My Orders
+        </a>
+
+        <a href="{% url 'cart' %}" class="text-sm font-black text-orange-600">
+            Cart{% if cart_count %} ({{ cart_count }}){% endif %}
         </a>
     </div>
 
@@ -37,52 +42,103 @@
 
         <div class="p-6">
 
-            <!-- Product Summary -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <!-- Order Summary -->
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900">
+                            Order Items
+                        </h2>
 
-                <div class="md:col-span-1">
-                    <div class="h-40 bg-slate-100 rounded-2xl overflow-hidden">
-                        {% if order.product.image %}
-                            <img src="{{ order.product.image.url }}"
-                                 class="w-full h-full object-cover">
-                        {% else %}
-                            <div class="h-full flex items-center justify-center text-slate-400">
-                                No Image
-                            </div>
+                        <p class="text-slate-500 mt-1">
+                            Status:
+                            <span class="font-black text-orange-600">
+                                {% if order.is_delayed %}
+                                    Delayed
+                                {% else %}
+                                    {{ order.get_status_display }}
+                                {% endif %}
+                            </span>
+                        </p>
+
+                        <p class="text-slate-500 mt-1">
+                            Expected Arrival:
+                            <span class="font-bold text-slate-800">
+                                {{ order.estimated_arrival_start }} to {{ order.estimated_arrival_end }}
+                            </span>
+                        </p>
+
+                        {% if order.arrival_date %}
+                            <p class="text-green-600 mt-1 font-bold">
+                                Arrival Date: {{ order.arrival_date }}
+                            </p>
                         {% endif %}
+                    </div>
+
+                    <div class="bg-orange-50 text-orange-600 px-5 py-3 rounded-2xl font-black">
+                        K{{ order.total_price|floatformat:2|intcomma }}
                     </div>
                 </div>
 
-                <div class="md:col-span-3">
-                    <h2 class="text-2xl font-black text-slate-900">
-                        {{ order.product.name }}
-                    </h2>
+                <div class="space-y-4">
+                    {% for item in order.items.all %}
+                        <div class="bg-slate-50 rounded-2xl p-4 flex gap-4">
+                            <div class="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden shrink-0">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}"
+                                         class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="h-full flex items-center justify-center text-slate-400 text-xs">
+                                        No Image
+                                    </div>
+                                {% endif %}
+                            </div>
 
-                    <p class="text-slate-500 mt-1">
-                        Status:
-                        <span class="font-black text-orange-600">
-                            {% if order.is_delayed %}
-                                Delayed
-                            {% else %}
-                                {{ order.get_status_display }}
-                            {% endif %}
-                        </span>
-                    </p>
+                            <div class="flex-1">
+                                <h3 class="font-black text-slate-900">
+                                    {{ item.product_name }}
+                                </h3>
 
-                    <p class="text-slate-500 mt-1">
-                        Expected Arrival:
-                        <span class="font-bold text-slate-800">
-                            {{ order.estimated_arrival_start }} to {{ order.estimated_arrival_end }}
-                        </span>
-                    </p>
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    {% if item.product_type == "local" %}
+                                        <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-black">
+                                            Available in Zambia
+                                        </span>
+                                    {% else %}
+                                        <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[11px] font-black">
+                                            Pre-order from China
+                                        </span>
+                                    {% endif %}
+                                </div>
 
-                    {% if order.arrival_date %}
-                        <p class="text-green-600 mt-1 font-bold">
-                            Arrival Date: {{ order.arrival_date }}
-                        </p>
-                    {% endif %}
+                                <div class="mt-3 grid grid-cols-3 gap-3 text-sm">
+                                    <div>
+                                        <p class="text-slate-400 text-xs">Qty</p>
+                                        <p class="font-black">{{ item.quantity }}</p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-slate-400 text-xs">Unit Price</p>
+                                        <p class="font-black">
+                                            K{{ item.unit_price|floatformat:2|intcomma }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-slate-400 text-xs">Line Total</p>
+                                        <p class="font-black text-orange-600">
+                                            K{{ item.line_total|floatformat:2|intcomma }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="bg-red-50 text-red-700 rounded-2xl p-4 font-bold">
+                            No items found for this order.
+                        </div>
+                    {% endfor %}
                 </div>
-
             </div>
 
             <!-- Tracking Timeline -->
@@ -91,7 +147,6 @@
 
                 <div class="space-y-5">
 
-                    <!-- Pending -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -107,13 +162,10 @@
 
                         <div>
                             <h4 class="font-black">Order Placed</h4>
-                            <p class="text-sm text-slate-500">
-                                Your order request has been created.
-                            </p>
+                            <p class="text-sm text-slate-500">Your order request has been created.</p>
                         </div>
                     </div>
 
-                    <!-- Confirmed -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -129,13 +181,10 @@
 
                         <div>
                             <h4 class="font-black">Confirmed</h4>
-                            <p class="text-sm text-slate-500">
-                                Order has been confirmed after WhatsApp/deposit verification.
-                            </p>
+                            <p class="text-sm text-slate-500">Order has been confirmed after WhatsApp/deposit verification.</p>
                         </div>
                     </div>
 
-                    <!-- Purchased -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -151,13 +200,10 @@
 
                         <div>
                             <h4 class="font-black">Purchased in China</h4>
-                            <p class="text-sm text-slate-500">
-                                Item has been purchased from supplier.
-                            </p>
+                            <p class="text-sm text-slate-500">Pre-order items have been purchased from supplier.</p>
                         </div>
                     </div>
 
-                    <!-- Shipped -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -173,13 +219,10 @@
 
                         <div>
                             <h4 class="font-black">Shipped</h4>
-                            <p class="text-sm text-slate-500">
-                                Item has left supplier/logistics point.
-                            </p>
+                            <p class="text-sm text-slate-500">Goods have left supplier/logistics point.</p>
                         </div>
                     </div>
 
-                    <!-- In Transit -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -195,13 +238,10 @@
 
                         <div>
                             <h4 class="font-black">In Transit</h4>
-                            <p class="text-sm text-slate-500">
-                                Goods are on the way to Zambia.
-                            </p>
+                            <p class="text-sm text-slate-500">Goods are on the way to Zambia.</p>
                         </div>
                     </div>
 
-                    <!-- Arrived -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -217,13 +257,10 @@
 
                         <div>
                             <h4 class="font-black">Arrived in Zambia</h4>
-                            <p class="text-sm text-slate-500">
-                                Goods have arrived in Zambia.
-                            </p>
+                            <p class="text-sm text-slate-500">Goods have arrived in Zambia.</p>
                         </div>
                     </div>
 
-                    <!-- Ready / Successful -->
                     <div class="flex gap-4">
                         <div class="flex flex-col items-center">
                             <div class="w-9 h-9 rounded-full flex items-center justify-center font-black
@@ -238,9 +275,7 @@
 
                         <div>
                             <h4 class="font-black">Ready / Completed</h4>
-                            <p class="text-sm text-slate-500">
-                                Order is ready for collection/delivery or has been completed.
-                            </p>
+                            <p class="text-sm text-slate-500">Order is ready for collection/delivery or has been completed.</p>
                         </div>
                     </div>
 
@@ -254,17 +289,27 @@
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <span class="text-slate-500">Total Price</span>
-                        <span class="font-black">K{{ order.total_price }}</span>
+                        <span class="font-black">K{{ order.total_price|floatformat:2|intcomma }}</span>
                     </div>
 
                     <div class="flex justify-between">
                         <span class="text-slate-500">Deposit</span>
-                        <span class="font-black">K{{ order.deposit_amount }}</span>
+                        <span class="font-black">K{{ order.deposit_amount|floatformat:2|intcomma }}</span>
                     </div>
 
                     <div class="flex justify-between">
                         <span class="text-slate-500">Balance</span>
-                        <span class="font-black">K{{ order.balance_amount }}</span>
+                        <span class="font-black">K{{ order.balance_amount|floatformat:2|intcomma }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Amount Paid</span>
+                        <span class="font-black text-green-600">K{{ order.amount_paid|floatformat:2|intcomma }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Amount Remaining</span>
+                        <span class="font-black text-red-600">K{{ order.amount_remaining|floatformat:2|intcomma }}</span>
                     </div>
                 </div>
             </div>
@@ -272,7 +317,7 @@
             <!-- Actions -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-                <a href="https://wa.me/260970261322?text=Hello,%20I%20want%20to%20ask%20about%20Order%20%23{{ order.id }}"
+                <a href="https://wa.me/260969274458?text=Hello,%20I%20want%20to%20ask%20about%20Order%20%23{{ order.id }}"
                    target="_blank"
                    class="bg-green-500 hover:bg-green-600 text-white text-center py-3 rounded-2xl font-black">
                     WhatsApp
