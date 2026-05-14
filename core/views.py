@@ -8,10 +8,10 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
 from django.urls import reverse
-
+from django.core.mail import send_mail
 from xhtml2pdf import pisa
 
-from .forms import OrderForm, SupplierProductRequestForm
+from .forms import OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm
 from .models import (
     Product,
     Order,
@@ -100,15 +100,36 @@ def product_detail(request, slug):
 
 def register_view(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = CustomUserRegistrationForm(request.POST)
 
         if form.is_valid():
             user = form.save()
+
+            if user.email:
+                send_mail(
+                    subject="Welcome to China to Zambia Marketplace",
+                    message=f"""
+Hello {user.username},
+
+Welcome to China to Zambia Marketplace.
+
+Thank you for registering with us.
+
+You can now browse products, place orders, track your orders, and contact us easily.
+
+Regards,
+China to Zambia Team
+""",
+                    from_email=None,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+
             login(request, user)
             messages.success(request, "Account created successfully.")
             return redirect("home")
     else:
-        form = UserCreationForm()
+        form = CustomUserRegistrationForm()
 
     return render(request, "core/register.html", {
         "form": form,
@@ -324,6 +345,40 @@ def checkout_cart_view(request):
                     f"@ K{item.unit_price} = K{item.line_total}\n"
                 )
 
+            # Send order confirmation email to customer
+            if request.user.email:
+                send_mail(
+                    subject=f"Order Received - #{order.id}",
+                    message=f"""
+Hello {request.user.username},
+
+Thank you for placing your order on ChinaZed.
+
+Order ID: #{order.id}
+
+Items:
+{item_lines}
+
+Total Price: K{order.total_price}
+Deposit Required: K{order.deposit_amount}
+Balance on Arrival: K{order.balance_amount}
+
+Phone: {order.customer_phone}
+Expected Arrival: {order.estimated_arrival_start} to {order.estimated_arrival_end}
+
+Track your order here:
+{order_link}
+
+We will contact you shortly to confirm availability and deposit instructions.
+
+Regards,
+ChinaZed Team
+""",
+                    from_email=None,
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+
             whatsapp_message = f"""
 Hello, I have placed an order on China Zed Marketplace.
 
@@ -431,11 +486,14 @@ Track here:
 
 @login_required
 def order_detail_view(request, order_id):
-    order = get_object_or_404(
-        Order,
-        id=order_id,
-        user=request.user
-    )
+    try:
+        order = Order.objects.get(
+            id=order_id,
+            user=request.user
+        )
+    except Order.DoesNotExist:
+        messages.error(request, "You are not allowed to view that order.")
+        return redirect("profile")
 
     return render(request, "core/order_detail.html", {
         "order": order,
