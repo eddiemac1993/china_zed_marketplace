@@ -468,51 +468,106 @@
 
                 <!-- PRODUCT INFO -->
                 <div class="form-section">
-                    <div class="form-section-title">Product Details</div>
+    <div class="form-section-title">Product Details</div>
 
-                    <div class="form-group">
-                        <label class="form-label">Product Name <span class="req">*</span></label>
-                        <input type="text" name="product_name"
-                               class="form-input"
-                               placeholder="e.g. Smart Watch Ultra Pro"
-                               required>
-                    </div>
+    <div class="form-row">
 
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea name="description"
-                                  class="form-textarea"
-                                  placeholder="Describe the product — features, available sizes, colors, materials…"></textarea>
-                    </div>
+        <div class="form-group">
+            <label class="form-label">
+                Product Type <span class="req">*</span>
+            </label>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Price (RMB ¥) <span class="req">*</span></label>
-                            <input type="number" step="0.01" name="rmb_price"
-                                   class="form-input"
-                                   placeholder="e.g. 120"
-                                   required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Minimum Order Qty</label>
-                            <input type="number" name="moq"
-                                   class="form-input"
-                                   placeholder="e.g. 1">
-                        </div>
-                    </div>
-                </div>
+            <select name="product_type" class="form-input" required>
+                <option value="preorder">Pre-order from China</option>
+                <option value="local">Available in Zambia</option>
+            </select>
+        </div>
 
-                <!-- IMAGES -->
-                <div class="form-section">
-                    <div class="form-section-title">Product Images</div>
+        <div class="form-group">
+            <label class="form-label">
+                Stock Quantity
+            </label>
 
-                    <div class="file-drop">
-                        <input type="file" name="images" multiple accept="image/*">
-                        <div class="file-drop-icon">📷</div>
-                        <div class="file-drop-text">Click or drag images here</div>
-                        <div class="file-drop-hint">Upload 3–6 images · JPG, PNG, WEBP · Max 5MB each</div>
-                    </div>
-                </div>
+            <input type="number"
+                   name="stock_quantity"
+                   class="form-input"
+                   placeholder="Available quantity"
+                   min="0">
+        </div>
+
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">
+            Product Name <span class="req">*</span>
+        </label>
+
+        <input type="text"
+               name="product_name"
+               class="form-input"
+               placeholder="e.g. Smart Watch Ultra Pro"
+               required>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">
+            Description
+        </label>
+
+        <textarea name="description"
+                  class="form-textarea"
+                  placeholder="Describe the product — features, sizes, colors, materials…"></textarea>
+    </div>
+
+    <div class="form-row">
+
+        <div class="form-group">
+            <label class="form-label">
+                China Price (RMB ¥)
+            </label>
+
+            <input type="number"
+                   step="0.01"
+                   name="rmb_price"
+                   class="form-input"
+                   placeholder="For China pre-orders">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">
+                Local Price (ZMW K)
+            </label>
+
+            <input type="number"
+                   step="0.01"
+                   name="local_price"
+                   class="form-input"
+                   placeholder="For Zambia local stock">
+        </div>
+
+    </div>
+</div>
+
+<!-- IMAGES -->
+<div class="form-section">
+    <div class="form-section-title">Product Images</div>
+
+    <div class="file-drop">
+        <input type="file"
+               id="images"
+               name="images"
+               multiple
+               accept="image/*"
+               onchange="showSelectedImages(this)">
+
+        <div class="file-drop-icon">📷</div>
+        <div class="file-drop-text">Click or drag images here</div>
+        <div class="file-drop-hint">Upload 3–6 images · JPG, PNG, WEBP · Max 5MB each</div>
+    </div>
+
+    <div id="image-preview-list"
+         style="margin-top:10px;font-size:12px;color:#555;"></div>
+</div>
 
                 <button type="submit" class="btn-submit">
                     Submit Product for Review →
@@ -601,6 +656,22 @@
         © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
     </div>
 </footer>
+<script>
+    function showSelectedImages(input) {
+        const previewList = document.getElementById("image-preview-list");
+        previewList.innerHTML = "";
 
+        if (!input.files || input.files.length === 0) {
+            previewList.innerHTML = "No images selected.";
+            return;
+        }
+
+        previewList.innerHTML = `<strong>${input.files.length} image(s) selected:</strong><br>`;
+
+        Array.from(input.files).forEach(function(file) {
+            previewList.innerHTML += `✓ ${file.name}<br>`;
+        });
+    }
+</script>
 </body>
 </html>

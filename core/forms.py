@@ -90,9 +90,12 @@ class SupplierProductRequestForm(forms.ModelForm):
         fields = [
             "supplier_name",
             "supplier_contact",
+            "product_type",
+            "stock_quantity",
             "product_name",
             "description",
             "rmb_price",
+            "local_price",
             "image",
         ]
 
@@ -105,6 +108,14 @@ class SupplierProductRequestForm(forms.ModelForm):
                 "class": "form-control",
                 "placeholder": "Phone, WhatsApp or WeChat",
             }),
+            "product_type": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "stock_quantity": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter quantity available in Zambia",
+                "min": "0",
+            }),
             "product_name": forms.TextInput(attrs={
                 "class": "form-control",
                 "placeholder": "Product name",
@@ -116,7 +127,12 @@ class SupplierProductRequestForm(forms.ModelForm):
             }),
             "rmb_price": forms.NumberInput(attrs={
                 "class": "form-control",
-                "placeholder": "Price in RMB",
+                "placeholder": "Price in RMB for China pre-order",
+                "step": "0.01",
+            }),
+            "local_price": forms.NumberInput(attrs={
+                "class": "form-control",
+                "placeholder": "Local price in ZMW",
                 "step": "0.01",
             }),
             "image": forms.ClearableFileInput(attrs={
@@ -124,6 +140,36 @@ class SupplierProductRequestForm(forms.ModelForm):
                 "accept": "image/*",
             }),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        product_type = cleaned_data.get("product_type")
+        stock_quantity = cleaned_data.get("stock_quantity") or 0
+        rmb_price = cleaned_data.get("rmb_price")
+        local_price = cleaned_data.get("local_price")
+
+        if product_type == "local":
+            if stock_quantity <= 0:
+                self.add_error(
+                    "stock_quantity",
+                    "Please enter stock quantity for local products."
+                )
+
+            if not local_price:
+                self.add_error(
+                    "local_price",
+                    "Please enter local price in ZMW."
+                )
+
+        if product_type == "preorder":
+            if not rmb_price:
+                self.add_error(
+                    "rmb_price",
+                    "Please enter RMB price for China pre-order products."
+                )
+
+        return cleaned_data
 
 
 class OrderForm(forms.Form):

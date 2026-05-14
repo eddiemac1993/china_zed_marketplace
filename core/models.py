@@ -115,8 +115,40 @@ class Product(models.Model):
         return money(self.rmb_price * rmb_rate)
 
     def selling_price(self):
+
+        # Local Zambia products
+        if self.product_type == "local":
+
+            local_markup = Decimal("80.00")  # adjust this
+
+            final_price = Decimal(self.rmb_price) * (
+                Decimal("1") + (local_markup / Decimal("100"))
+            )
+
+            return money(final_price)
+
+        # China preorder products
         rate = self.active_exchange_rate()
-        markup = rate.markup_percentage if rate else Decimal("35.00")
+
+        markup = (
+            rate.markup_percentage
+            if rate
+            else Decimal("35.00")
+        )
+
+        exchange_rate = (
+            rate.rmb_to_zmw
+            if rate
+            else Decimal("3.50")
+        )
+
+        zmw_price = Decimal(self.rmb_price) * Decimal(exchange_rate)
+
+        final_price = zmw_price * (
+            Decimal("1") + (Decimal(markup) / Decimal("100"))
+        )
+
+        return money(final_price)
 
         base_price = self.kwacha_base_price()
         return money(base_price + (base_price * markup / Decimal("100")))
@@ -243,20 +275,56 @@ class SupplierProductRequest(models.Model):
         ("other", "Other"),
     ]
 
+    PRODUCT_TYPE_CHOICES = [
+        ("preorder", "Pre-order from China"),
+        ("local", "Available in Zambia"),
+    ]
+
     supplier_name = models.CharField(max_length=150)
     supplier_contact = models.CharField(max_length=100, blank=True)
 
     product_name = models.CharField(max_length=200)
     description = models.TextField()
 
-    source_platform = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="other")
+    product_type = models.CharField(
+        max_length=20,
+        choices=PRODUCT_TYPE_CHOICES,
+        default="preorder"
+    )
+
+    stock_quantity = models.PositiveIntegerField(default=0)
+
+    source_platform = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default="other"
+    )
+
     source_link = models.URLField(blank=True)
 
-    rmb_price = models.DecimalField(max_digits=12, decimal_places=2)
-    image = models.ImageField(upload_to="supplier_requests/", blank=True, null=True)
+    rmb_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
+    local_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
+    image = models.ImageField(
+        upload_to="supplier_requests/",
+        blank=True,
+        null=True
+    )
 
     is_reviewed = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
+
     admin_note = models.TextField(blank=True)
 
     submitted_at = models.DateTimeField(auto_now_add=True)
@@ -264,9 +332,20 @@ class SupplierProductRequest(models.Model):
     class Meta:
         ordering = ["-submitted_at"]
 
-    def __str__(self):
-        return self.product_name
+    def is_local(self):
+        return self.product_type == "local"
 
+    def is_preorder(self):
+        return self.product_type == "preorder"
+
+    def display_price(self):
+        if self.product_type == "local":
+            return f"K{self.local_price}"
+
+        return f"¥{self.rmb_price}"
+
+    def __str__(self):
+        return f"{self.product_name} ({self.get_product_type_display()})"
 
 class SupplierProductRequestImage(models.Model):
     supplier_request = models.ForeignKey(

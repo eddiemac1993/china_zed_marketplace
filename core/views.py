@@ -695,27 +695,56 @@ def order_policy(request):
 
 def supplier_submit_product(request):
     if request.method == "POST":
-        form = SupplierProductRequestForm(request.POST, request.FILES)
+        form = SupplierProductRequestForm(
+            request.POST,
+            request.FILES
+        )
 
         if form.is_valid():
-            supplier_request = form.save()
+            supplier_request = form.save(commit=False)
 
-            images = request.FILES.getlist("images")
+            # Set preview image from first uploaded image later
+            uploaded_images = request.FILES.getlist("images")
 
-            for img in images:
+            # fallback single image
+            if not uploaded_images and request.FILES.get("image"):
+                supplier_request.image = request.FILES.get("image")
+
+            supplier_request.save()
+
+            # Save multiple images
+            for index, img in enumerate(uploaded_images):
+
                 SupplierProductRequestImage.objects.create(
                     supplier_request=supplier_request,
                     image=img
                 )
 
-            messages.success(request, "Product submitted successfully.")
+                # first image becomes cover image
+                if index == 0 and not supplier_request.image:
+                    supplier_request.image = img
+                    supplier_request.save()
+
+            messages.success(
+                request,
+                "Your product was submitted successfully and is awaiting review."
+            )
+
             return redirect("supplier_submit_product")
 
-        messages.error(request, "Please check the form and try again.")
+        else:
+            messages.error(
+                request,
+                "Please correct the errors below."
+            )
 
     else:
         form = SupplierProductRequestForm()
 
-    return render(request, "core/supplier_submit_product.html", {
-        "form": form,
-    })
+    return render(
+        request,
+        "core/supplier_submit_product.html",
+        {
+            "form": form,
+        }
+    )

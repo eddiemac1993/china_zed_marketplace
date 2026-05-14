@@ -254,20 +254,43 @@ class OrderAdmin(admin.ModelAdmin):
 def approve_supplier_requests(modeladmin, request, queryset):
     default_category = Category.objects.first()
     created_count = 0
+    skipped_count = 0
 
     for supplier_request in queryset:
         if supplier_request.is_approved:
+            skipped_count += 1
+            continue
+
+        if supplier_request.product_type == "local":
+            product_price = supplier_request.local_price
+            stock_quantity = supplier_request.stock_quantity
+        else:
+            product_price = supplier_request.rmb_price
+            stock_quantity = 0
+
+        if not product_price:
+            messages.error(
+                request,
+                f"{supplier_request.product_name} was not approved because price is missing."
+            )
+            continue
+
+        if supplier_request.product_type == "local" and stock_quantity <= 0:
+            messages.error(
+                request,
+                f"{supplier_request.product_name} was not approved because local stock quantity is missing."
+            )
             continue
 
         product = Product.objects.create(
             name=supplier_request.product_name,
             description=supplier_request.description,
-            rmb_price=supplier_request.rmb_price,
+            rmb_price=product_price,
             category=default_category,
-            product_type="preorder",
-            stock_quantity=0,
-            source_platform="other",
-            source_link="",
+            product_type=supplier_request.product_type,
+            stock_quantity=stock_quantity,
+            source_platform=supplier_request.source_platform,
+            source_link=supplier_request.source_link,
             supplier_name=supplier_request.supplier_name,
             supplier_contact=supplier_request.supplier_contact,
             is_available=True,
@@ -290,16 +313,15 @@ def approve_supplier_requests(modeladmin, request, queryset):
 
         supplier_request.is_reviewed = True
         supplier_request.is_approved = True
-        supplier_request.admin_note = "Approved and images moved to product."
+        supplier_request.admin_note = "Approved and converted to product."
         supplier_request.save()
 
         created_count += 1
 
     messages.success(
         request,
-        f"{created_count} supplier request(s) approved and converted to products."
+        f"{created_count} supplier request(s) approved and converted to products. {skipped_count} already approved."
     )
-
 
 @admin.register(SupplierProductRequest)
 class SupplierProductRequestAdmin(admin.ModelAdmin):
