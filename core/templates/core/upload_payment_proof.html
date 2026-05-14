@@ -1,0 +1,167 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Payment Proof · ChinaZed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body{
+            margin:0;
+            font-family:Arial,sans-serif;
+            background:#f5f5f5;
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+        }
+
+        .card{
+            background:#fff;
+            max-width:520px;
+            width:100%;
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:0 10px 30px rgba(0,0,0,.08);
+        }
+
+        .header{
+            background:#E5141A;
+            color:#fff;
+            padding:28px 24px;
+            text-align:center;
+        }
+
+        .logo{
+            font-size:36px;
+            font-weight:900;
+        }
+
+        .body{
+            padding:28px 24px;
+        }
+
+        h2{
+            margin:0 0 10px;
+        }
+
+        p{
+            color:#666;
+            line-height:1.7;
+            font-size:14px;
+        }
+
+        .summary{
+            background:#fff8ee;
+            border:1px solid #ffe0b0;
+            padding:14px;
+            border-radius:8px;
+            margin:18px 0;
+            font-size:14px;
+        }
+
+        .summary strong{
+            color:#E5141A;
+        }
+
+        input[type="file"]{
+            width:100%;
+            padding:14px;
+            border:1px dashed #ccc;
+            border-radius:8px;
+            background:#fafafa;
+            margin:14px 0;
+        }
+
+        .btn{
+            width:100%;
+            border:none;
+            background:#E5141A;
+            color:#fff;
+            padding:14px;
+            border-radius:8px;
+            font-weight:700;
+            cursor:pointer;
+        }
+
+        .btn:hover{
+            background:#B50F14;
+        }
+
+        .back{
+            display:block;
+            text-align:center;
+            margin-top:16px;
+            color:#777;
+            text-decoration:none;
+            font-size:13px;
+        }
+
+        .back:hover{
+            color:#E5141A;
+        }
+
+        .error{
+            background:#fff3f3;
+            border:1px solid #ffcaca;
+            color:#b00020;
+            padding:12px;
+            border-radius:8px;
+            font-size:13px;
+            margin-bottom:14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <div class="header">
+        <div class="logo">CHINAZED</div>
+        <div>Upload Deposit Payment Proof</div>
+    </div>
+
+    <div class="body">
+
+        <h2>Order #{{ order.id }}</h2>
+
+        <p>
+            Upload a screenshot or photo of your 20% deposit payment.
+            We will review it and confirm your order.
+        </p>
+
+        <div class="summary">
+            <div>Total Price: <strong>K{{ order.total_price }}</strong></div>
+            <div>Deposit Required: <strong>K{{ order.deposit_amount }}</strong></div>
+            <div>Balance on Arrival: <strong>K{{ order.balance_amount }}</strong></div>
+        </div>
+
+        {% if form.errors %}
+            <div class="error">
+                Please upload a valid image file.
+            </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {{ form.payment_proof }}
+
+            <button type="submit" class="btn">
+                Upload Payment Proof
+            </button>
+        </form>
+
+        <a href="{% url 'order_detail' order.id %}" class="back">
+            ← Back to Order
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

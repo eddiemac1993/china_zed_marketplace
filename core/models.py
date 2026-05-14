@@ -302,6 +302,8 @@ class Order(models.Model):
     deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     balance_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
+    payment_proof = models.ImageField(upload_to="payment_proofs/", blank=True, null=True)
+    payment_proof_uploaded_at = models.DateTimeField(blank=True, null=True)
     exchange_rate_used = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     markup_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 

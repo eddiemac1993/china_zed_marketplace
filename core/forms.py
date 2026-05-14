@@ -1,9 +1,20 @@
 from django import forms
-from .models import SupplierProductRequest
-from django import forms
+from .models import SupplierProductRequest, Order
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
+
+class PaymentProofForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ["payment_proof"]
+
+        widgets = {
+            "payment_proof": forms.FileInput(attrs={
+                "accept": "image/*",
+                "class": "form-control",
+            })
+        }
 
 class CustomUserRegistrationForm(UserCreationForm):
     email = forms.EmailField(

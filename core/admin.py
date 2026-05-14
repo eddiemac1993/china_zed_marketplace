@@ -1,6 +1,6 @@
 from .models import ExchangeRate, SupplierProductRequestImage, Category, Product, ProductImage, Order, SupplierProductRequest
 from django.contrib import admin, messages
-
+from django.utils.html import format_html
 from .models import (
     ExchangeRate,
     Category,
@@ -150,6 +150,7 @@ class OrderAdmin(admin.ModelAdmin):
         "balance_paid",
         "stock_reduced",
         "total_price",
+        "payment_proof_status",
         "order_date",
     )
 
@@ -183,6 +184,32 @@ class OrderAdmin(admin.ModelAdmin):
         "markup_used",
         "stock_reduced",
         "order_date",
+        "payment_proof_preview",
+        "payment_proof_uploaded_at",
+    )
+
+    fields = (
+        "user",
+        "customer_phone",
+        "customer_note",
+        "status",
+        "total_price",
+        "deposit_amount",
+        "balance_amount",
+        "deposit_confirmed",
+        "balance_paid",
+        "stock_reduced",
+        "payment_proof",
+        "payment_proof_preview",
+        "payment_proof_uploaded_at",
+        "payment_note",
+        "exchange_rate_used",
+        "markup_used",
+        "estimated_arrival_start",
+        "estimated_arrival_end",
+        "arrival_date",
+        "receipt_number",
+        "order_date",
     )
 
     actions = [confirm_orders_and_reduce_stock]
@@ -200,6 +227,27 @@ class OrderAdmin(admin.ModelAdmin):
         )
 
     order_products.short_description = "Products"
+
+    def payment_proof_status(self, obj):
+        if obj.payment_proof:
+            return "Uploaded"
+        return "Not uploaded"
+
+    payment_proof_status.short_description = "Proof"
+
+    def payment_proof_preview(self, obj):
+        if obj.payment_proof:
+            return format_html(
+                '<a href="{}" target="_blank">'
+                '<img src="{}" style="max-width:320px;max-height:320px;border-radius:12px;border:1px solid #ddd;" />'
+                "</a>",
+                obj.payment_proof.url,
+                obj.payment_proof.url,
+            )
+
+        return "No payment proof uploaded"
+
+    payment_proof_preview.short_description = "Payment Proof Preview"
 
 
 @admin.action(description="Approve selected requests and create products")

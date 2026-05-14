@@ -59,4 +59,10 @@ urlpatterns = [
     # =========================
 
     path("order-policy/", views.order_policy, name="order_policy"),
+
+    path(
+        "order/<int:order_id>/upload-payment-proof/",
+        views.upload_payment_proof_view,
+        name="upload_payment_proof"
+    ),
 ]

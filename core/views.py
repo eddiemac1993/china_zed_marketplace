@@ -1,17 +1,15 @@
 from urllib.parse import quote
-
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
 from django.urls import reverse
 from django.core.mail import send_mail
 from xhtml2pdf import pisa
-
-from .forms import OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm
+from .forms import OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm, PaymentProofForm
 from .models import (
     Product,
     Order,
@@ -24,12 +22,43 @@ from .models import (
 
 
 WHATSAPP_NUMBER = "260969274458"
-
+ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
 
 def get_user_cart(user):
     cart, created = Cart.objects.get_or_create(user=user)
     return cart
 
+
+@login_required
+def upload_payment_proof_view(request, order_id):
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
+
+    if order.deposit_confirmed:
+        messages.info(request, "Your deposit has already been confirmed.")
+        return redirect("order_detail", order_id=order.id)
+
+    if request.method == "POST":
+        form = PaymentProofForm(request.POST, request.FILES, instance=order)
+
+        if form.is_valid():
+            payment_proof = form.save(commit=False)
+            payment_proof.payment_proof_uploaded_at = timezone.now()
+            payment_proof.save()
+
+            messages.success(request, "Payment proof uploaded successfully. We will review it shortly.")
+            return redirect("order_detail", order_id=order.id)
+    else:
+        form = PaymentProofForm(instance=order)
+
+    return render(request, "core/upload_payment_proof.html", {
+        "form": form,
+        "order": order,
+        "cart_count": get_user_cart(request.user).total_items(),
+    })
 
 def home(request):
     query = request.GET.get("q", "").strip()
@@ -345,7 +374,6 @@ def checkout_cart_view(request):
                     f"@ K{item.unit_price} = K{item.line_total}\n"
                 )
 
-            # Send order confirmation email to customer
             if request.user.email:
                 send_mail(
                     subject=f"Order Received - #{order.id}",
@@ -378,6 +406,37 @@ ChinaZed Team
                     recipient_list=[request.user.email],
                     fail_silently=True,
                 )
+
+            send_mail(
+                subject=f"New Order Placed - #{order.id}",
+                message=f"""
+New order received on ChinaZed.
+
+Order ID: #{order.id}
+Customer: {request.user.username}
+Customer Email: {request.user.email}
+Customer Phone: {order.customer_phone}
+
+Items:
+{item_lines}
+
+Total Price: K{order.total_price}
+Deposit Required: K{order.deposit_amount}
+Balance on Arrival: K{order.balance_amount}
+
+Expected Arrival:
+{order.estimated_arrival_start} to {order.estimated_arrival_end}
+
+Customer Note:
+{order.customer_note}
+
+Order Link:
+{order_link}
+""",
+                from_email=None,
+                recipient_list=[ADMIN_ORDER_EMAIL],
+                fail_silently=True,
+            )
 
             whatsapp_message = f"""
 Hello, I have placed an order on China Zed Marketplace.
@@ -450,6 +509,75 @@ def place_order_view(request, slug):
 
             order_link = request.build_absolute_uri(
                 reverse("order_detail", kwargs={"order_id": order.id})
+            )
+
+            item_lines = (
+                f"- 1 x {product.name} "
+                f"@ K{product.selling_price()} = K{product.selling_price()}\n"
+            )
+
+            if request.user.email:
+                send_mail(
+                    subject=f"Order Received - #{order.id}",
+                    message=f"""
+Hello {request.user.username},
+
+Thank you for placing your order on ChinaZed.
+
+Order ID: #{order.id}
+
+Product: {product.name}
+Quantity: 1
+
+Total Price: K{order.total_price}
+Deposit Required: K{order.deposit_amount}
+Balance on Arrival: K{order.balance_amount}
+
+Phone: {order.customer_phone}
+Expected Arrival: {order.estimated_arrival_start} to {order.estimated_arrival_end}
+
+Track your order here:
+{order_link}
+
+We will contact you shortly to confirm availability and deposit instructions.
+
+Regards,
+ChinaZed Team
+""",
+                    from_email=None,
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+
+            send_mail(
+                subject=f"New Order Placed - #{order.id}",
+                message=f"""
+New order received on ChinaZed.
+
+Order ID: #{order.id}
+Customer: {request.user.username}
+Customer Email: {request.user.email}
+Customer Phone: {order.customer_phone}
+
+Items:
+{item_lines}
+
+Total Price: K{order.total_price}
+Deposit Required: K{order.deposit_amount}
+Balance on Arrival: K{order.balance_amount}
+
+Expected Arrival:
+{order.estimated_arrival_start} to {order.estimated_arrival_end}
+
+Customer Note:
+{order.customer_note}
+
+Order Link:
+{order_link}
+""",
+                from_email=None,
+                recipient_list=[ADMIN_ORDER_EMAIL],
+                fail_silently=True,
             )
 
             whatsapp_message = f"""
