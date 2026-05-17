@@ -468,6 +468,19 @@
             z-index: 500; background: #fff; border-radius: 22px;
             box-shadow: 0 10px 35px rgba(0,0,0,.15); padding: 6px;
         }
+        .ad-carousel-wrap{width:100%;background:#fff;border:1px solid var(--border);border-radius:var(--card-radius);overflow:hidden;position:relative;height:90px;cursor:pointer}
+        .ad-slide{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:12px 16px;opacity:0;transition:opacity .5s ease;pointer-events:none}
+        .ad-slide.active{opacity:1;pointer-events:auto}
+        .ad-img{width:66px;height:66px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--border)}
+        .ad-img-placeholder{width:66px;height:66px;border-radius:6px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;background:#f8f8f8}
+        .ad-body{flex:1;min-width:0}
+        .ad-label{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+        .ad-headline{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .ad-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+        .ad-cta{flex-shrink:0;background:var(--red);color:#fff;border:none;border-radius:5px;padding:8px 16px;font-size:12px;font-weight:700;white-space:nowrap;text-decoration:none}
+        .ad-dots{position:absolute;bottom:7px;right:12px;display:flex;gap:5px}
+        .ad-dot{width:5px;height:5px;border-radius:50%;background:#ddd;transition:background .3s}
+        .ad-dot.active{background:var(--muted)}
         .mobile-bottom-nav-inner { width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; }
         .mbn-item {
             width: 100%; min-width: 0; display: flex; flex-direction: column;
@@ -702,43 +715,7 @@
         </div>
     </div>
 
-    <!-- TRUST BAR -->
-    <div class="trust-strip">
-        <div class="trust-item">
-            <div class="trust-icon">💰</div>
-            <div class="trust-text"><h4>20% Deposit Only</h4><p>Pay the rest when it arrives</p></div>
-        </div>
-        <div class="trust-item">
-            <div class="trust-icon">✈️</div>
-            <div class="trust-text"><h4>14–30 Day Delivery</h4><p>Direct from Chinese suppliers</p></div>
-        </div>
-        <div class="trust-item">
-            <div class="trust-icon">💬</div>
-            <div class="trust-text"><h4>WhatsApp Support</h4><p>Confirm & track your order</p></div>
-        </div>
-        <div class="trust-item">
-            <div class="trust-icon">📦</div>
-            <div class="trust-text"><h4>Real-Time Tracking</h4><p>Follow your order in profile</p></div>
-        </div>
-    </div>
-
-    <!-- ══ FILTER PILL BAR ══ -->
-    <div class="filter-bar">
-        <span class="filter-bar-label">Filter:</span>
-        <a href="{% url 'home' %}#results" class="filter-pill {% if not category_id and not product_type and not query %}active{% endif %}">🛍️ All Products</a>
-        <a href="?type=local#results" class="filter-pill local {% if product_type == 'local' %}active{% endif %}">🇿🇲 Zambia Stock</a>
-        <a href="?type=preorder#results" class="filter-pill china {% if product_type == 'preorder' %}active{% endif %}">🇨🇳 Pre-order</a>
-        <div class="filter-divider"></div>
-        {% for category in categories %}
-        <a href="?category={{ category.id }}#results" class="filter-pill {% if category_id == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a>
-        {% endfor %}
-        <div class="filter-search-count">
-            {% if query %}<span>🔍 "<strong>{{ query }}</strong>"</span>{% endif %}
-            {% if category_id or product_type or query %}
-            <a href="{% url 'home' %}" class="filter-clear-btn">✕ Clear Filter</a>
-            {% endif %}
-        </div>
-    </div>
+{% include "core/includes/_ad_carousel.html" %}
 
     <!-- TWO-COL -->
     <div class="two-col">
@@ -1154,6 +1131,28 @@
         if (btn) btn.style.opacity = window.scrollY > 400 ? '1' : '0';
     });
 </script>
-
+<script>
+(function(){
+  const wrap = document.getElementById('adCarousel');
+  if(!wrap) return;
+  const slides = wrap.querySelectorAll('.ad-slide');
+  const dotsEl = document.getElementById('adDots');
+  if(slides.length <= 1){ if(dotsEl) dotsEl.style.display='none'; return; }
+  let cur = 0;
+  slides.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className='ad-dot'+(i===0?' active':'');
+    dotsEl.appendChild(d);
+  });
+  function show(n){
+    slides.forEach(s=>s.classList.remove('active'));
+    wrap.querySelectorAll('.ad-dot').forEach(d=>d.classList.remove('active'));
+    slides[n].classList.add('active');
+    wrap.querySelectorAll('.ad-dot')[n].classList.add('active');
+    cur=n;
+  }
+  setInterval(()=>show((cur+1)%slides.length), 4000);
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,27 @@
+{% load ad_tags %}
+{% get_current_ads as ads %}
+
+{% if ads %}
+<div style="margin-bottom:14px;">
+  <div class="ad-carousel-wrap" id="adCarousel">
+    {% for ad in ads %}
+    <div class="ad-slide {% if forloop.first %}active{% endif %}" data-url="{{ ad.cta_url }}">
+      {% if ad.image %}
+        <img src="{{ ad.image.url }}" alt="{{ ad.advertiser_name }}" class="ad-img">
+      {% else %}
+        <div class="ad-img-placeholder">📣</div>
+      {% endif %}
+      <div class="ad-body">
+        <div class="ad-label">sponsored</div>
+        <div class="ad-headline">{{ ad.headline }}</div>
+        {% if ad.subtext %}<div class="ad-sub">{{ ad.subtext }}</div>{% endif %}
+      </div>
+      <a href="{{ ad.cta_url }}" target="_blank" class="ad-cta" onclick="event.stopPropagation()">
+        {{ ad.cta_text }}
+      </a>
+    </div>
+    {% endfor %}
+    <div class="ad-dots" id="adDots"></div>
+  </div>
+</div>
+{% endif %}

@@ -291,7 +291,12 @@ class SupplierProductRequest(models.Model):
         choices=PRODUCT_TYPE_CHOICES,
         default="preorder"
     )
-
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
     stock_quantity = models.PositiveIntegerField(default=0)
 
     source_platform = models.CharField(
@@ -545,3 +550,25 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product_name}"
+
+
+class Advertisement(models.Model):
+    HOUR_CHOICES = [(i, f"{i:02d}:00 – {i:02d}:59") for i in range(24)]
+
+    advertiser_name = models.CharField(max_length=150)
+    headline = models.CharField(max_length=100)
+    subtext = models.CharField(max_length=160, blank=True)
+    image = models.ImageField(upload_to="ads/", blank=True, null=True)
+    cta_text = models.CharField(max_length=30, default="Visit")
+    cta_url = models.URLField()
+
+    hour_slot = models.PositiveSmallIntegerField(choices=HOUR_CHOICES)  # 0–23
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["hour_slot"]
+
+    def __str__(self):
+        return f"[Slot {self.hour_slot:02d}h] {self.advertiser_name} — {self.headline}"

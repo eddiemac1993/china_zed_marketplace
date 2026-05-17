@@ -92,6 +92,7 @@ class SupplierProductRequestForm(forms.ModelForm):
             "supplier_contact",
             "product_type",
             "stock_quantity",
+            "category",
             "product_name",
             "description",
             "rmb_price",
@@ -109,6 +110,9 @@ class SupplierProductRequestForm(forms.ModelForm):
                 "placeholder": "Phone, WhatsApp or WeChat",
             }),
             "product_type": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "category": forms.Select(attrs={
                 "class": "form-control",
             }),
             "stock_quantity": forms.NumberInput(attrs={

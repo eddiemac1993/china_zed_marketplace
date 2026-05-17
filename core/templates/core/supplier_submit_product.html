@@ -418,7 +418,25 @@
         <a href="{% url 'home' %}" class="hdr-back">← Back to Shop</a>
     </div>
 </div>
+{% if form.errors %}
+    <div style="background:#fff0f0;border:1px solid #ffb3b3;color:#b00020;padding:12px;border-radius:6px;margin-bottom:18px;">
+        <strong>Please fix these errors:</strong>
 
+        <ul style="margin-top:8px;padding-left:18px;">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li>
+                        <strong>{{ field.label }}:</strong> {{ error }}
+                    </li>
+                {% endfor %}
+            {% endfor %}
+
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
 <!-- PAGE -->
 <div class="page-body">
 
@@ -466,8 +484,8 @@
                     </div>
                 </div>
 
-                <!-- PRODUCT INFO -->
-                <div class="form-section">
+<!-- PRODUCT INFO -->
+<div class="form-section">
     <div class="form-section-title">Product Details</div>
 
     <div class="form-row">
@@ -485,6 +503,18 @@
 
         <div class="form-group">
             <label class="form-label">
+                Category
+            </label>
+
+            {{ form.category }}
+        </div>
+
+    </div>
+
+    <div class="form-row">
+
+        <div class="form-group">
+            <label class="form-label">
                 Stock Quantity
             </label>
 
@@ -495,18 +525,18 @@
                    min="0">
         </div>
 
-    </div>
+        <div class="form-group">
+            <label class="form-label">
+                Product Name <span class="req">*</span>
+            </label>
 
-    <div class="form-group">
-        <label class="form-label">
-            Product Name <span class="req">*</span>
-        </label>
+            <input type="text"
+                   name="product_name"
+                   class="form-input"
+                   placeholder="e.g. Smart Watch Ultra Pro"
+                   required>
+        </div>
 
-        <input type="text"
-               name="product_name"
-               class="form-input"
-               placeholder="e.g. Smart Watch Ultra Pro"
-               required>
     </div>
 
     <div class="form-group">

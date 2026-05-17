@@ -350,3 +350,11 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
 
     actions = [approve_supplier_requests]
     inlines = [SupplierProductRequestImageInline]
+
+from .models import Advertisement
+
+@admin.register(Advertisement)
+class AdvertisementAdmin(admin.ModelAdmin):
+    list_display = ("advertiser_name", "headline", "hour_slot", "is_active", "created_at")
+    list_filter = ("hour_slot", "is_active")
+    list_editable = ("is_active",)
