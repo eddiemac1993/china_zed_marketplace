@@ -1,20 +1,31 @@
 from django.db import models
 from django.contrib.auth.models import User
-from decimal import Decimal, ROUND_HALF_UP
-from datetime import timedelta
 from django.utils import timezone
 from django.utils.text import slugify
+from decimal import Decimal, ROUND_HALF_UP
+from datetime import timedelta
+import uuid
 
 
 def money(value):
-    return Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return Decimal(value or 0).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-class ExchangeRate(models.Model):
+class TimeStampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+
+class ExchangeRate(TimeStampedModel):
     rmb_to_zmw = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("3.20"))
     markup_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("35.00"))
+    local_markup_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("80.00"))
+    deposit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("20.00"))
     is_active = models.BooleanField(default=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-updated_at"]
@@ -23,7 +34,7 @@ class ExchangeRate(models.Model):
         return f"1 RMB = K{self.rmb_to_zmw} | Markup {self.markup_percentage}%"
 
 
-class Category(models.Model):
+class Category(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
 
@@ -40,7 +51,7 @@ class Category(models.Model):
         return self.name
 
 
-class Product(models.Model):
+class Product(TimeStampedModel):
     SOURCE_CHOICES = [
         ("taobao", "Taobao"),
         ("1688", "1688"),
@@ -54,20 +65,31 @@ class Product(models.Model):
         ("local", "Available in Zambia"),
     ]
 
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("out_of_stock", "Out of Stock"),
+        ("archived", "Archived"),
+    ]
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    sku = models.CharField(max_length=60, unique=True, blank=True)
+
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=230, unique=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
 
     description = models.TextField()
-    rmb_price = models.DecimalField(max_digits=12, decimal_places=2)
+    rmb_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="For local products, use this field as the buying/local cost price."
+    )
 
     image = models.ImageField(upload_to="products/", blank=True, null=True)
 
-    product_type = models.CharField(
-        max_length=20,
-        choices=PRODUCT_TYPE_CHOICES,
-        default="preorder"
-    )
+    product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default="preorder")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
 
     stock_quantity = models.PositiveIntegerField(default=0)
 
@@ -86,10 +108,14 @@ class Product(models.Model):
 
     views_count = models.PositiveIntegerField(default=0)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["slug"]),
+            models.Index(fields=["product_type"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["created_at"]),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -103,11 +129,18 @@ class Product(models.Model):
 
             self.slug = slug
 
+        if not self.sku:
+            prefix = "LOC" if self.product_type == "local" else "CHN"
+            self.sku = f"{prefix}-{uuid.uuid4().hex[:8].upper()}"
+
+        if self.product_type == "local" and self.stock_quantity <= 0:
+            self.status = "out_of_stock"
+
         super().save(*args, **kwargs)
 
     @staticmethod
     def active_exchange_rate():
-        return ExchangeRate.objects.filter(is_active=True).order_by("-updated_at").first()
+        return ExchangeRate.objects.filter(is_active=True, is_deleted=False).order_by("-updated_at").first()
 
     def kwacha_base_price(self):
         rate = self.active_exchange_rate()
@@ -115,49 +148,28 @@ class Product(models.Model):
         return money(self.rmb_price * rmb_rate)
 
     def selling_price(self):
-
-        # Local Zambia products
-        if self.product_type == "local":
-
-            local_markup = Decimal("80.00")  # adjust this
-
-            final_price = Decimal(self.rmb_price) * (
-                Decimal("1") + (local_markup / Decimal("100"))
-            )
-
-            return money(final_price)
-
-        # China preorder products
         rate = self.active_exchange_rate()
 
-        markup = (
-            rate.markup_percentage
-            if rate
-            else Decimal("35.00")
-        )
+        if self.product_type == "local":
+            local_markup = rate.local_markup_percentage if rate else Decimal("80.00")
+            final_price = Decimal(self.rmb_price) * (Decimal("1") + (local_markup / Decimal("100")))
+            return money(final_price)
 
-        exchange_rate = (
-            rate.rmb_to_zmw
-            if rate
-            else Decimal("3.50")
-        )
+        markup = rate.markup_percentage if rate else Decimal("35.00")
+        exchange_rate = rate.rmb_to_zmw if rate else Decimal("3.20")
 
         zmw_price = Decimal(self.rmb_price) * Decimal(exchange_rate)
-
-        final_price = zmw_price * (
-            Decimal("1") + (Decimal(markup) / Decimal("100"))
-        )
+        final_price = zmw_price * (Decimal("1") + (Decimal(markup) / Decimal("100")))
 
         return money(final_price)
 
-        base_price = self.kwacha_base_price()
-        return money(base_price + (base_price * markup / Decimal("100")))
-
     def deposit_amount(self):
-        return money(self.selling_price() * Decimal("0.20"))
+        rate = self.active_exchange_rate()
+        percentage = rate.deposit_percentage if rate else Decimal("20.00")
+        return money(self.selling_price() * (percentage / Decimal("100")))
 
     def balance_amount(self):
-        return money(self.selling_price() * Decimal("0.80"))
+        return money(self.selling_price() - self.deposit_amount())
 
     def delivery_range(self):
         return f"{self.delivery_min_days} to {self.delivery_max_days} days"
@@ -194,28 +206,17 @@ class Product(models.Model):
         return self.name
 
 
-class ProductImage(models.Model):
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="gallery_images"
-    )
+class ProductImage(TimeStampedModel):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="gallery_images")
     image = models.ImageField(upload_to="products/gallery/")
     caption = models.CharField(max_length=100, blank=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Image for {self.product.name}"
 
 
-class Cart(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="cart"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class Cart(TimeStampedModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
 
     def total_price(self):
         return money(sum(item.line_total() for item in self.items.all()))
@@ -224,7 +225,7 @@ class Cart(models.Model):
         return money(self.total_price() * Decimal("0.20"))
 
     def balance_amount(self):
-        return money(self.total_price() * Decimal("0.80"))
+        return money(self.total_price() - self.deposit_amount())
 
     def total_items(self):
         return sum(item.quantity for item in self.items.all())
@@ -240,11 +241,7 @@ class Cart(models.Model):
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(
-        Cart,
-        on_delete=models.CASCADE,
-        related_name="items"
-    )
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
@@ -266,19 +263,11 @@ class CartItem(models.Model):
         return f"{self.quantity} x {self.product.name}"
 
 
-class SupplierProductRequest(models.Model):
-    SOURCE_CHOICES = [
-        ("taobao", "Taobao"),
-        ("1688", "1688"),
-        ("alibaba", "Alibaba"),
-        ("wechat", "WeChat Supplier"),
-        ("other", "Other"),
-    ]
+class SupplierProductRequest(TimeStampedModel):
+    SOURCE_CHOICES = Product.SOURCE_CHOICES
+    PRODUCT_TYPE_CHOICES = Product.PRODUCT_TYPE_CHOICES
 
-    PRODUCT_TYPE_CHOICES = [
-        ("preorder", "Pre-order from China"),
-        ("local", "Available in Zambia"),
-    ]
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     supplier_name = models.CharField(max_length=150)
     supplier_contact = models.CharField(max_length=100, blank=True)
@@ -286,56 +275,26 @@ class SupplierProductRequest(models.Model):
     product_name = models.CharField(max_length=200)
     description = models.TextField()
 
-    product_type = models.CharField(
-        max_length=20,
-        choices=PRODUCT_TYPE_CHOICES,
-        default="preorder"
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
+    product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default="preorder")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+
     stock_quantity = models.PositiveIntegerField(default=0)
 
-    source_platform = models.CharField(
-        max_length=20,
-        choices=SOURCE_CHOICES,
-        default="other"
-    )
-
+    source_platform = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="other")
     source_link = models.URLField(blank=True)
 
-    rmb_price = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        blank=True,
-        null=True
-    )
+    rmb_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    local_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
-    local_price = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        blank=True,
-        null=True
-    )
-
-    image = models.ImageField(
-        upload_to="supplier_requests/",
-        blank=True,
-        null=True
-    )
+    image = models.ImageField(upload_to="supplier_requests/", blank=True, null=True)
 
     is_reviewed = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
 
     admin_note = models.TextField(blank=True)
 
-    submitted_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
-        ordering = ["-submitted_at"]
+        ordering = ["-created_at"]
 
     def is_local(self):
         return self.product_type == "local"
@@ -345,14 +304,14 @@ class SupplierProductRequest(models.Model):
 
     def display_price(self):
         if self.product_type == "local":
-            return f"K{self.local_price}"
-
-        return f"¥{self.rmb_price}"
+            return f"K{self.local_price or Decimal('0.00')}"
+        return f"¥{self.rmb_price or Decimal('0.00')}"
 
     def __str__(self):
         return f"{self.product_name} ({self.get_product_type_display()})"
 
-class SupplierProductRequestImage(models.Model):
+
+class SupplierProductRequestImage(TimeStampedModel):
     supplier_request = models.ForeignKey(
         SupplierProductRequest,
         on_delete=models.CASCADE,
@@ -365,7 +324,7 @@ class SupplierProductRequestImage(models.Model):
         return f"Image for {self.supplier_request.product_name}"
 
 
-class Order(models.Model):
+class Order(TimeStampedModel):
     STATUS_CHOICES = [
         ("pending", "Pending Confirmation"),
         ("confirmed", "Confirmed"),
@@ -379,17 +338,22 @@ class Order(models.Model):
         ("cancelled", "Cancelled"),
     ]
 
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    # models.py — Order model fields
-    total_price    = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    tracking_code = models.CharField(max_length=30, unique=True, blank=True)
+
+    total_price = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     deposit_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     balance_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     payment_proof = models.ImageField(upload_to="payment_proofs/", blank=True, null=True)
     payment_proof_uploaded_at = models.DateTimeField(blank=True, null=True)
+
     exchange_rate_used = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     markup_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    deposit_percentage_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
 
     deposit_confirmed = models.BooleanField(default=False)
     balance_paid = models.BooleanField(default=False)
@@ -411,6 +375,11 @@ class Order(models.Model):
 
     class Meta:
         ordering = ["-order_date"]
+        indexes = [
+            models.Index(fields=["tracking_code"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["order_date"]),
+        ]
 
     def save(self, *args, **kwargs):
         rate = Product.active_exchange_rate()
@@ -420,8 +389,15 @@ class Order(models.Model):
                 self.exchange_rate_used = rate.rmb_to_zmw
             if not self.markup_used:
                 self.markup_used = rate.markup_percentage
+            if not self.deposit_percentage_used:
+                self.deposit_percentage_used = rate.deposit_percentage
 
         today = timezone.now().date()
+
+        if not self.tracking_code:
+            year = timezone.now().year
+            short_code = uuid.uuid4().hex[:6].upper()
+            self.tracking_code = f"CZM-{year}-{short_code}"
 
         if not self.estimated_arrival_start:
             self.estimated_arrival_start = today + timedelta(days=14)
@@ -438,8 +414,11 @@ class Order(models.Model):
         total = sum(item.line_total for item in self.items.all())
 
         self.total_price = money(total)
-        self.deposit_amount = money(self.total_price * Decimal("0.20"))
-        self.balance_amount = money(self.total_price * Decimal("0.80"))
+
+        percentage = self.deposit_percentage_used or Decimal("20.00")
+        self.deposit_amount = money(self.total_price * (percentage / Decimal("100")))
+        self.balance_amount = money(self.total_price - self.deposit_amount)
+
         self.save()
 
     def reduce_local_stock(self):
@@ -505,21 +484,17 @@ class Order(models.Model):
         return money(self.total_price - self.amount_paid())
 
     def has_local_items(self):
-        return self.items.filter(product_type="local").exists()
+        return self.items.filter(product__product_type="local").exists()
 
     def has_preorder_items(self):
-        return self.items.filter(product_type="preorder").exists()
+        return self.items.filter(product__product_type="preorder").exists()
 
     def __str__(self):
-        return f"Order #{self.id} - {self.user.username}"
+        return f"Order {self.tracking_code} - {self.user.username}"
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="items"
-    )
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
 
@@ -552,23 +527,89 @@ class OrderItem(models.Model):
         return f"{self.quantity} x {self.product_name}"
 
 
-class Advertisement(models.Model):
+class StockMovement(TimeStampedModel):
+    MOVEMENT_CHOICES = [
+        ("in", "Stock In"),
+        ("out", "Stock Out"),
+        ("adjustment", "Adjustment"),
+        ("sale", "Sale"),
+        ("return", "Return"),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stock_movements")
+    movement_type = models.CharField(max_length=20, choices=MOVEMENT_CHOICES)
+    quantity = models.IntegerField()
+    note = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.product.name} - {self.movement_type} - {self.quantity}"
+
+
+class ProductReview(TimeStampedModel):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    rating = models.PositiveSmallIntegerField(default=5)
+    comment = models.TextField(blank=True)
+
+    is_approved = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("product", "user")
+
+    def __str__(self):
+        return f"{self.product.name} - {self.rating}/5"
+
+
+class Advertisement(TimeStampedModel):
     HOUR_CHOICES = [(i, f"{i:02d}:00 – {i:02d}:59") for i in range(24)]
 
     advertiser_name = models.CharField(max_length=150)
     headline = models.CharField(max_length=100)
     subtext = models.CharField(max_length=160, blank=True)
+
     image = models.ImageField(upload_to="ads/", blank=True, null=True)
+
     cta_text = models.CharField(max_length=30, default="Visit")
     cta_url = models.URLField()
 
-    hour_slot = models.PositiveSmallIntegerField(choices=HOUR_CHOICES)  # 0–23
+    hour_slot = models.PositiveSmallIntegerField(
+        choices=HOUR_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Optional old-style hourly slot."
+    )
+
+    display_from = models.DateTimeField(blank=True, null=True)
+    display_until = models.DateTimeField(blank=True, null=True)
 
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["hour_slot"]
+        ordering = ["hour_slot", "-created_at"]
+
+    def is_currently_active(self):
+        now = timezone.now()
+
+        if not self.is_active:
+            return False
+
+        if self.display_from and now < self.display_from:
+            return False
+
+        if self.display_until and now > self.display_until:
+            return False
+
+        if self.hour_slot is not None and now.hour != self.hour_slot:
+            return False
+
+        return True
 
     def __str__(self):
-        return f"[Slot {self.hour_slot:02d}h] {self.advertiser_name} — {self.headline}"
+        slot = f"Slot {self.hour_slot:02d}h" if self.hour_slot is not None else "Flexible Slot"
+        return f"[{slot}] {self.advertiser_name} — {self.headline}"
