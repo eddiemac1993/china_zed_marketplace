@@ -594,6 +594,24 @@
             border-radius: 4px;
             transition: all .15s;
         }
+.btn-save-poster{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    margin-top:10px;
+    background:#111827;
+    color:#fff;
+    padding:12px 0;
+    border-radius:4px;
+    font-size:13px;
+    font-weight:700;
+    transition:.2s;
+}
+
+.btn-save-poster:hover{
+    background:#ea580c;
+}
         .section-head-more:hover { border-color: var(--red); color: var(--red); }
 
         .related-grid {
@@ -959,6 +977,10 @@
                                 <a href="{% url 'place_order' product.slug %}" class="btn-buy-now">⚡ Buy Now</a>
                             {% endif %}
                         </div>
+                        <a href="{% url 'save_product_image' product.slug %}"
+                           class="btn-save-poster">
+                            📥 Save Product Poster
+                        </a>
 
                     {% else %}
                         <a href="{% url 'login' %}" class="btn-login-cta">🔑 Login to Add to Cart</a>

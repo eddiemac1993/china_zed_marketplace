@@ -65,4 +65,10 @@ urlpatterns = [
         views.upload_payment_proof_view,
         name="upload_payment_proof"
     ),
+
+    path(
+        "product/<slug:slug>/save-image/",
+        views.save_product_image_view,
+        name="save_product_image"
+    ),
 ]

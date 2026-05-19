@@ -19,7 +19,12 @@ from .models import (
     Category,
     SupplierProductRequestImage,
 )
-
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+from django.http import HttpResponse
+from django.conf import settings
+import os
+import textwrap
 
 WHATSAPP_NUMBER = "260969274458"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
@@ -748,3 +753,854 @@ def supplier_submit_product(request):
             "form": form,
         }
     )
+
+import textwrap
+from io import BytesIO
+import qrcode
+
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.urls import reverse
+from django.core.cache import cache
+from django.views.decorators.http import require_GET
+from PIL import Image, ImageDraw, ImageFont
+
+from .models import Product # Adjust this import path to match your project structure
+
+
+def get_font(font_path, size, bold=False):
+    """
+    Attempts to load a font from the specified path.
+    If it fails, searches common system fallbacks before defaulting.
+    """
+    try:
+        return ImageFont.truetype(font_path, size)
+    except (IOError, OSError):
+        # Common fallbacks across Linux, macOS, and Windows
+        fallbacks = [
+            "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf",
+            "Arial Bold.ttf" if bold else "Arial.ttf",
+            "Helvetica-Bold" if bold else "Helvetica",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]
+        for font_name in fallbacks:
+            try:
+                return ImageFont.truetype(font_name, size)
+            except (IOError, OSError):
+                continue
+        # Hard fallback to PIL's default (Note: default font does not support custom sizes)
+        return ImageFont.load_default()
+
+
+import logging
+import textwrap
+from io import BytesIO
+import qrcode
+
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.views.decorators.http import require_GET
+from PIL import Image, ImageDraw, ImageFont
+
+from .models import Product  # Adjust the import path to match your project layout
+
+# Configure logger for standard Django error reporting
+logger = logging.getLogger(__name__)
+
+
+def load_system_font(font_name_or_path, size):
+    """
+    Standard font loader with a cascading fallback system.
+    Tries the requested path first, then searches common system locations,
+    and falls back to standard default fonts to prevent OS-level crashes.
+    """
+    try:
+        return ImageFont.truetype(font_name_or_path, size)
+    except (IOError, OSError):
+        # List of standard fonts available across Windows, macOS, Linux, and Docker
+        fallbacks = [
+            "DejaVuSans-Bold.ttf" if "Bold" in font_name_or_path else "DejaVuSans.ttf",
+            "Arial Bold.ttf" if "Bold" in font_name_or_path else "Arial.ttf",
+            "Helvetica-Bold" if "Bold" in font_name_or_path else "Helvetica",
+            "LiberationSans-Bold.ttf" if "Bold" in font_name_or_path else "LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "arial.ttf",
+        ]
+
+        for fallback in fallbacks:
+            try:
+                return ImageFont.truetype(fallback, size)
+            except (IOError, OSError):
+                continue
+
+        # Return standard default system font if all custom TrueType fonts fail
+        return ImageFont.load_default()
+
+
+import logging
+import textwrap
+from io import BytesIO
+from decimal import Decimal, InvalidOperation
+
+import qrcode
+from PIL import Image, ImageDraw, ImageFont
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.views.decorators.http import require_GET
+
+from .models import Product
+
+logger = logging.getLogger(__name__)
+
+
+# =========================
+# FONT HELPERS
+# =========================
+
+def load_system_font(font_name_or_path, size):
+    try:
+        return ImageFont.truetype(font_name_or_path, size)
+    except (IOError, OSError):
+        fallbacks = [
+            "DejaVuSans-Bold.ttf" if "Bold" in font_name_or_path else "DejaVuSans.ttf",
+            "Arial Bold.ttf" if "Bold" in font_name_or_path else "Arial.ttf",
+            "LiberationSans-Bold.ttf" if "Bold" in font_name_or_path else "LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+            if "Bold" in font_name_or_path else
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "arial.ttf",
+        ]
+
+        for fallback in fallbacks:
+            try:
+                return ImageFont.truetype(fallback, size)
+            except (IOError, OSError):
+                continue
+
+        return ImageFont.load_default()
+
+
+def safe_decimal(value, default="0"):
+    try:
+        if callable(value):
+            value = value()
+
+        if value is None:
+            return Decimal(default)
+
+        cleaned = str(value).replace(",", "").replace("K", "").strip()
+        return Decimal(cleaned)
+
+    except (InvalidOperation, ValueError, TypeError):
+        return Decimal(default)
+
+
+def format_currency(value):
+    amount = safe_decimal(value)
+
+    if amount == amount.to_integral():
+        return f"{int(amount):,}"
+
+    return f"{amount:,.2f}"
+
+
+def safe_text(value, default=""):
+    try:
+        if callable(value):
+            value = value()
+
+        if value is None:
+            return default
+
+        return str(value)
+
+    except Exception:
+        return default
+
+
+def truncate_to_width(draw, text, font, max_width):
+    text = safe_text(text)
+
+    if draw.textbbox((0, 0), text, font=font)[2] <= max_width:
+        return text
+
+    while len(text) > 3:
+        shortened = text[:-3].rstrip() + "..."
+        if draw.textbbox((0, 0), shortened, font=font)[2] <= max_width:
+            return shortened
+        text = text[:-1]
+
+    return "..."
+
+
+def draw_centered_text(draw, box, text, font, fill):
+    x1, y1, x2, y2 = box
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+
+    x = x1 + ((x2 - x1 - tw) // 2)
+    y = y1 + ((y2 - y1 - th) // 2)
+
+    draw.text((x, y), text, font=font, fill=fill)
+
+
+def draw_wrapped_text(draw, text, x, y, font, fill, max_width, line_gap, max_lines):
+    words = safe_text(text).split()
+    lines = []
+    current = ""
+
+    for word in words:
+        test_line = f"{current} {word}".strip()
+        bbox = draw.textbbox((0, 0), test_line, font=font)
+
+        if bbox[2] - bbox[0] <= max_width:
+            current = test_line
+        else:
+            if current:
+                lines.append(current)
+            current = word
+
+        if len(lines) >= max_lines:
+            break
+
+    if current and len(lines) < max_lines:
+        lines.append(current)
+
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+
+    if len(words) > len(" ".join(lines).split()) and lines:
+        lines[-1] = truncate_to_width(draw, lines[-1] + "...", font, max_width)
+
+    for line in lines:
+        draw.text((x, y), line, font=font, fill=fill)
+        y += line_gap
+
+    return y
+
+
+def get_product_price(product, field_name, fallback="0"):
+    value = getattr(product, field_name, fallback)
+    return format_currency(value)
+
+
+def get_product_value(product, field_name, fallback=""):
+    value = getattr(product, field_name, fallback)
+    return safe_text(value, fallback)
+
+
+# =========================
+# MAIN VIEW
+# =========================
+
+@require_GET
+def save_product_image_view(request, slug):
+    """
+    Generates a clean marketplace poster for a product.
+
+    Recommended output:
+    - JPEG
+    - 2160 x 3200
+    - easier to share on WhatsApp
+    - lighter than huge PNG files
+    """
+
+    product = get_object_or_404(Product, slug=slug, is_available=True)
+
+    # S=2 is high quality but safer for PythonAnywhere.
+    # Use S=4 only when you want very large print-quality images.
+    S = 2
+
+    W, H = 1080 * S, 1600 * S
+
+    def p(value):
+        return int(value * S)
+
+    poster = Image.new("RGB", (W, H), "#F9FAFB")
+    draw = ImageDraw.Draw(poster)
+
+    # =========================
+    # COLORS
+    # =========================
+
+    ORANGE = "#FF5A00"
+    ORANGE_LIGHT = "#FFF3EA"
+    RED = "#E5141A"
+    DARK = "#111827"
+    GREY = "#6B7280"
+    LIGHT_GREY = "#E5E7EB"
+    WHITE = "#FFFFFF"
+    GREEN = "#16A34A"
+    BORDER = "#E5E7EB"
+    YELLOW = "#FACC15"
+
+    # =========================
+    # FONTS
+    # =========================
+
+    regular_font = "DejaVuSans.ttf"
+    bold_font = "DejaVuSans-Bold.ttf"
+
+    tiny = load_system_font(regular_font, p(18))
+    small = load_system_font(regular_font, p(22))
+    font = load_system_font(regular_font, p(28))
+    bold_small = load_system_font(bold_font, p(24))
+    bold = load_system_font(bold_font, p(30))
+    big = load_system_font(bold_font, p(48))
+    title_font = load_system_font(bold_font, p(50))
+    huge = load_system_font(bold_font, p(74))
+    brand_font = load_system_font(bold_font, p(58))
+
+    # =========================
+    # PRODUCT URL
+    # =========================
+
+    product_url = request.build_absolute_uri(
+        reverse("product_detail", kwargs={"slug": product.slug})
+    )
+
+    # =========================
+    # HEADER
+    # =========================
+
+    draw.rectangle((0, 0, W, p(170)), fill=ORANGE)
+
+    draw.rounded_rectangle(
+        (p(45), p(42), p(135), p(132)),
+        radius=p(18),
+        fill=WHITE
+    )
+
+    draw_centered_text(
+        draw,
+        (p(45), p(42), p(135), p(132)),
+        "CZ",
+        bold,
+        ORANGE
+    )
+
+    draw.text((p(155), p(42)), "China Zed", font=brand_font, fill=WHITE)
+    draw.text((p(160), p(108)), "M A R K E T P L A C E", font=small, fill=WHITE)
+
+    header_badges = [
+        "TRUSTED PLATFORM",
+        "SECURE ORDERS",
+        "RELIABLE SUPPORT",
+    ]
+
+    badge_y = p(34)
+
+    for badge in header_badges:
+        draw.rounded_rectangle(
+            (p(690), badge_y, p(1010), badge_y + p(34)),
+            radius=p(8),
+            fill="#E04D00"
+        )
+        draw_centered_text(
+            draw,
+            (p(690), badge_y, p(1010), badge_y + p(34)),
+            badge,
+            tiny,
+            WHITE
+        )
+        badge_y += p(42)
+
+    # =========================
+    # MAIN CARD
+    # =========================
+
+    draw.rounded_rectangle(
+        (p(48), p(190), p(1048), p(1390)),
+        radius=p(36),
+        fill="#D1D5DB"
+    )
+
+    draw.rounded_rectangle(
+        (p(40), p(182), p(1040), p(1380)),
+        radius=p(36),
+        fill=WHITE
+    )
+
+    # =========================
+    # PRODUCT IMAGE
+    # =========================
+
+    img_x, img_y = p(65), p(240)
+    img_w, img_h = p(450), p(560)
+
+    draw.rounded_rectangle(
+        (img_x - p(6), img_y - p(6), img_x + img_w + p(6), img_y + img_h + p(6)),
+        radius=p(22),
+        fill="#F3F4F6"
+    )
+
+    if product.image:
+        try:
+            with product.image.open("rb") as img_file:
+                img = Image.open(img_file).convert("RGBA")
+
+                src_w, src_h = img.size
+                scale = max(img_w / src_w, img_h / src_h)
+
+                new_w = int(src_w * scale)
+                new_h = int(src_h * scale)
+
+                img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+                crop_x = max((new_w - img_w) // 2, 0)
+                crop_y = max((new_h - img_h) // 2, 0)
+
+                img = img.crop((crop_x, crop_y, crop_x + img_w, crop_y + img_h))
+
+                bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
+                bg.paste(img, mask=img.split()[3])
+
+                poster.paste(bg.convert("RGB"), (img_x, img_y))
+
+        except Exception as exc:
+            logger.exception("Failed to generate product poster image: %s", exc)
+
+            draw.rounded_rectangle(
+                (img_x, img_y, img_x + img_w, img_y + img_h),
+                radius=p(18),
+                fill=LIGHT_GREY
+            )
+            draw_centered_text(
+                draw,
+                (img_x, img_y, img_x + img_w, img_y + img_h),
+                "No Image",
+                bold,
+                GREY
+            )
+    else:
+        draw.rounded_rectangle(
+            (img_x, img_y, img_x + img_w, img_y + img_h),
+            radius=p(18),
+            fill=LIGHT_GREY
+        )
+        draw_centered_text(
+            draw,
+            (img_x, img_y, img_x + img_w, img_y + img_h),
+            "No Image",
+            bold,
+            GREY
+        )
+
+    draw.ellipse(
+        (p(115), p(785), p(475), p(825)),
+        fill="#E5E7EB"
+    )
+
+    # =========================
+    # QUALITY BADGE
+    # =========================
+
+    bx, by = p(70), p(665)
+
+    draw.ellipse(
+        (bx, by, bx + p(155), by + p(155)),
+        fill=DARK,
+        outline=YELLOW,
+        width=p(7)
+    )
+
+    draw_centered_text(
+        draw,
+        (bx, by + p(14), bx + p(155), by + p(50)),
+        "★★★★★",
+        tiny,
+        YELLOW
+    )
+
+    draw_centered_text(
+        draw,
+        (bx, by + p(50), bx + p(155), by + p(88)),
+        "QUALITY",
+        bold_small,
+        YELLOW
+    )
+
+    draw_centered_text(
+        draw,
+        (bx, by + p(88), bx + p(155), by + p(128)),
+        "CHECKED",
+        small,
+        WHITE
+    )
+
+    # =========================
+    # PRODUCT TYPE BADGE
+    # =========================
+
+    product_type = get_product_value(product, "product_type", "preorder")
+
+    if product_type == "preorder":
+        badge_text = "PRE-ORDER FROM CHINA"
+        badge_color = RED
+    else:
+        badge_text = "AVAILABLE IN ZAMBIA"
+        badge_color = GREEN
+
+    draw.rounded_rectangle(
+        (p(545), p(220), p(940), p(270)),
+        radius=p(12),
+        fill=badge_color
+    )
+
+    draw_centered_text(
+        draw,
+        (p(545), p(220), p(940), p(270)),
+        badge_text,
+        small,
+        WHITE
+    )
+
+    # =========================
+    # PRODUCT TITLE
+    # =========================
+
+    product_name = get_product_value(product, "name", "Product")
+
+    draw_wrapped_text(
+        draw=draw,
+        text=product_name,
+        x=p(545),
+        y=p(302),
+        font=title_font,
+        fill=DARK,
+        max_width=p(455),
+        line_gap=p(58),
+        max_lines=3,
+    )
+
+    # =========================
+    # PRICE BOX
+    # =========================
+
+    price_box_top = p(520)
+
+    draw.rounded_rectangle(
+        (p(515), price_box_top, p(1020), price_box_top + p(255)),
+        radius=p(22),
+        outline=ORANGE,
+        width=p(3),
+        fill=ORANGE_LIGHT
+    )
+
+    draw.rounded_rectangle(
+        (p(680), price_box_top + p(14), p(875), price_box_top + p(56)),
+        radius=p(10),
+        fill=ORANGE
+    )
+
+    draw_centered_text(
+        draw,
+        (p(680), price_box_top + p(14), p(875), price_box_top + p(56)),
+        "TOTAL PRICE",
+        small,
+        WHITE
+    )
+
+    price_val = get_product_price(product, "selling_price")
+    deposit_val = get_product_price(product, "deposit_amount")
+    balance_val = get_product_price(product, "balance_amount")
+
+    price_text = f"K{price_val}"
+
+    price_text = truncate_to_width(
+        draw,
+        price_text,
+        huge,
+        p(455)
+    )
+
+    draw.text(
+        (p(545), price_box_top + p(72)),
+        price_text,
+        font=huge,
+        fill=RED
+    )
+
+    divider_y = price_box_top + p(172)
+
+    draw.line(
+        (p(545), divider_y, p(985), divider_y),
+        fill="#F3C2A3",
+        width=p(2)
+    )
+
+    draw.text((p(570), divider_y + p(18)), "DEPOSIT", font=small, fill=DARK)
+    draw.text((p(570), divider_y + p(48)), f"K{deposit_val}", font=bold, fill=RED)
+
+    draw.line(
+        (p(775), divider_y + p(10), p(775), divider_y + p(85)),
+        fill="#F3C2A3",
+        width=p(2)
+    )
+
+    draw.text((p(805), divider_y + p(18)), "BALANCE", font=small, fill=DARK)
+    draw.text((p(805), divider_y + p(48)), f"K{balance_val}", font=bold, fill=RED)
+
+    # =========================
+    # PRODUCT DETAILS
+    # =========================
+
+    detail_y = p(815)
+
+    sku = get_product_value(product, "sku", "N/A")[:28]
+
+    stock_status = getattr(product, "stock_status", "Available")
+    stock_status = safe_text(stock_status, "Available")
+
+    delivery_range = getattr(product, "delivery_range", "Ask for ETA")
+    delivery_range = safe_text(delivery_range, "Ask for ETA")
+
+    if hasattr(product, "get_product_type_display"):
+        product_type_display = safe_text(product.get_product_type_display(), product_type)
+    else:
+        product_type_display = product_type.replace("_", " ").title()
+
+    condition = get_product_value(product, "condition", "Brand New")
+
+    details = [
+        ("SKU:", sku),
+        ("TYPE:", product_type_display),
+        ("STOCK:", stock_status),
+        ("CONDITION:", condition),
+        ("DELIVERY:", delivery_range),
+    ]
+
+    for label, value in details:
+        draw.text((p(545), detail_y), label, font=bold, fill=DARK)
+
+        value = truncate_to_width(
+            draw,
+            value,
+            font,
+            p(270)
+        )
+
+        draw.text((p(735), detail_y), value, font=font, fill=DARK)
+
+        draw.line(
+            (p(545), detail_y + p(46), p(1000), detail_y + p(46)),
+            fill=BORDER,
+            width=p(1)
+        )
+
+        detail_y += p(60)
+
+    # =========================
+    # TRUST SECTION
+    # =========================
+
+    trust_top = p(1060)
+
+    draw.rounded_rectangle(
+        (p(55), trust_top, p(1025), trust_top + p(155)),
+        radius=p(22),
+        fill=WHITE,
+        outline=BORDER,
+        width=p(2)
+    )
+
+    trust_badges = [
+        ("SECURE", "Safe Orders", "Trusted process"),
+        ("GUARANTEE", "Pre-order Care", "We source carefully"),
+        ("DELIVERY", "Zambia Delivery", "Clear ETA guidance"),
+        ("SUPPORT", "WhatsApp Help", "Ask before buying"),
+    ]
+
+    tx = p(75)
+
+    for label, heading, desc in trust_badges:
+        draw.rounded_rectangle(
+            (tx, trust_top + p(14), tx + p(205), trust_top + p(52)),
+            radius=p(8),
+            fill=ORANGE
+        )
+
+        draw_centered_text(
+            draw,
+            (tx, trust_top + p(14), tx + p(205), trust_top + p(52)),
+            label,
+            tiny,
+            WHITE
+        )
+
+        draw.text((tx, trust_top + p(68)), heading, font=small, fill=DARK)
+        draw.text((tx, trust_top + p(105)), desc, font=tiny, fill=GREY)
+
+        tx += p(240)
+
+    # =========================
+    # WHATSAPP SECTION
+    # =========================
+
+    whatsapp_number = "+260 969 274 458"
+
+    wa_y = p(1240)
+
+    draw.rounded_rectangle(
+        (p(55), wa_y, p(810), wa_y + p(170)),
+        radius=p(24),
+        fill=GREEN
+    )
+
+    draw.text(
+        (p(78), wa_y + p(22)),
+        "Order or Ask on WhatsApp",
+        font=bold,
+        fill=WHITE
+    )
+
+    draw.line(
+        (p(78), wa_y + p(72), p(790), wa_y + p(72)),
+        fill="#15803D",
+        width=p(2)
+    )
+
+    draw.text(
+        (p(78), wa_y + p(86)),
+        whatsapp_number,
+        font=big,
+        fill=WHITE
+    )
+
+    draw.text(
+        (p(78), wa_y + p(144)),
+        "Scan the QR code to view product",
+        font=small,
+        fill="#BBF7D0"
+    )
+
+    # =========================
+    # QR CODE
+    # =========================
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=4 * S,
+        border=2,
+    )
+
+    qr.add_data(product_url)
+    qr.make(fit=True)
+
+    qr_img = qr.make_image(
+        fill_color="black",
+        back_color="white"
+    ).convert("RGB")
+
+    qr_size = p(165)
+    qr_img = qr_img.resize((qr_size, qr_size), Image.Resampling.NEAREST)
+
+    qr_x = p(840)
+    qr_y = p(1238)
+
+    draw.rounded_rectangle(
+        (
+            qr_x - p(12),
+            qr_y - p(12),
+            qr_x + qr_size + p(12),
+            qr_y + qr_size + p(12),
+        ),
+        radius=p(12),
+        fill=WHITE,
+        outline=BORDER,
+        width=p(2)
+    )
+
+    poster.paste(qr_img, (qr_x, qr_y))
+
+    draw_centered_text(
+        draw,
+        (
+            qr_x - p(20),
+            qr_y + qr_size + p(10),
+            qr_x + qr_size + p(20),
+            qr_y + qr_size + p(45),
+        ),
+        "Scan to View",
+        tiny,
+        DARK
+    )
+
+    # =========================
+    # FOOTER
+    # =========================
+
+    footer_top = p(1440)
+
+    draw.rectangle(
+        (0, footer_top, W, H),
+        fill=RED
+    )
+
+    draw.text(
+        (p(80), p(1460)),
+        "TRUSTED BY CUSTOMERS IN ZAMBIA",
+        font=small,
+        fill=WHITE
+    )
+
+    draw.text(
+        (p(455), p(1458)),
+        "★★★★★",
+        font=bold,
+        fill=YELLOW
+    )
+
+    draw.text(
+        (p(740), p(1454)),
+        "China Zed",
+        font=bold,
+        fill=WHITE
+    )
+
+    draw.text(
+        (p(758), p(1494)),
+        "MARKETPLACE",
+        font=tiny,
+        fill=WHITE
+    )
+
+    draw.text(
+        (p(80), p(1530)),
+        "Fast sourcing • Zambia delivery • WhatsApp support",
+        font=tiny,
+        fill=WHITE
+    )
+
+    # =========================
+    # OUTPUT
+    # =========================
+
+    buffer = BytesIO()
+
+    # JPEG is better for WhatsApp and faster downloads.
+    poster.save(
+        buffer,
+        format="JPEG",
+        quality=95,
+        optimize=True,
+        progressive=True
+    )
+
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="image/jpeg")
+    response["Content-Disposition"] = (
+        f'attachment; filename="{product.slug}-poster.jpg"'
+    )
+
+    return response
+
+
