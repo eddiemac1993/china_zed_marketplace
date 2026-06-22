@@ -6,15 +6,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
+DEBUG = os.getenv("DEBUG", "False").lower() in {"1", "true", "yes", "on"}
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-
-DEBUG = False
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-only-secret-key"
+    else:
+        raise RuntimeError("SECRET_KEY must be set when DEBUG is False.")
 
 ALLOWED_HOSTS = [
     "chinatozambia.org",
     "www.chinatozambia.org",
     "chinatozambia.pythonanywhere.com",
+    "localhost",
+    "127.0.0.1",
 ]
 
 

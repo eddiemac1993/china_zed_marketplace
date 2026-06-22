@@ -6,6 +6,7 @@ __pycache__/
 
 # Virtual environment
 venv/
+.venv/
 .env
 
 # Database
@@ -16,6 +17,9 @@ media/
 
 # Static collected files
 staticfiles/
+
+# Local runserver logs
+runserver.*.log
 
 # VS Code
 .vscode/
