@@ -132,8 +132,20 @@ def product_detail(request, slug):
     })
 
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib import messages
+from django.core.mail import send_mail
+from django_ratelimit.decorators import ratelimit
+
+@ratelimit(key="ip", rate="3/h", block=True)
 def register_view(request):
+
+    # HONEYPOT CHECK
     if request.method == "POST":
+        if request.POST.get("website"):
+            return redirect("home")
+
         form = CustomUserRegistrationForm(request.POST)
 
         if form.is_valid():
@@ -162,13 +174,13 @@ China to Zambia Team
             login(request, user)
             messages.success(request, "Account created successfully.")
             return redirect("home")
+
     else:
         form = CustomUserRegistrationForm()
 
     return render(request, "core/register.html", {
         "form": form,
     })
-
 
 def logout_view(request):
     logout(request)

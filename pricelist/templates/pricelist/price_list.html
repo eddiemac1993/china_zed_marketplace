@@ -1,0 +1,308 @@
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ price_list.title }}</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1a1a1a;
+            margin: 0;
+            padding: 30px;
+            font-size: 13px;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #e5141a;
+            padding-bottom: 15px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            color: #e5141a;
+            font-size: 26px;
+            text-transform: uppercase;
+        }
+
+        .brand p {
+            margin: 4px 0 0;
+            color: #777;
+            font-size: 12px;
+        }
+
+        .print-btn {
+            background: #e5141a;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .print-btn:hover {
+            background: #b50f14;
+        }
+
+        .doc-title {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .doc-title h2 {
+            margin: 0;
+            font-size: 22px;
+            text-transform: uppercase;
+        }
+
+        .doc-title span {
+            display: inline-block;
+            margin-top: 6px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .detail-box {
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+
+        .detail-box strong {
+            display: block;
+            font-size: 11px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .detail-box span {
+            font-weight: bold;
+            color: #111;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #111;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: .04em;
+            padding: 10px;
+            border: 1px solid #111;
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .item-name {
+            font-weight: bold;
+        }
+
+        .supplier {
+            color: #e5141a;
+            font-weight: bold;
+        }
+
+        .total-row td {
+            background: #fff4f4;
+            font-weight: bold;
+            border-top: 2px solid #e5141a;
+            font-size: 14px;
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .signature-box {
+            width: 45%;
+            margin-top: 25px;
+            font-size: 12px;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #111;
+            height: 35px;
+            margin-bottom: 6px;
+        }
+
+        .small-note {
+            margin-top: 25px;
+            color: #777;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 15px;
+                max-width: 100%;
+            }
+
+            .print-btn {
+                display: none;
+            }
+
+            th {
+                background: #111 !important;
+                color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .total-row td {
+                background: #fff4f4 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="top-bar">
+        <div class="brand">
+            <h1>Price List</h1>
+            <p>Item pricing, supplier source and procurement summary</p>
+        </div>
+
+        <button class="print-btn" onclick="window.print()">Print Table</button>
+    </div>
+
+    <div class="doc-title">
+        <h2>{{ price_list.title }}</h2>
+        <span>BOQ / RFQ / Price Comparison Sheet</span>
+    </div>
+
+    <div class="details">
+        <div class="detail-box">
+            <strong>Client</strong>
+            <span>{{ price_list.client_name|default:"-" }}</span>
+        </div>
+
+        <div class="detail-box">
+            <strong>Reference No.</strong>
+            <span>{{ price_list.reference_no|default:"-" }}</span>
+        </div>
+
+        <div class="detail-box">
+            <strong>Date</strong>
+            <span>{{ price_list.date }}</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:5%;">No.</th>
+                <th style="width:22%;">Item</th>
+                <th style="width:25%;">Description</th>
+                <th style="width:8%;">Qty</th>
+                <th style="width:13%;">Unit Price</th>
+                <th style="width:13%;">Total</th>
+                <th style="width:14%;">Where to Buy</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="item-name">{{ item.item_name }}</td>
+                <td>{{ item.description|default:"-" }}</td>
+                <td class="text-right">{{ item.quantity|floatformat:2 }}</td>
+                <td class="text-right">K {{ item.unit_price|floatformat:2|intcomma }}</td>
+                <td class="text-right">K {{ item.total_price|floatformat:2|intcomma }}</td>
+                <td class="supplier">{{ item.where_to_buy|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; padding:25px;">
+                    No items added yet.
+                </td>
+            </tr>
+            {% endfor %}
+
+            <tr class="total-row">
+                <td colspan="5" class="text-right">Grand Total</td>
+                <td class="text-right">K {{ total|floatformat:2|intcomma }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            Prepared By
+        </div>
+
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            Approved By
+        </div>
+    </div>
+
+    <div class="small-note">
+        This price list is prepared for procurement comparison and budgeting purposes.
+    </div>
+
+</div>
+
+</body>
+</html>

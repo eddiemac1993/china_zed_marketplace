@@ -532,8 +532,9 @@
             {% endif %}
 
             <form method="POST" autocomplete="off">
-                {% csrf_token %}
 
+                {% csrf_token %}
+                <input type="text" name="website" style="display:none">
                 {% if messages %}
                     {% for message in messages %}
                         <div class="error-box"

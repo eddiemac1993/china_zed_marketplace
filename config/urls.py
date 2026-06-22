@@ -7,6 +7,8 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("core.urls")),
+    path("events/", include("events.urls")),
+    path("price-list/", include("pricelist.urls")),
 
     path(
         "password-reset/",

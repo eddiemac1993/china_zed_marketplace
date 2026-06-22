@@ -28,7 +28,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    "events",
     'django.contrib.humanize',
+    "pricelist",
 ]
 
 MIDDLEWARE = [

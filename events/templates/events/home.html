@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annual Church Conference</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #090d16;
+            min-height: 100vh;
+        }
+
+        /* Beautiful fluid poster with a high-contrast cathedral light backdrop */
+        .poster-canvas {
+            background-image: 
+                linear-gradient(to bottom, rgba(13, 18, 30, 0.85) 0%, rgba(9, 13, 22, 0.98) 100%),
+                url("https://images.unsplash.com/photo-1438032005730-c779502df39b?auto=format&fit=crop&w=1200&q=80");
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        .font-garamond {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Pure premium gold gradient */
+        .gold-text {
+            background: linear-gradient(135deg, #fef08a 0%, #facc15 60%, #a16207 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 sm:p-6 md:p-12 overflow-x-hidden">
+
+    <!-- MAIN POSTER CONTAINER (A4 proportioned on desktop, fluid on mobile) -->
+    <div class="w-full max-w-[550px] relative">
+        
+        <!-- Ambient back-glow -->
+        <div class="absolute -inset-1.5 bg-yellow-500/10 rounded-[28px] blur-2xl pointer-events-none"></div>
+        
+        <!-- The Poster Card -->
+        <div class="poster-canvas w-full rounded-[24px] p-6 sm:p-10 flex flex-col justify-between items-center text-center relative overflow-hidden">
+            
+            <!-- TOP SECTION: Branding & Welcome -->
+            <div class="w-full flex flex-col items-center space-y-3">
+                <div class="inline-block bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 px-4 py-1 rounded-full font-bold tracking-[0.15em] text-[10px] uppercase">
+                    You Are Invited
+                </div>
+                
+                <span class="text-slate-400 tracking-[0.2em] text-[11px] font-semibold uppercase">
+                    Your Church Name Here
+                </span>
+
+                <!-- Elegant minimal cross divider -->
+                <div class="flex items-center gap-3 w-28 my-1 opacity-60">
+                    <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-yellow-500/50"></div>
+                    <i class="fa-solid fa-cross text-[9px] text-yellow-500"></i>
+                    <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-yellow-500/50"></div>
+                </div>
+            </div>
+
+            <!-- MIDDLE SECTION: Event Headlines -->
+            <div class="w-full flex flex-col items-center my-8">
+                <h1 class="font-cinzel text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-wide text-white leading-tight">
+                    Annual<br>
+                    <span class="gold-text">Church</span><br>
+                    Conference
+                </h1>
+
+                <!-- Theme Banner -->
+                <div class="text-yellow-400 text-sm sm:text-base font-bold tracking-widest uppercase mt-4 mb-3 font-cinzel">
+                    Theme: Trusting the Process
+                </div>
+
+                <!-- Scripture Callout -->
+                <div class="max-w-sm px-4 py-1.5 relative border-l-2 border-yellow-500/30 mt-2">
+                    <p class="font-garamond text-slate-300 text-base sm:text-lg italic leading-relaxed">
+                        “He who began a good work in you will complete it.”
+                    </p>
+                    <span class="block mt-1 text-[10px] uppercase tracking-[0.1em] text-slate-400 font-bold">— Philippians 1:6</span>
+                </div>
+            </div>
+
+            <!-- BOTTOM SECTION: Event Details, Speaker & Action -->
+            <div class="w-full flex flex-col items-center">
+                
+                <!-- Info Grid (Auto-stacks beautifully on mobile, side-by-side on tablet/desktop) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mb-6 text-left sm:text-center">
+                    <!-- Date Card -->
+                    <div class="bg-slate-950/50 border border-white/5 p-3 rounded-xl flex sm:flex-col justify-between items-center sm:justify-center">
+                        <span class="text-yellow-500 text-[9px] uppercase font-bold tracking-widest sm:mb-1">Date</span>
+                        <strong class="text-slate-100 text-xs sm:text-sm">25 May 2026</strong>
+                    </div>
+                    <!-- Time Card -->
+                    <div class="bg-slate-950/50 border border-white/5 p-3 rounded-xl flex sm:flex-col justify-between items-center sm:justify-center">
+                        <span class="text-yellow-500 text-[9px] uppercase font-bold tracking-widest sm:mb-1">Time</span>
+                        <strong class="text-slate-100 text-xs sm:text-sm">09:00 Hours</strong>
+                    </div>
+                    <!-- Venue Card -->
+                    <div class="bg-slate-950/50 border border-white/5 p-3 rounded-xl flex sm:flex-col justify-between items-center sm:justify-center">
+                        <span class="text-yellow-500 text-[9px] uppercase font-bold tracking-widest sm:mb-1">Venue</span>
+                        <strong class="text-slate-100 text-xs sm:text-sm truncate max-w-[150px] sm:max-w-full">Main Auditorium</strong>
+                    </div>
+                </div>
+
+                <!-- Guest Speaker -->
+                <div class="text-slate-300 text-xs sm:text-sm mb-6 bg-slate-950/60 px-4 py-2 rounded-full border border-white/5">
+                    Guest Speaker: <strong class="text-yellow-400 font-bold">Pastor Name Here</strong>
+                </div>
+
+                <!-- Registration CTA -->
+                <button onclick="openRegisterModal()" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-950 font-black py-3.5 rounded-xl shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 active:scale-[0.98] transition-all text-xs uppercase tracking-widest cursor-pointer">
+                    Register Now
+                </button>
+
+                <!-- Footer Note -->
+                <p class="text-slate-400 text-[10px] tracking-wide mt-5 max-w-xs leading-relaxed">
+                    Come expectant. Come prepared.<br>God is still working.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- REGISTRATION MODAL -->
+    <div id="registration-overlay" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 border border-yellow-500/20 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl transform scale-95 transition-all duration-300">
+            
+            <!-- Modal Header -->
+            <div class="bg-slate-950 px-5 py-4 flex justify-between items-center border-b border-white/5">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-yellow-500"></i>
+                    <h4 class="font-cinzel font-bold text-slate-100 text-xs tracking-wider">Pass Registration</h4>
+                </div>
+                <button onclick="closeRegisterModal()" class="text-slate-400 hover:text-white transition p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Stage 1 Form Entry -->
+            <div id="modal-form" class="p-5 sm:p-6 space-y-4">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Fill out your details to generate your customized access pass for the conference.
+                </p>
+
+                <div>
+                    <label class="block text-[9px] uppercase font-bold text-slate-400 mb-1.5 tracking-wider">Your Full Name</label>
+                    <input type="text" id="attendee-name" placeholder="John Doe" class="w-full px-3 py-2 text-sm rounded-lg bg-slate-950 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-500/50 transition">
+                </div>
+
+                <div>
+                    <label class="block text-[9px] uppercase font-bold text-slate-400 mb-1.5 tracking-wider">Email Address</label>
+                    <input type="email" id="attendee-email" placeholder="john@example.com" class="w-full px-3 py-2 text-sm rounded-lg bg-slate-950 border border-white/10 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-500/50 transition">
+                </div>
+
+                <button onclick="generateDigitalTicket()" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-bold py-2.5 rounded-lg text-xs uppercase tracking-widest mt-2 flex items-center justify-center gap-2 cursor-pointer hover:from-yellow-400 hover:to-amber-400">
+                    <i class="fa-solid fa-ticket"></i> Generate Pass
+                </button>
+            </div>
+
+            <!-- Stage 2 Generated Pass -->
+            <div id="modal-ticket" class="p-5 sm:p-6 hidden text-center space-y-4">
+                <div class="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
+                    <i class="fa-solid fa-check text-base"></i>
+                </div>
+                
+                <div>
+                    <h5 class="font-cinzel font-bold text-white text-sm tracking-wide">Registration Confirmed!</h5>
+                    <p class="text-[10px] text-slate-400">Please screenshot and save your digital pass.</p>
+                </div>
+
+                <!-- Digital Ticket Representation -->
+                <div class="bg-slate-950 border border-white/5 rounded-xl overflow-hidden relative text-left p-4 shadow-xl">
+                    <div class="absolute w-3 h-3 rounded-full bg-slate-900 border-r border-white/5 top-1/2 -left-1.5 -translate-y-1/2"></div>
+                    <div class="absolute w-3 h-3 rounded-full bg-slate-900 border-l border-white/5 top-1/2 -right-1.5 -translate-y-1/2"></div>
+
+                    <div class="border-b border-dashed border-white/10 pb-2.5 mb-2.5 flex justify-between items-center">
+                        <div>
+                            <span class="text-[8px] uppercase tracking-widest text-yellow-500 font-bold">Host Church</span>
+                            <p class="text-[10px] font-bold text-slate-200 uppercase truncate max-w-[150px]">Annual Conference</p>
+                        </div>
+                        <span class="text-[8px] font-mono bg-yellow-500/10 text-yellow-400 px-1.5 py-0.5 rounded border border-yellow-500/20 font-black">VIP PASS</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[8px] uppercase text-slate-500 block">Attendee</span>
+                            <span class="text-[10px] font-bold text-slate-100 truncate block" id="pass-holder-name">John Doe</span>
+                        </div>
+                        <div>
+                            <span class="text-[8px] uppercase text-slate-500 block">Seat Assignment</span>
+                            <span class="text-[10px] font-mono font-bold text-yellow-400" id="pass-number">#CH-7291</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-2.5 border-t border-white/5 flex justify-between items-center text-[8px] text-slate-500">
+                        <span>Present at main entrance</span>
+                        <div class="flex gap-0.5 h-4 opacity-70">
+                            <span class="w-[1px] bg-slate-400"></span><span class="w-[3px] bg-slate-400"></span><span class="w-[1px] bg-slate-400"></span>
+                            <span class="w-[1px] bg-slate-400"></span><span class="w-[4px] bg-slate-400"></span><span class="w-[1px] bg-slate-400"></span>
+                            <span class="w-[3px] bg-slate-400"></span><span class="w-[1px] bg-slate-400"></span><span class="w-[3px] bg-slate-400"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="closeRegisterModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg text-xs font-bold tracking-wider transition uppercase cursor-pointer">
+                    Close Pass
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function openRegisterModal() {
+            const overlay = document.getElementById('registration-overlay');
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.querySelector('div').classList.remove('scale-95');
+            
+            // Clear and reset form view
+            document.getElementById('modal-form').classList.remove('hidden');
+            document.getElementById('modal-ticket').classList.add('hidden');
+            document.getElementById('attendee-name').value = '';
+            document.getElementById('attendee-email').value = '';
+        }
+
+        function closeRegisterModal() {
+            const overlay = document.getElementById('registration-overlay');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            overlay.querySelector('div').classList.add('scale-95');
+        }
+
+        function generateDigitalTicket() {
+            const rawName = document.getElementById('attendee-name').value.trim();
+            const holderName = rawName || 'Valued Guest';
+            
+            document.getElementById('pass-holder-name').textContent = holderName;
+            
+            const randomCode = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('pass-number').textContent = `#CH-${randomCode}-ANN`;
+
+            document.getElementById('modal-form').classList.add('hidden');
+            document.getElementById('modal-ticket').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+```
+eof

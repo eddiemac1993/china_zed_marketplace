@@ -992,6 +992,7 @@
 </div><!-- /page-body -->
 
 <!-- FOOTER -->
+<!-- FOOTER -->
 <footer class="site-footer">
     <div class="footer-top">
         <div>
@@ -1022,9 +1023,77 @@
             <h4>Seller</h4>
             <a href="{% url 'supplier_submit_product' %}">Submit a Product</a>
             <a href="{% url 'supplier_submit_product' %}">Become a Supplier</a>
+            <a href="{% url 'pricelist:index' %}">Price Lists</a>
             <a href="{% url 'order_policy' %}">Supplier Policy</a>
         </div>
     </div>
+
+    <!-- ── SUPPORTED BY ── -->
+    <div style="border-top:1px solid #1E1E1E;padding:22px 20px;max-width:1300px;margin:0 auto;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <div style="flex:1;height:1px;background:#222;"></div>
+            <span style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#444;white-space:nowrap;">Supported by</span>
+            <div style="flex:1;height:1px;background:#222;"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+
+            <!-- SwiftFind -->
+            <a href="https://swiftfind.zm" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 12px;border-radius:8px;border:1px solid #1e1e1e;background:#161616;min-width:90px;text-decoration:none;">
+                <div style="width:36px;height:36px;border-radius:8px;background:#0d1520;display:flex;align-items:center;justify-content:center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="8" r="5.5" stroke="#1677FF" stroke-width="2"/><line x1="12.5" y1="12.5" x2="17" y2="17" stroke="#1677FF" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <span style="font-size:13px;font-weight:800;color:#1677FF;letter-spacing:-.3px;">Swift<span style="color:#4aa3ff;">Find</span></span>
+                <span style="font-size:9px;font-weight:600;color:#3a3a3a;text-transform:uppercase;letter-spacing:.05em;">Search & Discovery</span>
+            </a>
+
+            <div style="width:5px;height:5px;border-radius:50%;background:#222;align-self:center;flex-shrink:0;"></div>
+
+            <!-- SwiftLogistics -->
+            <a href="https://swiftlogistics.zm" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 12px;border-radius:8px;border:1px solid #1e1e1e;background:#161616;min-width:90px;text-decoration:none;">
+                <div style="width:36px;height:36px;border-radius:8px;background:#0f1a0d;display:flex;align-items:center;justify-content:center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1" y="7" width="12" height="8" rx="1.5" stroke="#00A854" stroke-width="1.8"/><path d="M13 10h3l2 3v2h-5V10z" stroke="#00A854" stroke-width="1.8" stroke-linejoin="round"/><circle cx="5" cy="16" r="1.5" fill="#00A854"/><circle cx="15" cy="16" r="1.5" fill="#00A854"/></svg>
+                </div>
+                <span style="font-size:13px;font-weight:800;color:#00A854;letter-spacing:-.3px;">Swift<span style="color:#4dd68a;">Logistics</span></span>
+                <span style="font-size:9px;font-weight:600;color:#3a3a3a;text-transform:uppercase;letter-spacing:.05em;">Delivery & Freight</span>
+            </a>
+
+            <div style="width:5px;height:5px;border-radius:50%;background:#222;align-self:center;flex-shrink:0;"></div>
+
+            <!-- Teacher.zm -->
+            <a href="https://teacher.zm" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 12px;border-radius:8px;border:1px solid #1e1e1e;background:#161616;min-width:90px;text-decoration:none;">
+                <div style="width:36px;height:36px;border-radius:8px;background:#1a100d;display:flex;align-items:center;justify-content:center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3L1 7.5l9 4.5 9-4.5L10 3z" stroke="#FF6600" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 10v4.5c0 1.2 2.2 2.5 5 2.5s5-1.3 5-2.5V10" stroke="#FF6600" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </div>
+                <span style="font-size:13px;font-weight:800;color:#FF6600;letter-spacing:-.3px;">teacher<span style="color:#FF6600;opacity:.5;">.zm</span></span>
+                <span style="font-size:9px;font-weight:600;color:#3a3a3a;text-transform:uppercase;letter-spacing:.05em;">Education Platform</span>
+            </a>
+
+            <div style="width:5px;height:5px;border-radius:50%;background:#222;align-self:center;flex-shrink:0;"></div>
+
+            <!-- Events.zm -->
+            <a href="https://events.zm" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 12px;border-radius:8px;border:1px solid #1e1e1e;background:#161616;min-width:90px;text-decoration:none;">
+                <div style="width:36px;height:36px;border-radius:8px;background:#180d1a;display:flex;align-items:center;justify-content:center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="14" rx="2" stroke="#9333EA" stroke-width="1.8"/><line x1="6" y1="2" x2="6" y2="6" stroke="#9333EA" stroke-width="1.8" stroke-linecap="round"/><line x1="14" y1="2" x2="14" y2="6" stroke="#9333EA" stroke-width="1.8" stroke-linecap="round"/><line x1="2" y1="9" x2="18" y2="9" stroke="#9333EA" stroke-width="1.8"/><circle cx="10" cy="13" r="1.5" fill="#9333EA"/></svg>
+                </div>
+                <span style="font-size:13px;font-weight:800;color:#9333EA;letter-spacing:-.3px;">events<span style="color:#9333EA;opacity:.5;">.zm</span></span>
+                <span style="font-size:9px;font-weight:600;color:#3a3a3a;text-transform:uppercase;letter-spacing:.05em;">Events & Ticketing</span>
+            </a>
+
+            <div style="width:5px;height:5px;border-radius:50%;background:#222;align-self:center;flex-shrink:0;"></div>
+
+            <!-- AI Zambia -->
+            <a href="https://aizambia.zm" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 12px;border-radius:8px;border:1px solid #1e1e1e;background:#161616;min-width:90px;text-decoration:none;">
+                <div style="width:36px;height:36px;border-radius:8px;background:#0d1218;display:flex;align-items:center;justify-content:center;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="#06B6D4" stroke-width="1.8"/><path d="M7 10h6M10 7v6" stroke="#06B6D4" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="10" r="2" fill="#06B6D4" fill-opacity="0.3"/></svg>
+                </div>
+                <span style="font-size:13px;font-weight:800;color:#06B6D4;letter-spacing:-.3px;">AI <span style="font-weight:500;color:#67e8f9;">Zambia</span></span>
+                <span style="font-size:9px;font-weight:600;color:#3a3a3a;text-transform:uppercase;letter-spacing:.05em;">AI & Technology</span>
+            </a>
+
+        </div>
+    </div>
+    <!-- ── END SUPPORTED BY ── -->
+
     <div class="footer-bottom">
         © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
     </div>

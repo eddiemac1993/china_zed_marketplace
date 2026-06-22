@@ -1,0 +1,320 @@
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Price Lists</title>
+
+<style>
+
+body{
+    margin:0;
+    padding:30px;
+    background:#f4f6f8;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.page-title{
+    margin:0;
+    color:#e5141a;
+    font-size:32px;
+}
+
+.page-subtitle{
+    color:#777;
+    margin-top:5px;
+}
+
+.add-btn{
+    background:#e5141a;
+    color:white;
+    padding:12px 20px;
+    border-radius:6px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.add-btn:hover{
+    background:#b50f14;
+}
+
+.summary-cards{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.card-label{
+    color:#888;
+    font-size:12px;
+    text-transform:uppercase;
+    margin-bottom:8px;
+}
+
+.card-value{
+    font-size:28px;
+    font-weight:bold;
+    color:#111;
+}
+
+.table-card{
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.table-header{
+    padding:20px;
+    border-bottom:1px solid #eee;
+}
+
+.table-header h3{
+    margin:0;
+    color:#111;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#111;
+}
+
+th{
+    color:white;
+    text-transform:uppercase;
+    font-size:11px;
+    padding:12px;
+    text-align:left;
+}
+
+td{
+    padding:14px;
+    border-bottom:1px solid #eee;
+}
+
+tbody tr:hover{
+    background:#fafafa;
+}
+
+.client{
+    color:#777;
+    font-size:12px;
+}
+
+.total{
+    font-weight:bold;
+    color:#00A854;
+}
+
+.view-btn{
+    background:#e5141a;
+    color:white;
+    padding:8px 14px;
+    border-radius:5px;
+    text-decoration:none;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.view-btn:hover{
+    background:#b50f14;
+}
+
+.empty-state{
+    text-align:center;
+    padding:60px;
+    color:#777;
+}
+
+.badge{
+    background:#fff0f0;
+    color:#e5141a;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+@media(max-width:900px){
+
+.summary-cards{
+    grid-template-columns:repeat(2,1fr);
+}
+
+table{
+    font-size:12px;
+}
+
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <div class="page-header">
+
+        <div>
+            <h1 class="page-title">Price Lists</h1>
+            <div class="page-subtitle">
+                Procurement, BOQ and RFQ Price Comparison Lists
+            </div>
+        </div>
+
+        <a href="/admin/pricelist/pricelist/add/" class="add-btn">
+            + New Price List
+        </a>
+
+    </div>
+
+    <div class="summary-cards">
+
+        <div class="card">
+            <div class="card-label">Total Lists</div>
+            <div class="card-value">
+                {{ price_lists|length }}
+            </div>
+        </div>
+<div class="card">
+    <div class="card-label">Total Value</div>
+    <div class="card-value">
+        K {{ grand_total|floatformat:0|intcomma }}
+    </div>
+</div>
+        <div class="card">
+            <div class="card-label">Latest Update</div>
+            <div class="card-value" style="font-size:18px;">
+                {{ price_lists.0.date|default:"-" }}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Procurement</div>
+            <div class="card-value">
+                📋
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">Suppliers</div>
+            <div class="card-value">
+                🏪
+            </div>
+        </div>
+
+    </div>
+
+    <div class="table-card">
+
+        <div class="table-header">
+            <h3>Available Price Lists</h3>
+        </div>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Client</th>
+                    <th>Reference</th>
+                    <th>Date</th>
+                    <th>Total Value</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for price_list in price_lists %}
+                <tr>
+
+                    <td>
+                        <strong>{{ price_list.title }}</strong>
+                    </td>
+
+                    <td>
+                        <div>{{ price_list.client_name }}</div>
+                    </td>
+
+                    <td>
+                        <span class="badge">
+                            {{ price_list.reference_no }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {{ price_list.date }}
+                    </td>
+
+                    <td class="total">
+                        K {{ price_list.total_amount|floatformat:2|intcomma }}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'pricelist:detail' price_list.id %}"
+                           class="view-btn">
+                           Open
+                        </a>
+                    </td>
+
+                </tr>
+                {% empty %}
+
+                <tr>
+                    <td colspan="6">
+
+                        <div class="empty-state">
+
+                            <h3>No Price Lists Yet</h3>
+
+                            <p>
+                                Create your first procurement
+                                price list from the admin panel.
+                            </p>
+
+                        </div>
+
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>
