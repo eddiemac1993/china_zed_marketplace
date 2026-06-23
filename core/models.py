@@ -326,6 +326,47 @@ class SupplierProductRequestImage(TimeStampedModel):
         return f"Image for {self.supplier_request.product_name}"
 
 
+class CustomerProductRequest(TimeStampedModel):
+    PLATFORM_CHOICES = [
+        ("alibaba", "Alibaba"),
+        ("taobao", "Taobao"),
+        ("temu", "Temu"),
+        ("1688", "1688"),
+        ("shein", "Shein"),
+        ("other", "Other"),
+    ]
+
+    STATUS_CHOICES = [
+        ("new", "New"),
+        ("reviewing", "Reviewing"),
+        ("quoted", "Quoted"),
+        ("ordered", "Ordered"),
+        ("unavailable", "Unavailable"),
+        ("closed", "Closed"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="product_requests")
+    product_name = models.CharField(max_length=200, blank=True)
+    product_link = models.URLField()
+    source_platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default="other")
+    notes = models.TextField(blank=True)
+    screenshot = models.ImageField(upload_to="customer_product_requests/", blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+    quoted_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    admin_note = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def __str__(self):
+        label = self.product_name or self.product_link
+        return f"{label} - {self.user.username}"
+
+
 class Order(TimeStampedModel):
     STATUS_CHOICES = [
         ("pending", "Pending Confirmation"),

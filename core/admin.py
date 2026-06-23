@@ -10,6 +10,7 @@ from .models import (
     CartItem,
     Order,
     OrderItem,
+    CustomerProductRequest,
     SupplierProductRequest,
     SupplierProductRequestImage,
     Advertisement,
@@ -741,6 +742,52 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
     price_display.short_description = "Price"
 
 
+@admin.register(CustomerProductRequest)
+class CustomerProductRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "product_label",
+        "user",
+        "source_platform",
+        "status",
+        "quoted_price",
+        "created_at",
+    )
+    list_editable = ("status", "quoted_price")
+    list_filter = ("status", "source_platform", "created_at", "is_deleted")
+    search_fields = ("product_name", "product_link", "notes", "user__username", "user__email")
+    readonly_fields = ("created_at", "updated_at", "screenshot_preview")
+    fieldsets = (
+        ("Customer", {
+            "fields": ("user",)
+        }),
+        ("Request", {
+            "fields": ("product_name", "product_link", "source_platform", "notes", "screenshot", "screenshot_preview")
+        }),
+        ("Admin Review", {
+            "fields": ("status", "quoted_price", "admin_note")
+        }),
+        ("System", {
+            "fields": ("is_deleted", "created_at", "updated_at")
+        }),
+    )
+
+    def product_label(self, obj):
+        return obj.product_name or obj.product_link
+
+    product_label.short_description = "Product"
+
+    def screenshot_preview(self, obj):
+        if obj and obj.screenshot:
+            return format_html(
+                '<a href="{}" target="_blank"><img src="{}" style="max-width:320px;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid #ddd;" /></a>',
+                obj.screenshot.url,
+                obj.screenshot.url,
+            )
+        return "No screenshot"
+
+    screenshot_preview.short_description = "Screenshot Preview"
+
+
 # =========================
 # STOCK MOVEMENT
 # =========================
@@ -884,3 +931,22 @@ class AdvertisementAdmin(admin.ModelAdmin):
         return "No"
 
     currently_active_display.short_description = "Currently Active"
+
+
+admin.site.index_template = "admin/core_index.html"
+_default_admin_index = admin.site.index
+
+
+def chinazed_admin_index(request, extra_context=None):
+    extra_context = extra_context or {}
+    extra_context["chinazed_dashboard"] = {
+        "pending_orders": Order.objects.filter(status="pending").count(),
+        "unpaid_deposits": Order.objects.filter(deposit_confirmed=False).count(),
+        "payment_proofs": Order.objects.filter(payment_proof__isnull=False, deposit_confirmed=False).count(),
+        "product_requests": CustomerProductRequest.objects.filter(status="new").count(),
+        "delayed_orders": sum(1 for order in Order.objects.all() if order.is_delayed()),
+    }
+    return _default_admin_index(request, extra_context)
+
+
+admin.site.index = chinazed_admin_index

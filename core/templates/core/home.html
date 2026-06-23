@@ -484,6 +484,13 @@
         .how-step-info h4 { font-size: 13px; font-weight: 800; margin-bottom: 5px; }
         .how-step-info p { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
+        .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 18px; }
+        .testimonial-card { background: #fff; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px; }
+        .testimonial-stars { color: var(--gold-dark); font-size: 13px; margin-bottom: 8px; }
+        .testimonial-card p { color: #555; font-size: 12px; line-height: 1.7; margin-bottom: 10px; }
+        .testimonial-card strong { display: block; color: var(--ink); font-size: 12px; }
+        .testimonial-card span { color: var(--muted); font-size: 11px; }
+
         /* ── QUICK LINKS ── */
         .quick-links-grid { background: var(--white); border-radius: var(--card-radius); padding: 14px 16px; border: 1px solid var(--border); margin-bottom: 14px; }
         .quick-links-title { font-weight: 800; font-size: 13px; color: var(--red); margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
@@ -583,6 +590,7 @@
             .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; }
             .footer-top > div:first-child { grid-column: 1 / -1; }
             .product-grid-5, .product-grid-dense { grid-template-columns: repeat(3, 1fr); }
+            .testimonial-grid { grid-template-columns: 1fr; }
             .prod-card:nth-child(4n) { border-right: 1px solid #F0F0F0; }
             .prod-card:nth-child(3n) { border-right: none; }
         }
@@ -752,7 +760,9 @@
             <a href="{% url 'home' %}" class="{% if not category_id and not product_type %}active{% endif %}">🏠 All</a>
             <a href="?type=local#results" class="{% if product_type == 'local' %}active{% endif %}">🇿🇲 Zambia Stock</a>
             <a href="?type=preorder#results" class="{% if product_type == 'preorder' %}active{% endif %}">🇨🇳 Pre-order</a>
+            <a href="{% url 'request_product' %}">🔎 Request Product</a>
             <a href="{% url 'about' %}">ℹ About</a>
+            <a href="{% url 'faq' %}">❓ FAQ</a>
             {% for category in categories %}
                 <a href="?category={{ category.id }}#results" class="{% if category_id == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a>
             {% endfor %}
@@ -807,6 +817,12 @@
                 </a>
                 <a href="?type=preorder#results" class="sidebar-cat-item {% if product_type == 'preorder' %}active{% endif %}">
                     <span class="sidebar-cat-icon">🇨🇳</span> Pre-order China
+                </a>
+                <a href="{% url 'request_product' %}" class="sidebar-cat-item">
+                    <span class="sidebar-cat-icon">🔎</span> Request Product
+                </a>
+                <a href="{% url 'faq' %}" class="sidebar-cat-item">
+                    <span class="sidebar-cat-icon">❓</span> FAQ
                 </a>
                 {% for category in categories %}
                     <a href="?category={{ category.id }}#results" class="sidebar-cat-item {% if category_id == category.id|stringformat:'s' %}active{% endif %}">
@@ -1083,6 +1099,27 @@
         </div>
     </div>
 
+    {% if testimonials %}
+    <div class="how-panel">
+        <div class="section-head">
+            <div class="section-head-left">
+                <span class="section-head-title">CUSTOMER REVIEWS</span>
+                <span class="section-head-sub">What buyers are saying</span>
+            </div>
+        </div>
+        <div class="testimonial-grid">
+            {% for review in testimonials %}
+            <div class="testimonial-card">
+                <div class="testimonial-stars">★★★★★</div>
+                <p>{{ review.comment|default:"Great service from ChinaZed." }}</p>
+                <strong>{{ review.user.username }}</strong>
+                <span>{{ review.product.name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
 </div><!-- /page-body -->
 
 <!-- FOOTER -->
@@ -1104,6 +1141,7 @@
             <a href="?type=local#results">Local Stock</a>
             <a href="?type=preorder#results">Pre-order China</a>
             <a href="{% url 'about' %}">About ChinaZed</a>
+            <a href="{% url 'faq' %}">FAQ</a>
             <a href="{% url 'order_policy' %}">Order Policy</a>
             {% if request.user.is_authenticated %}
                 <a href="{% url 'profile' %}">Track Orders</a>

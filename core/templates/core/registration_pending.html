@@ -16,6 +16,13 @@
         .spam-box { margin-top: 16px; padding: 12px 14px; border-radius: 6px; background: #FFF8E1; border: 1px solid #FFE082; color: #7C4A00; font-size: 13px; line-height: 1.6; }
         .spam-box strong { display: block; color: #B50F14; margin-bottom: 4px; }
         .hint { margin-top: 12px; font-size: 12px; color: #888; }
+        .message { margin-bottom: 14px; padding: 10px 12px; border-radius: 6px; background: #F0FFF4; color: #1D6A34; border: 1px solid #B7EBC5; font-size: 12px; }
+        .message.error { background: #FFF0F0; color: #991B1B; border-color: #FECACA; }
+        .resend-box { margin-top: 16px; padding: 14px; border-radius: 6px; background: #F9F9F9; border: 1px solid #e0e0e0; text-align: left; }
+        .resend-box label { display: block; font-size: 12px; font-weight: 800; margin-bottom: 6px; }
+        .resend-row { display: flex; gap: 8px; }
+        .resend-row input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #d8d8d8; border-radius: 5px; }
+        .resend-row button { border: none; background: #111; color: #fff; border-radius: 5px; padding: 10px 12px; font-weight: 800; cursor: pointer; }
         .dev-box { margin-top: 18px; padding: 14px; border-radius: 6px; background: #FFF8E1; border: 1px solid #FFE082; text-align: left; }
         .dev-box strong { display: block; color: #7C4A00; margin-bottom: 6px; }
         .dev-box p { font-size: 12px; margin-bottom: 10px; }
@@ -27,6 +34,9 @@
         <div class="brand">CHINAZED</div>
         <div class="icon">✓</div>
         <h1>Check your email</h1>
+        {% for message in messages %}
+            <div class="message {% if message.tags == 'error' %}error{% endif %}">{{ message }}</div>
+        {% endfor %}
         {% if email %}
             <p>We sent an activation link to <span class="email">{{ email }}</span>.</p>
         {% else %}
@@ -39,6 +49,14 @@
             If the email is not in your inbox, please check your Spam, Junk, Promotions, or Updates folder for the activation link.
         </div>
         <div class="hint">Still cannot find it? Register again with the correct email address.</div>
+        <form method="POST" action="{% url 'resend_activation' %}" class="resend-box">
+            {% csrf_token %}
+            <label for="resend-email">Resend activation email</label>
+            <div class="resend-row">
+                <input id="resend-email" type="email" name="email" value="{{ email }}" placeholder="Enter your email address" required>
+                <button type="submit">Resend</button>
+            </div>
+        </form>
         {% if dev_activation_link %}
             <div class="dev-box">
                 <strong>Local development mode</strong>

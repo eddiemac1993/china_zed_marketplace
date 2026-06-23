@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
@@ -12,9 +13,11 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import send_mail
 from xhtml2pdf import pisa
-from .forms import OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm, PaymentProofForm
+from .forms import CustomerProductRequestForm, OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm, PaymentProofForm
 from .models import (
     Product,
+    ProductReview,
+    CustomerProductRequest,
     Order,
     OrderItem,
     Cart,
@@ -35,6 +38,37 @@ ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
 def get_user_cart(user):
     cart, created = Cart.objects.get_or_create(user=user)
     return cart
+
+
+def send_activation_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    activation_link = request.build_absolute_uri(
+        reverse("activate_account", kwargs={"uidb64": uid, "token": token})
+    )
+
+    send_mail(
+        subject="Activate your ChinaZed account",
+        message=f"""
+Hello {user.username},
+
+Thank you for registering with ChinaZed.
+
+Please click the link below to verify your email and activate your account:
+
+{activation_link}
+
+If you did not create this account, you can ignore this email.
+
+Regards,
+ChinaZed Team
+""",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
+    return activation_link
 
 
 @login_required
@@ -92,6 +126,10 @@ def home(request):
         product_type="preorder"
     ).order_by("-created_at")[:10]
 
+    testimonials = ProductReview.objects.filter(
+        is_approved=True
+    ).select_related("product", "user").order_by("-created_at")[:3]
+
     if query:
         products = products.filter(name__icontains=query)
 
@@ -114,6 +152,7 @@ def home(request):
         "featured_products": featured_products,
         "local_products": local_products,
         "preorder_products": preorder_products,
+        "testimonials": testimonials,
         "cart_count": cart_count,
     })
 
@@ -136,6 +175,10 @@ def privacy(request):
     return render(request, "core/privacy.html")
 
 
+def faq(request):
+    return render(request, "core/faq.html")
+
+
 def product_detail(request, slug):
     product = get_object_or_404(
         Product,
@@ -153,10 +196,51 @@ def product_detail(request, slug):
     })
 
 
+@login_required
+def request_product_view(request):
+    if request.method == "POST":
+        form = CustomerProductRequestForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            product_request = form.save(commit=False)
+            product_request.user = request.user
+            product_request.save()
+            messages.success(request, "Product request submitted. We will review the link and prepare a quote.")
+            return redirect("profile")
+    else:
+        form = CustomerProductRequestForm()
+
+    return render(request, "core/request_product.html", {
+        "form": form,
+        "cart_count": get_user_cart(request.user).total_items(),
+    })
+
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.mail import send_mail
 from django_ratelimit.decorators import ratelimit
+
+
+class ChinaZedLoginView(LoginView):
+    template_name = "core/login.html"
+
+    def form_invalid(self, form):
+        username = self.request.POST.get("username", "").strip()
+
+        if username:
+            User = get_user_model()
+            user = User.objects.filter(username__iexact=username, is_active=False).first()
+
+            if user:
+                self.request.session["pending_activation_email"] = user.email
+                messages.error(
+                    self.request,
+                    "Please verify your email before logging in. Check your inbox or spam folder, or resend the activation email."
+                )
+                return redirect("registration_pending")
+
+        return super().form_invalid(form)
 
 @ratelimit(key="ip", rate="10/h", method="POST", block=True)
 def register_view(request):
@@ -173,33 +257,8 @@ def register_view(request):
             user.is_active = False
             user.save()
 
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            activation_link = request.build_absolute_uri(
-                reverse("activate_account", kwargs={"uidb64": uid, "token": token})
-            )
-
             try:
-                send_mail(
-                    subject="Activate your ChinaZed account",
-                    message=f"""
-Hello {user.username},
-
-Thank you for registering with ChinaZed.
-
-Please click the link below to verify your email and activate your account:
-
-{activation_link}
-
-If you did not create this account, you can ignore this email.
-
-Regards,
-ChinaZed Team
-""",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
+                send_activation_email(request, user)
             except Exception:
                 user.delete()
                 messages.error(request, "We could not send the verification email. Please check the address or try again later.")
@@ -235,6 +294,28 @@ def registration_pending_view(request):
         "email": email,
         "dev_activation_link": dev_activation_link,
     })
+
+
+@ratelimit(key="post:email", rate="3/h", method="POST", block=True)
+def resend_activation_view(request):
+    if request.method != "POST":
+        return redirect("register")
+
+    email = request.POST.get("email", "").strip().lower()
+
+    if not email:
+        messages.error(request, "Please enter the email address you used to register.")
+        return redirect("registration_pending")
+
+    User = get_user_model()
+    user = User.objects.filter(email__iexact=email, is_active=False).first()
+
+    if user:
+        send_activation_email(request, user)
+        request.session["pending_activation_email"] = user.email
+
+    messages.success(request, "If that email has an unverified account, we sent a new activation link. Please check inbox and spam.")
+    return redirect("registration_pending")
 
 
 def activate_account_view(request, uidb64, token):

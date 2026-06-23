@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Product Quote · ChinaZed</title>
+    <style>
+        body { margin: 0; background: #f2f2f2; color: #1a1a1a; font-family: Arial, sans-serif; font-size: 14px; }
+        a { color: inherit; text-decoration: none; }
+        .header { background: #E5141A; color: #fff; padding: 15px 18px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { font-weight: 900; font-size: 26px; }
+        .header a { border: 1px solid rgba(255,255,255,.35); border-radius: 5px; padding: 8px 12px; font-size: 12px; font-weight: 800; }
+        .page { max-width: 920px; margin: 18px auto 40px; padding: 0 16px; }
+        .hero { background: linear-gradient(135deg, #111 0%, #2c2c2c 48%, #4A0B0D 100%); color: #fff; border-radius: 8px; padding: 24px; margin-bottom: 14px; }
+        .hero h1 { margin: 0 0 8px; font-size: 30px; }
+        .hero p { color: rgba(255,255,255,.76); line-height: 1.7; margin: 0; }
+        .platforms { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .platforms span { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); padding: 7px 11px; border-radius: 999px; font-weight: 800; font-size: 12px; }
+        .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+        .card-head { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; background: #fffafa; font-weight: 900; color: #E5141A; }
+        .card-body { padding: 20px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 12px; font-weight: 900; margin-bottom: 6px; color: #555; text-transform: uppercase; letter-spacing: .04em; }
+        .form-control { width: 100%; padding: 11px 12px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
+        textarea.form-control { resize: vertical; }
+        .hint { font-size: 12px; color: #888; margin-top: 5px; line-height: 1.5; }
+        .error { font-size: 12px; color: #B50F14; margin-top: 5px; }
+        .btn { width: 100%; border: none; background: #E5141A; color: #fff; border-radius: 5px; padding: 13px 16px; font-weight: 900; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #B50F14; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="{% url 'home' %}" class="brand">CHINAZED</a>
+        <a href="{% url 'profile' %}">My Orders</a>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <h1>Request any product from China</h1>
+            <p>Paste a product link, upload a screenshot if you have one, and tell us the size, colour, quantity, or budget. We will check availability and quote the Zambia landed price.</p>
+            <div class="platforms">
+                <span>Alibaba</span><span>Taobao</span><span>Temu</span><span>1688</span><span>Shein</span><span>Other</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-head">Product Quote Request</div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="{{ form.product_link.id_for_label }}">Product link</label>
+                        {{ form.product_link }}
+                        {% if form.product_link.errors %}<div class="error">{{ form.product_link.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.source_platform.id_for_label }}">Source platform</label>
+                        {{ form.source_platform }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.product_name.id_for_label }}">Product name</label>
+                        {{ form.product_name }}
+                        <div class="hint">Optional, but helpful if the link title is unclear.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.notes.id_for_label }}">Notes</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.screenshot.id_for_label }}">Screenshot</label>
+                        {{ form.screenshot }}
+                        <div class="hint">Optional. Upload a product screenshot if the link needs login or may expire.</div>
+                    </div>
+
+                    <button type="submit" class="btn">Submit Request</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

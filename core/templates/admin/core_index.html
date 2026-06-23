@@ -1,0 +1,32 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+    {% if chinazed_dashboard %}
+        <div class="module" style="margin-bottom:20px;">
+            <h2>ChinaZed Operations</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:14px;">
+                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px;">
+                    <div style="font-size:12px;color:#9a3412;font-weight:700;">Pending Orders</div>
+                    <div style="font-size:28px;font-weight:900;">{{ chinazed_dashboard.pending_orders }}</div>
+                </div>
+                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px;">
+                    <div style="font-size:12px;color:#991b1b;font-weight:700;">Unpaid Deposits</div>
+                    <div style="font-size:28px;font-weight:900;">{{ chinazed_dashboard.unpaid_deposits }}</div>
+                </div>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;">
+                    <div style="font-size:12px;color:#1d4ed8;font-weight:700;">Proofs Awaiting Review</div>
+                    <div style="font-size:28px;font-weight:900;">{{ chinazed_dashboard.payment_proofs }}</div>
+                </div>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;">
+                    <div style="font-size:12px;color:#166534;font-weight:700;">New Product Requests</div>
+                    <div style="font-size:28px;font-weight:900;">{{ chinazed_dashboard.product_requests }}</div>
+                </div>
+                <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:14px;">
+                    <div style="font-size:12px;color:#6d28d9;font-weight:700;">Delayed Orders</div>
+                    <div style="font-size:28px;font-weight:900;">{{ chinazed_dashboard.delayed_orders }}</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import SupplierProductRequest, Order
+from .models import CustomerProductRequest, SupplierProductRequest, Order
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -205,6 +205,40 @@ class SupplierProductRequestForm(forms.ModelForm):
                 )
 
         return cleaned_data
+
+
+class CustomerProductRequestForm(forms.ModelForm):
+    class Meta:
+        model = CustomerProductRequest
+        fields = [
+            "product_name",
+            "product_link",
+            "source_platform",
+            "notes",
+            "screenshot",
+        ]
+        widgets = {
+            "product_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Optional: product name or short description",
+            }),
+            "product_link": forms.URLInput(attrs={
+                "class": "form-control",
+                "placeholder": "Paste product link from Alibaba, Taobao, Temu, 1688, Shein...",
+            }),
+            "source_platform": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "notes": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Colour, size, quantity, budget, delivery notes, or anything we should check.",
+            }),
+            "screenshot": forms.ClearableFileInput(attrs={
+                "class": "form-control",
+                "accept": "image/*",
+            }),
+        }
 
 
 class OrderForm(forms.Form):

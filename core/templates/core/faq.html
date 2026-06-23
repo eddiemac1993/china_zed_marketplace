@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ · ChinaZed</title>
+    <style>
+        body { margin: 0; background: #f2f2f2; color: #1a1a1a; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.7; }
+        a { color: inherit; text-decoration: none; }
+        .header { background: #E5141A; color: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .brand { font-weight: 900; font-size: 26px; }
+        .header a { border: 1px solid rgba(255,255,255,.35); border-radius: 5px; padding: 8px 12px; font-size: 12px; font-weight: 800; }
+        .page { max-width: 900px; margin: 18px auto 40px; padding: 0 16px; }
+        .intro { background: #111; color: #fff; border-radius: 8px; padding: 24px; margin-bottom: 14px; }
+        .intro h1 { margin: 0 0 8px; font-size: 32px; }
+        .intro p { color: rgba(255,255,255,.72); margin: 0; }
+        .faq { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+        .item { padding: 18px 20px; border-bottom: 1px solid #f0f0f0; }
+        .item:last-child { border-bottom: none; }
+        .item h2 { margin: 0 0 7px; font-size: 17px; color: #E5141A; }
+        .item p { margin: 0; color: #555; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="{% url 'home' %}" class="brand">CHINAZED</a>
+        <a href="{% url 'request_product' %}">Request Product</a>
+    </header>
+    <main class="page">
+        <section class="intro">
+            <h1>Frequently Asked Questions</h1>
+            <p>Clear answers about deposits, delivery, product requests, balance payments, and order changes.</p>
+        </section>
+        <section class="faq">
+            <div class="item">
+                <h2>Why is the deposit 35%?</h2>
+                <p>The 35% deposit confirms your order and helps secure the product from the supplier before shipping begins. The balance is paid when the goods arrive and are ready for pickup or delivery.</p>
+            </div>
+            <div class="item">
+                <h2>How long does shipping take?</h2>
+                <p>China pre-orders usually show a 14-30 day delivery window. Some items can take longer because of supplier delays, shipping schedules, customs, or holidays.</p>
+            </div>
+            <div class="item">
+                <h2>Can I send my own product link?</h2>
+                <p>Yes. Use the product request form to send links from Alibaba, Taobao, Temu, 1688, Shein, or another supplier. We will check availability and prepare a Zambia price quote.</p>
+            </div>
+            <div class="item">
+                <h2>What if my item is unavailable?</h2>
+                <p>We confirm availability before final sourcing. If the item is unavailable, we can help find an alternative, adjust the order, or handle the deposit according to the order policy.</p>
+            </div>
+            <div class="item">
+                <h2>When do I pay the balance?</h2>
+                <p>The balance is paid when your China order arrives in Zambia and is ready for pickup or local delivery.</p>
+            </div>
+            <div class="item">
+                <h2>Why must I verify my email?</h2>
+                <p>Email verification prevents fake accounts and helps make sure order updates, activation links, and receipts go to the right customer.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -121,6 +121,16 @@
         .panel-head-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 20px; color: var(--red); letter-spacing: .5px; }
         .panel-body { padding: 18px; }
 
+        .status-summary {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            padding: 14px; border-bottom: 1px solid #F0F0F0; background: #FFFAF9;
+        }
+        .status-summary-card { background: #fff; border: 1px solid #F0E0E0; border-radius: 8px; padding: 12px; }
+        .status-summary-card .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; font-weight: 800; }
+        .status-summary-card .value { font-size: 13px; font-weight: 900; color: var(--ink); line-height: 1.35; }
+        .status-summary-card .value.red { color: var(--red); }
+        .status-summary-card .value.green { color: #00A854; }
+
         /* ── ORDER ITEMS ── */
         .order-item {
             display: flex; gap: 14px; padding: 14px;
@@ -239,6 +249,7 @@
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
             .order-grid { grid-template-columns: 1fr; }
+            .status-summary { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 640px) {
             .utility-bar { display: none; }
@@ -252,6 +263,7 @@
             .order-hero-text h2 { font-size: 18px; }
             .order-badge { font-size: 18px; }
             .order-hero-status { width: 100%; }
+            .status-summary { grid-template-columns: 1fr; }
             .actions-grid { grid-template-columns: 1fr; }
             .item-meta { grid-template-columns: repeat(3, 1fr); }
             .mobile-bottom-nav { display: block; }
@@ -413,6 +425,24 @@
             <div class="panel">
                 <div class="panel-head">
                     <span class="panel-head-title">🚚 TRACKING TIMELINE</span>
+                </div>
+                <div class="status-summary">
+                    <div class="status-summary-card">
+                        <div class="label">Current Step</div>
+                        <div class="value red">{{ order.get_status_display }}</div>
+                    </div>
+                    <div class="status-summary-card">
+                        <div class="label">Progress</div>
+                        <div class="value">{{ order.progress_percentage }}%</div>
+                    </div>
+                    <div class="status-summary-card">
+                        <div class="label">Deposit</div>
+                        <div class="value {% if order.deposit_confirmed %}green{% else %}red{% endif %}">{% if order.deposit_confirmed %}Confirmed{% else %}Pending{% endif %}</div>
+                    </div>
+                    <div class="status-summary-card">
+                        <div class="label">Estimated Arrival</div>
+                        <div class="value">{{ order.estimated_arrival_start }} - {{ order.estimated_arrival_end }}</div>
+                    </div>
                 </div>
                 <div class="timeline">
 

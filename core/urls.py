@@ -6,14 +6,16 @@ urlpatterns = [
     # Home
     path("", views.home, name="home"),
     path("about/", views.about, name="about"),
+    path("faq/", views.faq, name="faq"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),
 
     # Auth
     path("register/", views.register_view, name="register"),
     path("register/check-email/", views.registration_pending_view, name="registration_pending"),
+    path("register/resend-activation/", views.resend_activation_view, name="resend_activation"),
     path("activate/<uidb64>/<token>/", views.activate_account_view, name="activate_account"),
-    path("login/", auth_views.LoginView.as_view(template_name="core/login.html"), name="login"),
+    path("login/", views.ChinaZedLoginView.as_view(), name="login"),
     path("logout/", views.logout_view, name="logout"),
 
     # Profile
@@ -22,6 +24,7 @@ urlpatterns = [
     # Products
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),
     path("product/<slug:slug>/order/", views.place_order_view, name="place_order"),
+    path("request-product/", views.request_product_view, name="request_product"),
 
     # =========================
     # CART SYSTEM
