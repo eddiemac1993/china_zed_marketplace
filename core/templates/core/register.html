@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -317,6 +317,65 @@
             margin-top: 4px;
         }
 
+        .password-wrap {
+            position: relative;
+        }
+        .password-wrap input {
+            padding-right: 48px;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: transparent;
+            color: #777;
+            cursor: pointer;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background .15s, color .15s;
+        }
+        .password-toggle:hover {
+            background: #F0F0F0;
+            color: var(--red);
+        }
+
+        .terms-box {
+            background: #FFF8E1;
+            border: 1px solid #FFE082;
+            border-radius: 5px;
+            padding: 12px;
+            margin: 4px 0 14px;
+        }
+        .terms-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12px;
+            color: #555;
+            line-height: 1.55;
+            cursor: pointer;
+        }
+        form input.terms-checkbox {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            margin-top: 2px;
+            accent-color: var(--red);
+            cursor: pointer;
+        }
+        .terms-label a {
+            color: var(--red);
+            font-weight: 900;
+            text-decoration: underline;
+        }
+
         /* SUBMIT */
         .btn-submit {
             display: block;
@@ -474,7 +533,7 @@
             <div class="promo-badge">🔥 JOIN CHINAZED FREE</div>
             <h2 class="promo-title">Start ordering<br>from China today.</h2>
             <p class="promo-desc">
-                Create your free account to browse thousands of products, pay just 20% deposit, and get goods delivered from China directly to Zambia in 14–30 days.
+                Create your free account to browse thousands of products, pay just 35% deposit, and get goods delivered from China directly to Zambia in 14–30 days.
             </p>
             <div class="promo-grid">
                 <div class="promo-tile">
@@ -498,7 +557,7 @@
         <div class="promo-trust">
             <div class="promo-trust-item">
                 <span class="pt-icon">💰</span>
-                <span>20% deposit only</span>
+                <span>35% deposit only</span>
             </div>
             <div class="promo-trust-item">
                 <span class="pt-icon">✈️</span>
@@ -586,7 +645,10 @@
                 <div class="form-group">
                     <label class="form-label">Password</label>
 
-                    {{ form.password1 }}
+                    <div class="password-wrap">
+                        {{ form.password1 }}
+                        <button type="button" class="password-toggle" data-password-toggle="{{ form.password1.id_for_label }}" aria-label="Show password">👁</button>
+                    </div>
 
                     {% if form.password1.errors %}
                         <div class="input-hint" style="color:var(--red);">
@@ -602,11 +664,31 @@
                 <div class="form-group">
                     <label class="form-label">Confirm Password</label>
 
-                    {{ form.password2 }}
+                    <div class="password-wrap">
+                        {{ form.password2 }}
+                        <button type="button" class="password-toggle" data-password-toggle="{{ form.password2.id_for_label }}" aria-label="Show confirm password">👁</button>
+                    </div>
 
                     {% if form.password2.errors %}
                         <div class="input-hint" style="color:var(--red);">
                             {{ form.password2.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="terms-box">
+                    <label class="terms-label" for="{{ form.accept_terms.id_for_label }}">
+                        {{ form.accept_terms }}
+                        <span>
+                            I have read and agree to the
+                            <a href="{% url 'terms' %}" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+                            and
+                            <a href="{% url 'privacy' %}" target="_blank" rel="noopener">Privacy Policy</a>.
+                        </span>
+                    </label>
+                    {% if form.accept_terms.errors %}
+                        <div class="input-hint" style="color:var(--red);">
+                            {{ form.accept_terms.errors.0 }}
                         </div>
                     {% endif %}
                 </div>
@@ -635,7 +717,7 @@
             </div>
             <div class="step-item">
                 <div class="step-num">2</div>
-                <div class="step-text">Pay 20% deposit to order</div>
+                <div class="step-text">Pay 35% deposit to order</div>
             </div>
             <div class="step-item">
                 <div class="step-num">3</div>
@@ -653,6 +735,20 @@
         © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
     </div>
 </footer>
+
+<script>
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var input = document.getElementById(button.getAttribute('data-password-toggle'));
+            if (!input) return;
+
+            var showing = input.type === 'text';
+            input.type = showing ? 'password' : 'text';
+            button.textContent = showing ? '👁' : '🙈';
+            button.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+        });
+    });
+</script>
 
 </body>
 </html>

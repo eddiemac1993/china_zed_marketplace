@@ -17,6 +17,15 @@ class PaymentProofForm(forms.ModelForm):
         }
 
 class CustomUserRegistrationForm(UserCreationForm):
+    BLOCKED_EMAIL_DOMAINS = {
+        "10minutemail.com",
+        "guerrillamail.com",
+        "mailinator.com",
+        "tempmail.com",
+        "tempmail.net",
+        "yopmail.com",
+    }
+
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
@@ -46,9 +55,31 @@ class CustomUserRegistrationForm(UserCreationForm):
         })
     )
 
+    accept_terms = forms.BooleanField(
+        required=True,
+        error_messages={
+            "required": "You must accept the Terms & Conditions and Privacy Policy to create an account."
+        },
+        widget=forms.CheckboxInput(attrs={
+            "class": "terms-checkbox",
+        })
+    )
+
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2"]
+        fields = ["username", "email", "password1", "password2", "accept_terms"]
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        domain = email.rsplit("@", 1)[-1]
+
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+
+        if domain in self.BLOCKED_EMAIL_DOMAINS:
+            raise forms.ValidationError("Please use a permanent email address.")
+
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)

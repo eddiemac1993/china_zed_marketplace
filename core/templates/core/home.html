@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 {% load humanize %}
 
 <!DOCTYPE html>
@@ -672,6 +672,7 @@
     </div>
     <div class="drawer-section">
         <div class="drawer-section-title">Help</div>
+        <a href="{% url 'about' %}" class="drawer-link"><span class="di">ℹ</span> About ChinaZed</a>
         <a href="{% url 'order_policy' %}" class="drawer-link"><span class="di">📋</span> Order Policy</a>
         <a href="{% url 'supplier_submit_product' %}" class="drawer-link" style="color:var(--orange);font-weight:700;"><span class="di">🏪</span> Sell on ChinaZed</a>
     </div>
@@ -691,6 +692,7 @@
                 <a href="{% url 'register' %}" class="highlight">Register Free</a>
             {% endif %}
             <a href="{% url 'supplier_submit_product' %}" style="color:#FFA500;">Sell on ChinaZed</a>
+            <a href="{% url 'about' %}">About</a>
             <a href="{% url 'order_policy' %}">Policy</a>
         </div>
     </div>
@@ -750,6 +752,7 @@
             <a href="{% url 'home' %}" class="{% if not category_id and not product_type %}active{% endif %}">🏠 All</a>
             <a href="?type=local#results" class="{% if product_type == 'local' %}active{% endif %}">🇿🇲 Zambia Stock</a>
             <a href="?type=preorder#results" class="{% if product_type == 'preorder' %}active{% endif %}">🇨🇳 Pre-order</a>
+            <a href="{% url 'about' %}">ℹ About</a>
             {% for category in categories %}
                 <a href="?category={{ category.id }}#results" class="{% if category_id == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a>
             {% endfor %}
@@ -775,7 +778,7 @@
             <div class="hero-badge">🔥 HOT<small>DEALS</small></div>
             <div class="hero-text">
                 <h2>Buy Direct from China · Delivered to Zambia</h2>
-                <p>Pay only 20% deposit · Balance due on arrival · WhatsApp confirmation · 14–30 day shipping</p>
+                <p>Pay only 35% deposit · Balance due on arrival · WhatsApp confirmation · 14–30 day shipping</p>
             </div>
         </div>
         <div class="hero-chips">
@@ -784,70 +787,6 @@
             {% if not request.user.is_authenticated %}
                 <a href="{% url 'register' %}" class="hero-chip">📝 Register Free</a>
             {% endif %}
-        </div>
-    </div>
-
-    <!-- TRUST STRIP -->
-    <div class="trust-strip">
-        <div class="trust-item">
-            <div class="trust-icon">20%</div>
-            <div class="trust-text"><h4>20% deposit only</h4><p>Secure China pre-orders without paying the full amount upfront.</p></div>
-        </div>
-        <div class="trust-item">
-            <div class="trust-icon">✓</div>
-            <div class="trust-text"><h4>WhatsApp confirmation</h4><p>Orders are confirmed before sourcing and shipping begins.</p></div>
-        </div>
-        <div class="trust-item">
-            <div class="trust-icon">14-30</div>
-            <div class="trust-text"><h4>14-30 day delivery</h4><p>Clear estimated delivery window for China pre-orders.</p></div>
-        </div>
-        <div class="trust-item">
-            <div class="trust-icon">ZM</div>
-            <div class="trust-text"><h4>Local Zambia support</h4><p>Get local help with order updates, pickup, and delivery.</p></div>
-        </div>
-    </div>
-
-    <!-- REQUEST PRODUCT -->
-    <div class="request-panel">
-        <div class="request-copy">
-            <div class="request-kicker">Request any product from China</div>
-            <h3>Send us a product link and we will quote the Zambia price.</h3>
-            <p>Found something online but it is not listed yet? Share a product link from Alibaba, Taobao, Temu, 1688, Shein, or another China supplier. We will check availability, estimate shipping, and prepare a clear landed price in kwacha.</p>
-            <div class="request-sites">
-                <span>Alibaba</span><span>Taobao</span><span>Temu</span><span>1688</span><span>Shein</span>
-            </div>
-        </div>
-        <div class="request-action">
-            <a href="{% url 'register' %}">Create account to request a quote</a>
-            <div class="request-note">This keeps product requests linked to your profile, so quotes and order updates are easier to track.</div>
-        </div>
-    </div>
-
-    <!-- CUSTOMER REASSURANCE -->
-    <div class="reassurance-panel">
-        <div class="section-head">
-            <div class="section-head-left">
-                <span class="section-head-title">BUY WITH CLARITY</span>
-                <span class="section-head-sub">What happens after you order</span>
-            </div>
-        </div>
-        <div class="reassurance-grid">
-            <div class="reassurance-card">
-                <h4>How payment works</h4>
-                <p>Pre-order items start with a 20% deposit. Local stock can be paid for when checking out or as arranged after confirmation.</p>
-            </div>
-            <div class="reassurance-card">
-                <h4>When balance is paid</h4>
-                <p>The remaining balance is paid when your China order arrives and is ready for pickup or local delivery.</p>
-            </div>
-            <div class="reassurance-card">
-                <h4>If an item is unavailable</h4>
-                <p>We confirm availability before final sourcing. If a product is not available, we help find an alternative or adjust the order.</p>
-            </div>
-            <div class="reassurance-card">
-                <h4>Refunds and changes</h4>
-                <p>If an order cannot be fulfilled after confirmation, your deposit can be moved to another item or handled according to the order policy.</p>
-            </div>
         </div>
     </div>
 
@@ -935,7 +874,7 @@
                                 </div>
                                 <div class="price-label">Total price</div>
                                 <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                                <div class="price-deposit">20% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
+                                <div class="price-deposit">35% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
                                 {% if request.user.is_authenticated %}
                                     {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                                         <button disabled class="btn-cart btn-cart-disabled">Out of Stock</button>
@@ -1003,7 +942,7 @@
         <div class="section-head">
             <div class="section-head-left">
                 <span class="section-head-title">🇨🇳 PRE-ORDER FROM CHINA</span>
-                <span class="section-head-sub">Pay 20% deposit · Balance on arrival</span>
+                <span class="section-head-sub">Pay 35% deposit · Balance on arrival</span>
             </div>
             <a href="?type=preorder#results" class="section-head-more">View All ›</a>
         </div>
@@ -1025,7 +964,7 @@
                         </div>
                         <div class="price-label">Total price</div>
                         <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                        <div class="price-deposit">20% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
+                        <div class="price-deposit">35% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
                         {% if request.user.is_authenticated %}
                             <form method="POST" action="{% url 'add_to_cart' product.slug %}">{% csrf_token %}<button type="submit" class="btn-cart">Add to Cart</button></form>
                         {% else %}
@@ -1094,7 +1033,7 @@
                             </div>
                             <div class="price-label">Total price</div>
                             <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                            <div class="price-deposit">20% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
+                            <div class="price-deposit">35% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
                             {% if request.user.is_authenticated %}
                                 {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                                     <button disabled class="btn-cart btn-cart-disabled">Out of Stock</button>
@@ -1131,7 +1070,7 @@
             </div>
             <div class="how-step">
                 <div class="how-step-num">2</div>
-                <div class="how-step-info"><h4>Pay 20% Deposit</h4><p>Secure your order with just 20% upfront. Pay the balance when goods arrive.</p></div>
+                <div class="how-step-info"><h4>Pay 35% Deposit</h4><p>Secure your order with just 35% upfront. Pay the balance when goods arrive.</p></div>
             </div>
             <div class="how-step">
                 <div class="how-step-num">3</div>
@@ -1164,6 +1103,7 @@
             <a href="{% url 'home' %}">Home</a>
             <a href="?type=local#results">Local Stock</a>
             <a href="?type=preorder#results">Pre-order China</a>
+            <a href="{% url 'about' %}">About ChinaZed</a>
             <a href="{% url 'order_policy' %}">Order Policy</a>
             {% if request.user.is_authenticated %}
                 <a href="{% url 'profile' %}">Track Orders</a>

@@ -6,6 +6,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
 import uuid
 
+DEFAULT_DEPOSIT_PERCENTAGE = Decimal("35.00")
+
 
 def money(value):
     return Decimal(value or 0).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -24,7 +26,7 @@ class ExchangeRate(TimeStampedModel):
     rmb_to_zmw = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("3.20"))
     markup_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("35.00"))
     local_markup_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("80.00"))
-    deposit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("20.00"))
+    deposit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=DEFAULT_DEPOSIT_PERCENTAGE)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -165,7 +167,7 @@ class Product(TimeStampedModel):
 
     def deposit_amount(self):
         rate = self.active_exchange_rate()
-        percentage = rate.deposit_percentage if rate else Decimal("20.00")
+        percentage = rate.deposit_percentage if rate else DEFAULT_DEPOSIT_PERCENTAGE
         return money(self.selling_price() * (percentage / Decimal("100")))
 
     def balance_amount(self):
@@ -222,7 +224,7 @@ class Cart(TimeStampedModel):
         return money(sum(item.line_total() for item in self.items.all()))
 
     def deposit_amount(self):
-        return money(self.total_price() * Decimal("0.20"))
+        return money(self.total_price() * (DEFAULT_DEPOSIT_PERCENTAGE / Decimal("100")))
 
     def balance_amount(self):
         return money(self.total_price() - self.deposit_amount())
@@ -415,7 +417,7 @@ class Order(TimeStampedModel):
 
         self.total_price = money(total)
 
-        percentage = self.deposit_percentage_used or Decimal("20.00")
+        percentage = self.deposit_percentage_used or DEFAULT_DEPOSIT_PERCENTAGE
         self.deposit_amount = money(self.total_price * (percentage / Decimal("100")))
         self.balance_amount = money(self.total_price - self.deposit_amount)
 

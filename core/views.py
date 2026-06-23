@@ -1,12 +1,15 @@
 from urllib.parse import quote
 from django.utils import timezone
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import get_user_model, logout
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
 from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import send_mail
 from xhtml2pdf import pisa
 from .forms import OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm, PaymentProofForm
@@ -115,6 +118,24 @@ def home(request):
     })
 
 
+def about(request):
+    cart_count = 0
+    if request.user.is_authenticated:
+        cart_count = get_user_cart(request.user).total_items()
+
+    return render(request, "core/about.html", {
+        "cart_count": cart_count,
+    })
+
+
+def terms(request):
+    return render(request, "core/terms.html")
+
+
+def privacy(request):
+    return render(request, "core/privacy.html")
+
+
 def product_detail(request, slug):
     product = get_object_or_404(
         Product,
@@ -133,12 +154,11 @@ def product_detail(request, slug):
 
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
 from django.contrib import messages
 from django.core.mail import send_mail
 from django_ratelimit.decorators import ratelimit
 
-@ratelimit(key="ip", rate="3/h", block=True)
+@ratelimit(key="ip", rate="10/h", method="POST", block=True)
 def register_view(request):
 
     # HONEYPOT CHECK
@@ -149,31 +169,44 @@ def register_view(request):
         form = CustomUserRegistrationForm(request.POST)
 
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
 
-            if user.email:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            activation_link = request.build_absolute_uri(
+                reverse("activate_account", kwargs={"uidb64": uid, "token": token})
+            )
+
+            try:
                 send_mail(
-                    subject="Welcome to China to Zambia Marketplace",
+                    subject="Activate your ChinaZed account",
                     message=f"""
 Hello {user.username},
 
-Welcome to China to Zambia Marketplace.
+Thank you for registering with ChinaZed.
 
-Thank you for registering with us.
+Please click the link below to verify your email and activate your account:
 
-You can now browse products, place orders, track your orders, and contact us easily.
+{activation_link}
+
+If you did not create this account, you can ignore this email.
 
 Regards,
-China to Zambia Team
+ChinaZed Team
 """,
-                    from_email=None,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
+            except Exception:
+                user.delete()
+                messages.error(request, "We could not send the verification email. Please check the address or try again later.")
+                return redirect("register")
 
-            login(request, user)
-            messages.success(request, "Account created successfully.")
-            return redirect("home")
+            request.session["pending_activation_email"] = user.email
+            return redirect("registration_pending")
 
     else:
         form = CustomUserRegistrationForm()
@@ -181,6 +214,45 @@ China to Zambia Team
     return render(request, "core/register.html", {
         "form": form,
     })
+
+
+def registration_pending_view(request):
+    email = request.session.get("pending_activation_email", "")
+    dev_activation_link = ""
+
+    if settings.DEBUG and settings.EMAIL_BACKEND.endswith(".console.EmailBackend") and email:
+        User = get_user_model()
+        user = User.objects.filter(email__iexact=email, is_active=False).first()
+
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            dev_activation_link = request.build_absolute_uri(
+                reverse("activate_account", kwargs={"uidb64": uid, "token": token})
+            )
+
+    return render(request, "core/registration_pending.html", {
+        "email": email,
+        "dev_activation_link": dev_activation_link,
+    })
+
+
+def activate_account_view(request, uidb64, token):
+    User = get_user_model()
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        messages.success(request, "Your email has been verified. You can now log in.")
+        return redirect("login")
+
+    return render(request, "core/activation_invalid.html")
 
 def logout_view(request):
     logout(request)

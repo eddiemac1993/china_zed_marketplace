@@ -5,9 +5,14 @@ from . import views
 urlpatterns = [
     # Home
     path("", views.home, name="home"),
+    path("about/", views.about, name="about"),
+    path("terms/", views.terms, name="terms"),
+    path("privacy/", views.privacy, name="privacy"),
 
     # Auth
     path("register/", views.register_view, name="register"),
+    path("register/check-email/", views.registration_pending_view, name="registration_pending"),
+    path("activate/<uidb64>/<token>/", views.activate_account_view, name="activate_account"),
     path("login/", auth_views.LoginView.as_view(template_name="core/login.html"), name="login"),
     path("logout/", views.logout_view, name="logout"),
 

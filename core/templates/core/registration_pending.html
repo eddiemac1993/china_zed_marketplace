@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Your Email · ChinaZed</title>
+    <style>
+        body { margin: 0; min-height: 100vh; background: #f2f2f2; color: #1a1a1a; font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center; padding: 18px; }
+        .card { width: 100%; max-width: 520px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 28px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+        .brand { color: #E5141A; font-weight: 900; font-size: 30px; margin-bottom: 12px; }
+        .icon { width: 58px; height: 58px; border-radius: 50%; background: #FFF8E1; color: #B50F14; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; margin-bottom: 14px; }
+        h1 { margin: 0 0 10px; font-size: 26px; }
+        p { color: #666; line-height: 1.7; margin: 0 0 14px; }
+        .email { font-weight: 800; color: #1a1a1a; word-break: break-word; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 10px; padding: 11px 18px; background: #E5141A; color: #fff; border-radius: 5px; text-decoration: none; font-weight: 800; }
+        .hint { margin-top: 16px; font-size: 12px; color: #888; }
+        .dev-box { margin-top: 18px; padding: 14px; border-radius: 6px; background: #FFF8E1; border: 1px solid #FFE082; text-align: left; }
+        .dev-box strong { display: block; color: #7C4A00; margin-bottom: 6px; }
+        .dev-box p { font-size: 12px; margin-bottom: 10px; }
+        .dev-box a { color: #E5141A; font-weight: 900; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <div class="brand">CHINAZED</div>
+        <div class="icon">✓</div>
+        <h1>Check your email</h1>
+        {% if email %}
+            <p>We sent an activation link to <span class="email">{{ email }}</span>.</p>
+        {% else %}
+            <p>We sent an activation link to the email address you used to register.</p>
+        {% endif %}
+        <p>Click that link to verify your email and activate your account. You will not be able to log in until the email is verified.</p>
+        <a href="{% url 'login' %}" class="btn">Go to Login</a>
+        <div class="hint">If you do not see the email, check spam/junk or register again with the correct email address.</div>
+        {% if dev_activation_link %}
+            <div class="dev-box">
+                <strong>Local development mode</strong>
+                <p>Email sending is not configured, so Django printed the email to the local server log instead of sending it to the inbox.</p>
+                <p>Use this local activation link while testing:</p>
+                <a href="{{ dev_activation_link }}">{{ dev_activation_link }}</a>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>
