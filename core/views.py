@@ -353,7 +353,11 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    orders = Order.objects.filter(user=request.user).order_by("-order_date")
+    orders = (
+        Order.objects.filter(user=request.user)
+        .prefetch_related("items__product")
+        .order_by("-order_date")
+    )
 
     successful_orders = orders.filter(status="successful")
     cancelled_orders = orders.filter(status="cancelled")

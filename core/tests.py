@@ -180,3 +180,7 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(order.balance_amount, Decimal("561.60"))
         self.assertEqual(order.items.count(), 1)
         self.assertFalse(cart.items.exists())
+
+        profile_response = self.client.get(reverse("profile"))
+        self.assertContains(profile_response, "item-thumb")
+        self.assertContains(profile_response, product.name)

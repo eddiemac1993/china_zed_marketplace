@@ -91,16 +91,17 @@
         }
 
         /* BODY */
-        .page-body { max-width: 1100px; margin: 14px auto; padding: 0 16px 40px; }
+        .page-body { max-width: 1180px; margin: 16px auto; padding: 0 16px 44px; }
 
         /* HERO */
         .hero {
-            background: var(--red);
-            border-radius: var(--r);
-            padding: 20px 22px;
-            margin-bottom: 12px;
+            background: linear-gradient(135deg, #B50F14 0%, #E5141A 56%, #FF6600 100%);
+            border-radius: 12px;
+            padding: 24px 26px;
+            margin-bottom: 14px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 14px 36px rgba(181,15,20,.22);
         }
         .hero::after {
             content: '中赞';
@@ -135,6 +136,7 @@
             border: 1px solid var(--border);
             border-radius: var(--r);
             padding: 14px 16px;
+            box-shadow: 0 8px 22px rgba(0,0,0,.04);
         }
         .stat-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
         .stat-val {
@@ -172,8 +174,9 @@
         .order-card {
             background: var(--white);
             border: 1px solid var(--border);
-            border-radius: var(--r);
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 10px 26px rgba(0,0,0,.05);
         }
         .order-head {
             background: #FAFAFA;
@@ -207,34 +210,48 @@
         /* ORDER BODY GRID */
         .order-body {
             display: grid;
-            grid-template-columns: 72px 1fr 220px;
+            grid-template-columns: minmax(0, 1fr) 240px;
         }
-        .order-img {
-            width: 72px;
-            background: #F0F0F0;
-            border-right: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #CCC;
-            font-size: 10px;
-            min-height: 140px;
-            overflow: hidden;
-        }
-        .order-img img { width: 72px; height: 100%; object-fit: cover; display: block; }
         .order-info { padding: 12px 14px; border-right: 1px solid var(--border); }
 
         /* ITEMS LIST */
         .items-list { margin-bottom: 10px; }
         .item-row {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 78px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 12px;
             font-size: 12px;
-            padding: 4px 0;
+            padding: 9px 0;
             border-bottom: 1px solid #F5F5F5;
         }
         .item-row:last-child { border-bottom: none; }
-        .item-name { color: var(--ink); flex: 1; padding-right: 8px; line-height: 1.4; }
+        .item-thumb {
+            width: 78px;
+            height: 78px;
+            border-radius: 7px;
+            overflow: hidden;
+            background: #F3F3F3;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #B8B8B8;
+            font-size: 10px;
+            text-align: center;
+        }
+        .item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .item-main { min-width: 0; }
+        .item-name {
+            display: block;
+            color: var(--ink);
+            font-weight: 800;
+            line-height: 1.35;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; color: var(--muted); font-size: 10px; }
+        .item-pill { background: #F7F7F7; border: 1px solid #ECECEC; border-radius: 999px; padding: 3px 7px; font-weight: 700; }
         .item-price { font-weight: 700; color: var(--red); white-space: nowrap; }
 
         /* PROGRESS */
@@ -327,10 +344,17 @@
         }
         @media (max-width: 640px) {
             .order-body { grid-template-columns: 1fr; }
-            .order-img { width: 100%; height: 120px; min-height: unset; border-right: none; border-bottom: 1px solid var(--border); }
+            .order-info { border-right: none; }
             .order-side { border-top: 1px solid var(--border); }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .top-bar .danger { display: none; }
+            .main-header { align-items: flex-start; gap: 12px; }
+            .hdr-btn { padding: 8px 10px; }
+            .item-row { grid-template-columns: 72px minmax(0, 1fr); }
+            .item-thumb { width: 72px; height: 72px; }
+            .item-price { grid-column: 2; justify-self: start; margin-top: -6px; }
+            .progress { grid-template-columns: repeat(2, 1fr); }
+            .arrival-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -438,24 +462,31 @@
 
                 <!-- ORDER BODY -->
                 <div class="order-body">
-
-                    <!-- IMAGE -->
-                    <div class="order-img">
-                        {% with first_item=order.items.first %}
-                            {% if first_item and first_item.product.image %}
-                                <img src="{{ first_item.product.image.url }}" alt="{{ first_item.product_name }}">
-                            {% else %}
-                                No Image
-                            {% endif %}
-                        {% endwith %}
-                    </div>
-
                     <!-- INFO -->
                     <div class="order-info">
                         <div class="items-list">
                             {% for item in order.items.all %}
                                 <div class="item-row">
-                                    <span class="item-name">{{ item.quantity }} × {{ item.product_name }}</span>
+                                    <a class="item-thumb" href="{% url 'product_detail' item.product.slug %}">
+                                        {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" loading="lazy">
+                                        {% else %}
+                                            No Image
+                                        {% endif %}
+                                    </a>
+                                    <div class="item-main">
+                                        <a class="item-name" href="{% url 'product_detail' item.product.slug %}">
+                                            {{ item.product_name }}
+                                        </a>
+                                        <div class="item-meta">
+                                            <span class="item-pill">Qty {{ item.quantity }}</span>
+                                            {% if item.product_type == "local" %}
+                                                <span class="item-pill">Zambia stock</span>
+                                            {% else %}
+                                                <span class="item-pill">China pre-order</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     <span class="item-price">K{{ item.line_total|floatformat:0|intcomma }}</span>
                                 </div>
                             {% empty %}
