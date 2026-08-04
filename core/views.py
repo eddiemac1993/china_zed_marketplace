@@ -1,4 +1,4 @@
-import json
+﻿import json
 import requests
 from django.utils import timezone
 from django.contrib import messages
@@ -187,7 +187,7 @@ ChinaZed Team
     return activation_link
 
 
-@login_required
+@login_required(login_url="login")
 def upload_payment_proof_view(request, order_id):
     order = get_object_or_404(
         Order,
@@ -312,7 +312,7 @@ def product_detail(request, slug):
     })
 
 
-@login_required
+@login_required(login_url="login")
 def request_product_view(request):
     if request.method == "POST":
         form = CustomerProductRequestForm(request.POST, request.FILES)
@@ -339,6 +339,9 @@ from django.core.mail import send_mail
 
 class ChinaZedLoginView(LoginView):
     template_name = "core/login.html"
+
+    def get_success_url(self):
+        return reverse("profile")
 
     def form_invalid(self, form):
         username = self.request.POST.get("username", "").strip()
@@ -455,7 +458,7 @@ def logout_view(request):
     return redirect("home")
 
 
-@login_required
+@login_required(login_url="login")
 def profile_view(request):
     orders = (
         Order.objects.filter(user=request.user)
@@ -492,7 +495,7 @@ def profile_view(request):
     })
 
 
-@login_required
+@login_required(login_url="login")
 def add_to_cart_view(request, slug):
     product = get_object_or_404(
         Product,
@@ -540,7 +543,7 @@ def add_to_cart_view(request, slug):
     return redirect("cart")
 
 
-@login_required
+@login_required(login_url="login")
 def cart_view(request):
     cart = get_user_cart(request.user)
     cart_items = cart.items.select_related("product", "product__category")
@@ -552,7 +555,7 @@ def cart_view(request):
     })
 
 
-@login_required
+@login_required(login_url="login")
 def update_cart_item_view(request, item_id):
     cart = get_user_cart(request.user)
 
@@ -591,7 +594,7 @@ def update_cart_item_view(request, item_id):
     return redirect("cart")
 
 
-@login_required
+@login_required(login_url="login")
 def remove_cart_item_view(request, item_id):
     cart = get_user_cart(request.user)
 
@@ -606,7 +609,7 @@ def remove_cart_item_view(request, item_id):
     return redirect("cart")
 
 
-@login_required
+@login_required(login_url="login")
 def clear_cart_view(request):
     cart = get_user_cart(request.user)
     cart.clear()
@@ -614,7 +617,7 @@ def clear_cart_view(request):
     return redirect("cart")
 
 
-@login_required
+@login_required(login_url="login")
 def checkout_cart_view(request):
     cart = get_user_cart(request.user)
     cart_items = cart.items.select_related("product")
@@ -746,7 +749,7 @@ Order Link:
     })
 
 
-@login_required
+@login_required(login_url="login")
 def place_order_view(request, slug):
     product = get_object_or_404(
         Product,
@@ -865,7 +868,7 @@ Order Link:
     })
 
 
-@login_required
+@login_required(login_url="login")
 def order_detail_view(request, order_id):
     try:
         order = Order.objects.get(
@@ -882,7 +885,7 @@ def order_detail_view(request, order_id):
     })
 
 
-@login_required
+@login_required(login_url="login")
 def receipt_view(request, order_id):
     order = get_object_or_404(
         Order,
@@ -906,7 +909,7 @@ def receipt_view(request, order_id):
     })
 
 
-@login_required
+@login_required(login_url="login")
 def receipt_pdf_view(request, order_id):
     order = get_object_or_404(
         Order,
