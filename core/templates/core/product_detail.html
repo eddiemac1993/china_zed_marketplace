@@ -488,12 +488,12 @@
             grid-template-columns: 1fr 1fr;
             gap: 8px;
         }
-        .btn-whatsapp {
+        .btn-ai-assistant {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            background: #25D366;
+            background: linear-gradient(135deg, var(--red), var(--orange));
             color: #fff;
             border: none;
             padding: 11px 0;
@@ -505,7 +505,7 @@
             text-align: center;
             transition: background .15s;
         }
-        .btn-whatsapp:hover { background: #1DA851; }
+        .btn-ai-assistant:hover { background: var(--red-dark); }
         .btn-buy-now {
             display: flex;
             align-items: center;
@@ -667,7 +667,7 @@
         .footer-bottom { border-top: 1px solid #2D2D2D; padding: 14px 20px; text-align: center; font-size: 11px; color: #444; max-width: 1280px; margin: 0 auto; }
 
         /* ── FLOATING ── */
-        .wa-btn { position: fixed; bottom: 76px; right: 16px; background: #25D366; color: #fff; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 16px rgba(37,211,102,.45); z-index: 300; transition: transform .15s; }
+        .wa-btn { position: fixed; bottom: 76px; right: 16px; background: linear-gradient(135deg, var(--red), var(--orange)); color: #fff; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; box-shadow: 0 4px 16px rgba(229,20,26,.42); z-index: 300; transition: transform .15s; }
         .wa-btn:hover { transform: scale(1.1); }
         .back-top { position: fixed; bottom: 16px; right: 16px; background: rgba(0,0,0,.45); color: #fff; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 300; cursor: pointer; transition: background .15s; }
         .back-top:hover { background: var(--red); }
@@ -968,8 +968,8 @@
                         </form>
 
                         <div class="btn-row">
-                            <a href="https://wa.me/260969274458?text=Hello%20I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                               target="_blank" class="btn-whatsapp">💬 Ask on WhatsApp</a>
+                            <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
+                               class="btn-ai-assistant">AI Ask Assistant</a>
 
                             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                                 <button disabled class="btn-buy-now" style="opacity:.5; cursor:not-allowed;">Buy Now</button>
@@ -985,15 +985,15 @@
                     {% else %}
                         <a href="{% url 'login' %}" class="btn-login-cta">🔑 Login to Add to Cart</a>
                         <div class="btn-row" style="margin-top:8px;">
-                            <a href="https://wa.me/260969274458?text=Hello%20I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                               target="_blank" class="btn-whatsapp">💬 Ask on WhatsApp</a>
+                            <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
+                               class="btn-ai-assistant">AI Ask Assistant</a>
                             <a href="{% url 'register' %}" class="btn-buy-now">📝 Register Free</a>
                         </div>
                     {% endif %}
 
                     <div class="trust-pills">
                         <span class="trust-pill">✅ 35% Deposit Only</span>
-                        <span class="trust-pill">💬 WhatsApp Confirm</span>
+                        <span class="trust-pill">💬 AI Assistant</span>
                         <span class="trust-pill">📦 Real-time Tracking</span>
                     </div>
 
@@ -1113,7 +1113,7 @@
 </footer>
 
 <!-- FLOATING -->
-<a href="https://wa.me/260969274458" class="wa-btn" title="WhatsApp" aria-label="WhatsApp">💬</a>
+<a href="{% url 'assistant' %}" class="wa-btn" title="AI Assistant" aria-label="AI Assistant">AI</a>
 <div class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
 
 <!-- MOBILE BOTTOM NAV -->

@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -175,7 +175,7 @@
     <div class="policy-card">
         <div class="policy-head"><div class="policy-head-title">1. Order Confirmation</div></div>
         <div class="policy-body">
-            <p>After placing an order on the website, the customer must confirm the order through WhatsApp. Orders are only processed after manual confirmation to ensure accuracy and availability.</p>
+            <p>After placing an order on the website, ChinaZed staff reviews the order details before processing to ensure accuracy and availability.</p>
         </div>
     </div>
 
@@ -237,7 +237,7 @@
 
     <div class="cta-row">
         <a href="{% url 'home' %}" class="btn btn-home">← Back to Home</a>
-        <a href="https://wa.me/260969274458" target="_blank" class="btn btn-wa">💬 Ask on WhatsApp</a>
+        <a href="{% url 'assistant' %}" class="btn btn-wa">AI Ask Assistant</a>
     </div>
 
 </div>

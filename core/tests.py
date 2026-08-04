@@ -1,4 +1,5 @@
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -53,7 +54,7 @@ class MarketplaceFlowTests(TestCase):
         )
 
     def test_public_pages_load(self):
-        for url_name in ["home", "about", "faq", "register", "terms", "privacy", "registration_pending"]:
+        for url_name in ["home", "about", "faq", "register", "terms", "privacy", "registration_pending", "assistant"]:
             with self.subTest(url_name=url_name):
                 response = self.client.get(reverse(url_name))
                 self.assertEqual(response.status_code, 200)
@@ -71,6 +72,17 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/javascript")
         self.assertEqual(response["Service-Worker-Allowed"], "/")
         self.assertContains(response, "chinazed-app-v1")
+
+    @patch.dict("os.environ", {"OPENAI_API_KEY": ""})
+    def test_assistant_chat_returns_fallback_reply_without_api_key(self):
+        response = self.client.post(
+            reverse("assistant_chat"),
+            data='{"message":"How does the deposit work?"}',
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("35% deposit", response.json()["reply"])
 
     def test_product_uses_35_percent_deposit(self):
         product = self.create_preorder_product()
@@ -170,8 +182,7 @@ class MarketplaceFlowTests(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(response["Location"].startswith("https://wa.me/"))
+        self.assertRedirects(response, reverse("order_detail", kwargs={"order_id": Order.objects.get(user=user).id}))
 
         order = Order.objects.get(user=user)
         self.assertEqual(order.total_price, Decimal("864.00"))

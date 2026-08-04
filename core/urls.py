@@ -10,6 +10,8 @@ urlpatterns = [
     path("faq/", views.faq, name="faq"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),
+    path("assistant/", views.assistant_view, name="assistant"),
+    path("assistant/chat/", views.assistant_chat_view, name="assistant_chat"),
 
     # Auth
     path("register/", views.register_view, name="register"),

@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 {% load humanize %}
 
 <!DOCTYPE html>
@@ -397,7 +397,7 @@
     <div class="hero">
         <div class="hero-label">Welcome back</div>
         <div class="hero-name">{{ request.user.username }}</div>
-        <div class="hero-desc">View your order status, confirm on WhatsApp, and generate receipts once goods arrive.</div>
+        <div class="hero-desc">View your order status, ask the AI assistant for help, and generate receipts once goods arrive.</div>
     </div>
 
     <!-- STATS -->
@@ -548,8 +548,8 @@
                         </div>
 
                         <div class="side-btns">
-                            <a href="https://wa.me/260969274458?text=Hello,%20I%20want%20to%20confirm%20my%20order.%0A%0AOrder%20ID:%20{{ order.id }}%0ATotal:%20K{{ order.total_price|floatformat:2 }}%0ADeposit:%20K{{ order.deposit_amount|floatformat:2 }}%0ABalance:%20K{{ order.balance_amount|floatformat:2 }}%0APhone:%20{{ order.customer_phone }}"
-                               target="_blank" class="btn btn-wa">💬 Confirm on WhatsApp</a>
+                            <a href="{% url 'assistant' %}?message=Help%20me%20with%20Order%20%23{{ order.id }}"
+                               class="btn btn-wa">AI Ask Assistant</a>
                             <a href="{% url 'order_detail' order.id %}" class="btn btn-dark">View Details</a>
                             {% if order.status == "arrived" or order.status == "ready" or order.status == "successful" %}
                                 <a href="{% url 'receipt' order.id %}" class="btn btn-receipt">🧾 Generate Receipt</a>

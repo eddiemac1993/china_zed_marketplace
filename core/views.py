@@ -1,17 +1,20 @@
-from urllib.parse import quote
+import json
+import requests
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
+from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import CustomerProductRequestForm, OrderForm, SupplierProductRequestForm, CustomUserRegistrationForm, PaymentProofForm
 from .models import (
@@ -34,6 +37,108 @@ import textwrap
 
 WHATSAPP_NUMBER = "260969274458"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
+
+
+AI_ASSISTANT_SYSTEM_PROMPT = """
+You are the ChinaZed Marketplace customer assistant for buyers in Zambia.
+Answer clearly and politely. Keep replies short and practical.
+
+Business rules:
+- China pre-orders use a 35% deposit.
+- Balance is paid when the order arrives and is ready for pickup or local delivery.
+- China pre-order delivery estimate is usually 14 to 30 days.
+- Customers can request a product quote from Alibaba, Taobao, Temu, 1688, Shein, or another supplier.
+- If an item is unavailable, ChinaZed helps find an alternative or adjusts the order.
+- Refunds or changes follow the order policy.
+- Do not promise exact availability, final pricing, or delivery dates without staff confirmation.
+- If a customer needs account-specific changes, payment verification, refund approval, or urgent support, tell them staff will review it.
+"""
+
+
+def fallback_assistant_reply(message):
+    text = message.lower()
+
+    if "deposit" in text or "pay" in text:
+        return "ChinaZed pre-orders start with a 35% deposit. The balance is paid when your order arrives and is ready for pickup or local delivery."
+
+    if "delivery" in text or "arrive" in text or "shipping" in text:
+        return "Most China pre-orders have an estimated delivery window of 14 to 30 days. You can track your order progress from your profile after ordering."
+
+    if "request" in text or "quote" in text or "alibaba" in text or "taobao" in text or "temu" in text or "1688" in text or "shein" in text:
+        return "You can request any product from China by sending the product link through the Request Product page. ChinaZed will check availability, shipping, and quote the Zambia price."
+
+    if "refund" in text or "unavailable" in text or "change" in text:
+        return "If an item is unavailable after review, ChinaZed can help find an alternative, adjust the order, or handle the deposit according to the order policy."
+
+    return "I can help with ChinaZed deposits, delivery, product requests, order tracking, balances, and refunds. What would you like to know?"
+
+
+def assistant_view(request):
+    cart_count = 0
+    if request.user.is_authenticated:
+        cart_count = get_user_cart(request.user).total_items()
+
+    return render(request, "core/assistant.html", {
+        "cart_count": cart_count,
+        "initial_message": request.GET.get("message", "").strip(),
+    })
+
+
+@require_POST
+@ratelimit(key="ip", rate="30/h", method="POST", block=True)
+def assistant_chat_view(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        payload = request.POST
+
+    message = (payload.get("message") or "").strip()
+
+    if not message:
+        return JsonResponse({
+            "reply": "Please type your question so I can help."
+        })
+
+    context_lines = []
+    if request.user.is_authenticated:
+        recent_orders = Order.objects.filter(user=request.user).order_by("-order_date")[:3]
+        for order in recent_orders:
+            context_lines.append(
+                f"Order #{order.id}: status {order.get_status_display()}, total K{order.total_price}, "
+                f"deposit K{order.deposit_amount}, balance K{order.balance_amount}."
+            )
+
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        return JsonResponse({"reply": fallback_assistant_reply(message)})
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                "messages": [
+                    {"role": "system", "content": AI_ASSISTANT_SYSTEM_PROMPT},
+                    {"role": "system", "content": "\n".join(context_lines) if context_lines else "No signed-in order context."},
+                    {"role": "user", "content": message},
+                ],
+                "temperature": 0.3,
+                "max_tokens": 240,
+            },
+            timeout=20,
+        )
+        response.raise_for_status()
+        data = response.json()
+        reply = data["choices"][0]["message"]["content"].strip()
+    except Exception:
+        reply = fallback_assistant_reply(message)
+
+    return JsonResponse({"reply": reply})
 
 
 def service_worker_view(request):
@@ -230,7 +335,6 @@ def request_product_view(request):
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.mail import send_mail
-from django_ratelimit.decorators import ratelimit
 
 
 class ChinaZedLoginView(LoginView):
@@ -623,29 +727,8 @@ Order Link:
                 fail_silently=True,
             )
 
-            whatsapp_message = f"""
-Hello, I have placed an order on China Zed Marketplace.
-
-Order ID: #{order.id}
-Customer: {request.user.username}
-
-Items:
-{item_lines}
-
-Total Price: K{order.total_price}
-Deposit Required: K{order.deposit_amount}
-Balance on Arrival: K{order.balance_amount}
-Phone: {order.customer_phone}
-Expected Arrival: {order.estimated_arrival_start} to {order.estimated_arrival_end}
-
-Please confirm availability and deposit instructions.
-
-Track here:
-{order_link}
-"""
-
-            whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(whatsapp_message)}"
-            return redirect(whatsapp_url)
+            messages.success(request, "Order placed successfully. You can track it here and ask the AI assistant if you need help.")
+            return redirect("order_detail", order_id=order.id)
 
     else:
         form = OrderForm()
@@ -765,28 +848,8 @@ Order Link:
                 fail_silently=True,
             )
 
-            whatsapp_message = f"""
-Hello, I have placed an order on China Zed Marketplace.
-
-Order ID: #{order.id}
-Customer: {request.user.username}
-Product: {product.name}
-Quantity: 1
-Total Price: K{order.total_price}
-Deposit Required: K{order.deposit_amount}
-Balance on Arrival: K{order.balance_amount}
-Phone: {order.customer_phone}
-Expected Arrival: {order.estimated_arrival_start} to {order.estimated_arrival_end}
-
-Please confirm availability and deposit instructions.
-
-Track here:
-{order_link}
-"""
-
-            whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(whatsapp_message)}"
-
-            return redirect(whatsapp_url)
+            messages.success(request, "Order placed successfully. You can track it here and ask the AI assistant if you need help.")
+            return redirect("order_detail", order_id=order.id)
 
     else:
         form = OrderForm()
@@ -1187,7 +1250,7 @@ def save_product_image_view(request, slug):
     Recommended output:
     - JPEG
     - 2160 x 3200
-    - easier to share on WhatsApp
+    - easier to share with customers
     - lighter than huge PNG files
     """
 
@@ -1594,7 +1657,7 @@ def save_product_image_view(request, slug):
         ("SECURE", "Safe Orders", "Trusted process"),
         ("GUARANTEE", "Pre-order Care", "We source carefully"),
         ("DELIVERY", "Zambia Delivery", "Clear ETA guidance"),
-        ("SUPPORT", "WhatsApp Help", "Ask before buying"),
+        ("SUPPORT", "AI Help", "Ask before buying"),
     ]
 
     tx = p(75)
@@ -1620,10 +1683,8 @@ def save_product_image_view(request, slug):
         tx += p(240)
 
     # =========================
-    # WHATSAPP SECTION
+    # SUPPORT SECTION
     # =========================
-
-    whatsapp_number = "+260 969 274 458"
 
     wa_y = p(1240)
 
@@ -1635,7 +1696,7 @@ def save_product_image_view(request, slug):
 
     draw.text(
         (p(78), wa_y + p(22)),
-        "Order or Ask on WhatsApp",
+        "Order or Ask AI Assistant",
         font=bold,
         fill=WHITE
     )
@@ -1648,7 +1709,7 @@ def save_product_image_view(request, slug):
 
     draw.text(
         (p(78), wa_y + p(86)),
-        whatsapp_number,
+        "chinatozambia.org",
         font=big,
         fill=WHITE
     )
@@ -1754,7 +1815,7 @@ def save_product_image_view(request, slug):
 
     draw.text(
         (p(80), p(1530)),
-        "Fast sourcing • Zambia delivery • WhatsApp support",
+        "Fast sourcing • Zambia delivery • AI support",
         font=tiny,
         fill=WHITE
     )
@@ -1765,7 +1826,7 @@ def save_product_image_view(request, slug):
 
     buffer = BytesIO()
 
-    # JPEG is better for WhatsApp and faster downloads.
+    # JPEG is faster for downloads and sharing.
     poster.save(
         buffer,
         format="JPEG",

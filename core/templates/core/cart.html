@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 {% load humanize %}
 
 <!DOCTYPE html>
@@ -735,7 +735,7 @@
             position: fixed;
             bottom: 76px;
             right: 16px;
-            background: #25D366;
+            background: linear-gradient(135deg, var(--red), var(--orange));
             color: #fff;
             border-radius: 50%;
             width: 50px;
@@ -743,8 +743,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 16px rgba(37,211,102,.45);
+            font-size: 16px;
+            font-weight: 900;
+            box-shadow: 0 4px 16px rgba(229,20,26,.42);
             z-index: 300;
             transition: transform .15s;
         }
@@ -1093,7 +1094,7 @@
         <div class="how-item">
             <div class="how-num">2</div>
             <div class="how-text">
-                <h4>WhatsApp Confirm</h4>
+                <h4>AI Assistant</h4>
                 <p>We contact you to confirm details</p>
             </div>
         </div>
@@ -1166,7 +1167,7 @@
 </footer>
 
 <!-- FLOATING -->
-<a href="https://wa.me/260969274458" class="wa-btn" title="Chat on WhatsApp" aria-label="WhatsApp">💬</a>
+<a href="{% url 'assistant' %}" class="wa-btn" title="AI Assistant" aria-label="AI Assistant">AI</a>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-bottom-nav">

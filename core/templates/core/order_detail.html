@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 {% load humanize %}
 
 <!DOCTYPE html>
@@ -243,7 +243,7 @@
         .footer-bottom { padding: 16px 20px; text-align: center; font-size: 11px; color: #333; max-width: 1300px; margin: 0 auto; }
 
         /* ── FLOATING ── */
-        .wa-btn { position: fixed; bottom: 80px; right: 18px; background: #25D366; color: #fff; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 18px rgba(37,211,102,.5); z-index: 300; transition: transform .15s; }
+        .wa-btn { position: fixed; bottom: 80px; right: 18px; background: linear-gradient(135deg, var(--red), var(--orange)); color: #fff; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; box-shadow: 0 4px 18px rgba(229,20,26,.42); z-index: 300; transition: transform .15s; }
         .wa-btn:hover { transform: scale(1.1); }
 
         /* ── RESPONSIVE ── */
@@ -468,7 +468,7 @@
                         </div>
                         <div class="timeline-content">
                             <h4>Confirmed</h4>
-                            <p>Order confirmed after WhatsApp / deposit verification.</p>
+                            <p>Order confirmed after staff / deposit verification.</p>
                         </div>
                     </div>
 
@@ -620,9 +620,9 @@
                             </span>
                         {% endif %}
 
-                        <a href="https://wa.me/260969274458?text=Hello,%20I%20want%20to%20ask%20about%20Order%20%23{{ order.id }}"
-                           target="_blank" class="action-btn green">
-                            💬 WhatsApp
+                        <a href="{% url 'assistant' %}?message=Help%20me%20with%20Order%20%23{{ order.id }}"
+                           class="action-btn green">
+                            AI Assistant
                         </a>
 
                         <a href="{% url 'profile' %}" class="action-btn dark">
@@ -658,7 +658,7 @@
 </footer>
 
 <!-- FLOATING -->
-<a href="https://wa.me/260969274458" class="wa-btn" title="Chat on WhatsApp">💬</a>
+<a href="{% url 'assistant' %}" class="wa-btn" title="AI Assistant">AI</a>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-bottom-nav">
@@ -673,8 +673,8 @@
         <a href="{% url 'cart' %}" class="mbn-item">
             <span class="mbn-icon">🛒</span><span>Cart</span>
         </a>
-        <a href="https://wa.me/260969274458?text=Order%20%23{{ order.id }}" class="mbn-item">
-            <span class="mbn-icon">💬</span><span>WhatsApp</span>
+        <a href="{% url 'assistant' %}?message=Help%20me%20with%20Order%20%23{{ order.id }}" class="mbn-item">
+            <span class="mbn-icon">AI</span><span>Assistant</span>
         </a>
         {% else %}
         <a href="{% url 'login' %}" class="mbn-item">
