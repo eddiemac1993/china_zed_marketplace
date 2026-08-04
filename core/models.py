@@ -353,6 +353,11 @@ class CustomerProductRequest(TimeStampedModel):
     screenshot = models.ImageField(upload_to="customer_product_requests/", blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
     quoted_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    quoted_deposit = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    estimated_delivery_days = models.CharField(max_length=40, blank=True, default="14-30 days")
+    quoted_at = models.DateTimeField(blank=True, null=True)
+    customer_message = models.TextField(blank=True)
+    customer_notified_at = models.DateTimeField(blank=True, null=True)
     admin_note = models.TextField(blank=True)
 
     class Meta:
@@ -365,6 +370,15 @@ class CustomerProductRequest(TimeStampedModel):
     def __str__(self):
         label = self.product_name or self.product_link
         return f"{label} - {self.user.username}"
+
+    def save(self, *args, **kwargs):
+        if self.quoted_price and not self.quoted_deposit:
+            self.quoted_deposit = money(self.quoted_price * (DEFAULT_DEPOSIT_PERCENTAGE / Decimal("100")))
+
+        if self.status == "quoted" and self.quoted_price and not self.quoted_at:
+            self.quoted_at = timezone.now()
+
+        super().save(*args, **kwargs)
 
 
 class Order(TimeStampedModel):

@@ -465,6 +465,10 @@ def profile_view(request):
 
     successful_orders = orders.filter(status="successful")
     cancelled_orders = orders.filter(status="cancelled")
+    product_requests = CustomerProductRequest.objects.filter(
+        user=request.user,
+        is_deleted=False,
+    ).order_by("-created_at")
 
     delayed_orders_count = 0
     active_orders_count = 0
@@ -483,6 +487,7 @@ def profile_view(request):
         "cancelled_orders": cancelled_orders,
         "delayed_orders_count": delayed_orders_count,
         "active_orders_count": active_orders_count,
+        "product_requests": product_requests,
         "cart_count": cart_count,
     })
 

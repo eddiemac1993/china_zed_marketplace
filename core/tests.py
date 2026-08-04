@@ -167,6 +167,29 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(product_request.product_name, "Running shoes")
         self.assertEqual(product_request.status, "new")
 
+    def test_quoted_product_request_calculates_deposit_and_shows_on_profile(self):
+        user = self.create_user()
+        product_request = CustomerProductRequest.objects.create(
+            user=user,
+            product_name="Smart watch",
+            product_link="https://www.temu.com/example",
+            source_platform="temu",
+            status="quoted",
+            quoted_price=Decimal("1000.00"),
+            customer_message="Quote includes estimated shipping to Zambia.",
+        )
+
+        product_request.refresh_from_db()
+        self.assertEqual(product_request.quoted_deposit, Decimal("350.00"))
+        self.assertIsNotNone(product_request.quoted_at)
+
+        self.client.force_login(user)
+        response = self.client.get(reverse("profile"))
+
+        self.assertContains(response, "Smart watch")
+        self.assertContains(response, "K1,000")
+        self.assertContains(response, "K350")
+
     def test_cart_checkout_creates_order_with_35_percent_deposit(self):
         user = self.create_user()
         product = self.create_preorder_product()

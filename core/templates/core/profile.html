@@ -169,6 +169,53 @@
         }
         .section-more:hover { border-color: var(--red); color: var(--red); }
 
+        /* QUOTE REQUESTS */
+        .requests-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 26px rgba(0,0,0,.05);
+        }
+        .request-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            padding: 14px 16px;
+            border-top: 1px solid #F3F3F3;
+        }
+        .request-card:first-child { border-top: none; }
+        .request-name { font-weight: 900; font-size: 13px; margin-bottom: 4px; }
+        .request-meta { color: var(--muted); font-size: 11px; line-height: 1.6; word-break: break-word; }
+        .quote-box {
+            min-width: 190px;
+            background: #FFF8F2;
+            border: 1px solid #FFE0C5;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: right;
+        }
+        .quote-price { font-family: 'Barlow Condensed', sans-serif; color: var(--red); font-size: 26px; font-weight: 900; line-height: 1; }
+        .quote-small { color: var(--muted); font-size: 10px; margin-top: 4px; }
+        .request-note { margin-top: 7px; background: #F8F8F8; border-radius: 6px; padding: 8px; font-size: 11px; color: #555; line-height: 1.55; }
+        .req-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 7px;
+        }
+        .req-new { background: #EFF6FF; color: #1677FF; }
+        .req-reviewing { background: #FFF8DC; color: #B45309; }
+        .req-quoted { background: #F0FFF4; color: #00A854; }
+        .req-ordered { background: #F5F0FF; color: #6D28D9; }
+        .req-unavailable, .req-closed { background: #F5F5F5; color: #777; }
+
         /* ORDER CARDS */
         .orders { display: flex; flex-direction: column; gap: 10px; }
         .order-card {
@@ -355,6 +402,8 @@
             .item-price { grid-column: 2; justify-self: start; margin-top: -6px; }
             .progress { grid-template-columns: repeat(2, 1fr); }
             .arrival-row { grid-template-columns: 1fr; }
+            .request-card { grid-template-columns: 1fr; }
+            .quote-box { min-width: 0; text-align: left; }
         }
     </style>
 </head>
@@ -418,6 +467,52 @@
             <div class="stat-label">Cancelled</div>
             <div class="stat-val val-muted">{{ cancelled_orders.count }}</div>
         </div>
+    </div>
+
+    <!-- PRODUCT REQUESTS -->
+    <div class="section-head">
+        <span class="section-title">🔎 PRODUCT REQUESTS</span>
+        <a href="{% url 'request_product' %}" class="section-more">Request Product</a>
+    </div>
+
+    <div class="requests-panel">
+        {% for product_request in product_requests %}
+            <div class="request-card">
+                <div>
+                    <span class="req-status req-{{ product_request.status }}">{{ product_request.get_status_display }}</span>
+                    <div class="request-name">{{ product_request.product_name|default:"Product quote request" }}</div>
+                    <div class="request-meta">
+                        {{ product_request.get_source_platform_display }} · Requested {{ product_request.created_at|date:"d M Y" }}
+                        <br>
+                        {{ product_request.product_link }}
+                    </div>
+                    {% if product_request.customer_message or product_request.admin_note %}
+                        <div class="request-note">{{ product_request.customer_message|default:product_request.admin_note }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="quote-box">
+                    {% if product_request.quoted_price %}
+                        <div class="quote-price">K{{ product_request.quoted_price|floatformat:0|intcomma }}</div>
+                        <div class="quote-small">Deposit: K{{ product_request.quoted_deposit|floatformat:0|intcomma }}</div>
+                        <div class="quote-small">Delivery: {{ product_request.estimated_delivery_days|default:"14-30 days" }}</div>
+                    {% else %}
+                        <div class="quote-price">Pending</div>
+                        <div class="quote-small">We are checking supplier price and delivery.</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="request-card">
+                <div>
+                    <div class="request-name">No product requests yet</div>
+                    <div class="request-meta">Send a product link from Alibaba, Taobao, Temu, 1688, Shein, or another supplier.</div>
+                </div>
+                <div class="quote-box">
+                    <a href="{% url 'request_product' %}" class="section-more" style="display:inline-block;">Request Now</a>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 
     <!-- ORDER HISTORY -->

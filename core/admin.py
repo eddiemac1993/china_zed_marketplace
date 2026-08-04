@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.core.mail import send_mail
+from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import (
@@ -750,12 +752,16 @@ class CustomerProductRequestAdmin(admin.ModelAdmin):
         "source_platform",
         "status",
         "quoted_price",
+        "quoted_deposit",
+        "estimated_delivery_days",
+        "notified_display",
         "created_at",
     )
-    list_editable = ("status", "quoted_price")
-    list_filter = ("status", "source_platform", "created_at", "is_deleted")
+    list_editable = ("status", "quoted_price", "estimated_delivery_days")
+    list_filter = ("status", "source_platform", "customer_notified_at", "created_at", "is_deleted")
     search_fields = ("product_name", "product_link", "notes", "user__username", "user__email")
-    readonly_fields = ("created_at", "updated_at", "screenshot_preview")
+    readonly_fields = ("created_at", "updated_at", "quoted_at", "quoted_deposit", "customer_notified_at", "screenshot_preview")
+    actions = ["mark_reviewing", "mark_unavailable", "email_quote_to_customer"]
     fieldsets = (
         ("Customer", {
             "fields": ("user",)
@@ -764,7 +770,16 @@ class CustomerProductRequestAdmin(admin.ModelAdmin):
             "fields": ("product_name", "product_link", "source_platform", "notes", "screenshot", "screenshot_preview")
         }),
         ("Admin Review", {
-            "fields": ("status", "quoted_price", "admin_note")
+            "fields": (
+                "status",
+                "quoted_price",
+                "quoted_deposit",
+                "estimated_delivery_days",
+                "quoted_at",
+                "customer_message",
+                "customer_notified_at",
+                "admin_note",
+            )
         }),
         ("System", {
             "fields": ("is_deleted", "created_at", "updated_at")
@@ -775,6 +790,70 @@ class CustomerProductRequestAdmin(admin.ModelAdmin):
         return obj.product_name or obj.product_link
 
     product_label.short_description = "Product"
+
+    def notified_display(self, obj):
+        return "Yes" if obj.customer_notified_at else "No"
+
+    notified_display.short_description = "Notified"
+
+    @admin.action(description="Mark selected requests as reviewing")
+    def mark_reviewing(self, request, queryset):
+        updated = queryset.update(status="reviewing")
+        messages.success(request, f"{updated} request(s) marked as reviewing.")
+
+    @admin.action(description="Mark selected requests as unavailable")
+    def mark_unavailable(self, request, queryset):
+        updated = queryset.update(status="unavailable")
+        messages.success(request, f"{updated} request(s) marked as unavailable.")
+
+    @admin.action(description="Email quote to selected customers")
+    def email_quote_to_customer(self, request, queryset):
+        sent = 0
+        skipped = 0
+
+        for product_request in queryset.select_related("user"):
+            if not product_request.quoted_price or not product_request.user.email:
+                skipped += 1
+                continue
+
+            product_request.status = "quoted"
+            if not product_request.quoted_at:
+                product_request.quoted_at = timezone.now()
+            product_request.save()
+
+            send_mail(
+                subject="Your ChinaZed product quote is ready",
+                message=f"""
+Hello {product_request.user.username},
+
+Your requested product quote is ready.
+
+Product: {product_request.product_name or product_request.product_link}
+Quoted Price: K{product_request.quoted_price}
+Deposit Required: K{product_request.quoted_deposit}
+Estimated Delivery: {product_request.estimated_delivery_days or "14-30 days"}
+
+Note:
+{product_request.customer_message or product_request.admin_note or "Please log in to your ChinaZed profile to review the quote."}
+
+Log in to your profile to view this request.
+
+Regards,
+ChinaZed Team
+""",
+                from_email=None,
+                recipient_list=[product_request.user.email],
+                fail_silently=True,
+            )
+
+            product_request.customer_notified_at = timezone.now()
+            product_request.save(update_fields=["status", "quoted_at", "quoted_deposit", "customer_notified_at", "updated_at"])
+            sent += 1
+
+        if sent:
+            messages.success(request, f"Quote email sent for {sent} request(s).")
+        if skipped:
+            messages.warning(request, f"{skipped} request(s) skipped because price or email is missing.")
 
     def screenshot_preview(self, obj):
         if obj and obj.screenshot:
