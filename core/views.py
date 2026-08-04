@@ -35,6 +35,17 @@ import textwrap
 WHATSAPP_NUMBER = "260969274458"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
 
+
+def service_worker_view(request):
+    response = render(
+        request,
+        "core/service-worker.js",
+        content_type="application/javascript",
+    )
+    response["Service-Worker-Allowed"] = "/"
+    return response
+
+
 def get_user_cart(user):
     cart, created = Cart.objects.get_or_create(user=user)
     return cart

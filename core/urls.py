@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     # Home
     path("", views.home, name="home"),
+    path("service-worker.js", views.service_worker_view, name="service_worker"),
     path("about/", views.about, name="about"),
     path("faq/", views.faq, name="faq"),
     path("terms/", views.terms, name="terms"),

@@ -58,6 +58,20 @@ class MarketplaceFlowTests(TestCase):
                 response = self.client.get(reverse(url_name))
                 self.assertEqual(response.status_code, 200)
 
+    def test_homepage_exposes_mobile_app_manifest(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, 'rel="manifest"')
+        self.assertContains(response, "serviceWorker")
+
+    def test_service_worker_is_served_from_site_root(self):
+        response = self.client.get(reverse("service_worker"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/javascript")
+        self.assertEqual(response["Service-Worker-Allowed"], "/")
+        self.assertContains(response, "chinazed-app-v1")
+
     def test_product_uses_35_percent_deposit(self):
         product = self.create_preorder_product()
 

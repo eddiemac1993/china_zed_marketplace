@@ -1,0 +1,40 @@
+{
+    "name": "ChinaZed Marketplace",
+    "short_name": "ChinaZed",
+    "description": "Order products from China and Zambia stock with ChinaZed Marketplace.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#F0F0F0",
+    "theme_color": "#E5141A",
+    "orientation": "portrait",
+    "categories": ["shopping", "business"],
+    "icons": [
+        {
+            "src": "/static/core/images/chinazed-icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/core/images/chinazed-icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Request Product",
+            "short_name": "Request",
+            "url": "/request-product/",
+            "description": "Request a quote for any product from China."
+        },
+        {
+            "name": "My Orders",
+            "short_name": "Orders",
+            "url": "/profile/",
+            "description": "Track your ChinaZed orders."
+        }
+    ]
+}
