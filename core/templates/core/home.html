@@ -310,9 +310,15 @@
         /* ── SIDEBAR ── */
         .sidebar-cats {
             background: var(--white); border-radius: var(--card-radius);
-            overflow: hidden; border: 1px solid var(--border);
+            overflow: hidden auto; border: 1px solid var(--border);
             align-self: start; position: sticky; top: 130px;
+            max-height: calc(100vh - 150px);
+            scrollbar-width: thin;
+            scrollbar-color: #D8D8D8 transparent;
         }
+        .sidebar-cats::-webkit-scrollbar { width: 6px; }
+        .sidebar-cats::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-cats::-webkit-scrollbar-thumb { background: #D8D8D8; border-radius: 999px; }
         .sidebar-cat-title { background: var(--red); color: #fff; font-weight: 800; font-size: 13px; padding: 12px 16px; }
         .sidebar-cat-item {
             display: flex; align-items: center; padding: 10px 14px;
