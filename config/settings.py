@@ -16,12 +16,27 @@ if not SECRET_KEY:
     else:
         raise RuntimeError("SECRET_KEY must be set when DEBUG is False.")
 
+DEFAULT_ALLOWED_HOSTS = (
+    "chinatozambia.org,"
+    "www.chinatozambia.org,"
+    "chinatozambia.pythonanywhere.com,"
+    "localhost,"
+    "127.0.0.1"
+)
 ALLOWED_HOSTS = [
-    "chinatozambia.org",
-    "www.chinatozambia.org",
-    "chinatozambia.pythonanywhere.com",
-    "localhost",
-    "127.0.0.1",
+    host.strip()
+    for host in os.getenv("DJANGO_ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS).split(",")
+    if host.strip()
+]
+
+SITE_URL = os.getenv("SITE_URL", "https://chinatozambia.org").rstrip("/")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv(
+        "CSRF_TRUSTED_ORIGINS",
+        "https://chinatozambia.org,https://www.chinatozambia.org",
+    ).split(",")
+    if origin.strip()
 ]
 
 
@@ -141,3 +156,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
