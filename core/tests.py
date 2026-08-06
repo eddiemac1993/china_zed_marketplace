@@ -294,3 +294,25 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(product.name, "Manual AliExpress Watch")
         self.assertEqual(product.rmb_price, Decimal("86.40"))
         self.assertEqual(product.status, "draft")
+
+    @patch("core.management.commands.import_aliexpress_products.requests.get")
+    def test_import_china_product_detects_alibaba_links(self, mock_get):
+        mock_get.return_value = FakeResponse("<html><title>Alibaba TV Product</title></html>")
+        out = StringIO()
+
+        call_command(
+            "import_aliexpress_products",
+            "https://www.alibaba.com/product-detail/Big-Screen-50-55-65-75_1601757949259.html",
+            "--name",
+            "Big Screen Smart TV",
+            "--price-usd",
+            "120.00",
+            "--category",
+            "Electronics",
+            stdout=out,
+        )
+
+        product = Product.objects.get(source_platform="alibaba")
+        self.assertEqual(product.name, "Big Screen Smart TV")
+        self.assertEqual(product.rmb_price, Decimal("864.00"))
+        self.assertEqual(product.supplier_name, "Alibaba")

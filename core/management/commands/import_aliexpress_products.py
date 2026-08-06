@@ -16,6 +16,15 @@ USER_AGENT = (
 )
 
 
+def detect_platform(url):
+    host = urlparse(url).netloc.lower()
+    if "alibaba." in host:
+        return "alibaba", "Alibaba"
+    if "aliexpress." in host:
+        return "aliexpress", "AliExpress"
+    return "other", "China supplier"
+
+
 def clean_text(value):
     return re.sub(r"\s+", " ", value or "").strip()
 
@@ -66,6 +75,7 @@ def find_product_json_ld(html):
 
 
 def extract_product_data(html, url):
+    platform_code, platform_name = detect_platform(url)
     product_json = find_product_json_ld(html)
     offers = product_json.get("offers") if isinstance(product_json, dict) else {}
     if isinstance(offers, list):
@@ -80,7 +90,7 @@ def extract_product_data(html, url):
             ],
             html,
         )
-    title = re.sub(r"\s*-\s*AliExpress.*$", "", title, flags=re.I).strip()
+    title = re.sub(r"\s*-\s*(AliExpress|Alibaba\.com).*$", "", title, flags=re.I).strip()
 
     description = clean_text(product_json.get("description")) if product_json else ""
     if not description:
@@ -110,8 +120,10 @@ def extract_product_data(html, url):
         currency = first_match([r'"priceCurrency"\s*:\s*"([^"]+)"', r'"currencyCode"\s*:\s*"([^"]+)"'], html)
 
     return {
-        "title": title or f"AliExpress product {urlparse(url).path.strip('/').split('/')[-1]}",
-        "description": description or "AliExpress pre-order product. Final availability and landed Zambia price must be confirmed by ChinaZed staff before sourcing.",
+        "platform_code": platform_code,
+        "platform_name": platform_name,
+        "title": title or f"{platform_name} product {urlparse(url).path.strip('/').split('/')[-1]}",
+        "description": description or f"{platform_name} pre-order product. Final availability and landed Zambia price must be confirmed by ChinaZed staff before sourcing.",
         "image_url": image,
         "price": price,
         "currency": (currency or "USD").upper(),
@@ -120,17 +132,17 @@ def extract_product_data(html, url):
 
 
 class Command(BaseCommand):
-    help = "Import AliExpress product pages as ChinaZed pre-order products."
+    help = "Import Alibaba or AliExpress product pages as ChinaZed pre-order products."
 
     def add_arguments(self, parser):
-        parser.add_argument("urls", nargs="*", help="AliExpress product URLs to import.")
-        parser.add_argument("--file", help="Text file with one AliExpress product URL per line.")
-        parser.add_argument("--category", default="AliExpress Finds", help="Category name to use or create.")
+        parser.add_argument("urls", nargs="*", help="Alibaba or AliExpress product URLs to import.")
+        parser.add_argument("--file", help="Text file with one product URL per line.")
+        parser.add_argument("--category", default="China Finds", help="Category name to use or create.")
         parser.add_argument("--status", choices=["draft", "active"], default="draft")
         parser.add_argument("--usd-to-rmb", default="7.20", help="USD to RMB conversion rate. Default: 7.20.")
         parser.add_argument("--name", help="Manual product name to use when importing one URL.")
         parser.add_argument("--description", help="Manual product description.")
-        parser.add_argument("--price-usd", help="Manual AliExpress price in USD when the page price cannot be read.")
+        parser.add_argument("--price-usd", help="Manual product price in USD when the page price cannot be read.")
         parser.add_argument("--price-rmb", help="Manual product cost in RMB. Overrides --price-usd.")
         parser.add_argument("--image-url", help="Manual product image URL.")
         parser.add_argument("--download-images", action="store_true", help="Download the main product image into the product image field.")
@@ -201,6 +213,9 @@ class Command(BaseCommand):
             if options["dry_run"]:
                 continue
 
+            platform_code = data["platform_code"]
+            platform_name = data["platform_name"]
+
             product, created = Product.objects.update_or_create(
                 source_link=url,
                 defaults={
@@ -213,9 +228,9 @@ class Command(BaseCommand):
                     "is_available": options["status"] == "active",
                     "delivery_min_days": 14,
                     "delivery_max_days": 30,
-                    "source_platform": "aliexpress",
-                    "supplier_name": "AliExpress",
-                    "supplier_note": "Imported from AliExpress. Confirm availability, variants, shipping, and final landed price before purchase.",
+                    "source_platform": platform_code,
+                    "supplier_name": platform_name,
+                    "supplier_note": f"Imported from {platform_name}. Confirm availability, variants, shipping, and final landed price before purchase.",
                 },
             )
 
