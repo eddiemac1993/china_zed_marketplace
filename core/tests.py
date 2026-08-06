@@ -1,9 +1,11 @@
 from decimal import Decimal
+from io import StringIO
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -18,6 +20,16 @@ from .models import (
     Order,
     Product,
 )
+
+
+class FakeResponse:
+    def __init__(self, text, status_code=200):
+        self.text = text
+        self.status_code = status_code
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTP {self.status_code}")
 
 
 @override_settings(
@@ -218,3 +230,45 @@ class MarketplaceFlowTests(TestCase):
         profile_response = self.client.get(reverse("profile"))
         self.assertContains(profile_response, "item-thumb")
         self.assertContains(profile_response, product.name)
+
+    @patch("core.management.commands.import_aliexpress_products.requests.get")
+    def test_import_aliexpress_product_creates_preorder_product(self, mock_get):
+        html = """
+        <html>
+            <head>
+                <script type="application/ld+json">
+                {
+                    "@type": "Product",
+                    "name": "Portable Mini Projector",
+                    "description": "Compact projector for home entertainment.",
+                    "image": "https://example.com/projector.jpg",
+                    "offers": {
+                        "price": "25.50",
+                        "priceCurrency": "USD"
+                    }
+                }
+                </script>
+            </head>
+        </html>
+        """
+        mock_get.return_value = FakeResponse(html)
+        out = StringIO()
+
+        call_command(
+            "import_aliexpress_products",
+            "https://www.aliexpress.com/item/100500-example.html",
+            "--category",
+            "Electronics",
+            "--status",
+            "active",
+            "--usd-to-rmb",
+            "7.20",
+            stdout=out,
+        )
+
+        product = Product.objects.get(source_platform="aliexpress")
+        self.assertEqual(product.name, "Portable Mini Projector")
+        self.assertEqual(product.rmb_price, Decimal("183.60"))
+        self.assertEqual(product.product_type, "preorder")
+        self.assertEqual(product.status, "active")
+        self.assertEqual(product.category.name, "Electronics")

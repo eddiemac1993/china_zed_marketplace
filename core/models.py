@@ -55,6 +55,7 @@ class Category(TimeStampedModel):
 
 class Product(TimeStampedModel):
     SOURCE_CHOICES = [
+        ("aliexpress", "AliExpress"),
         ("taobao", "Taobao"),
         ("1688", "1688"),
         ("alibaba", "Alibaba"),
@@ -328,6 +329,7 @@ class SupplierProductRequestImage(TimeStampedModel):
 
 class CustomerProductRequest(TimeStampedModel):
     PLATFORM_CHOICES = [
+        ("aliexpress", "AliExpress"),
         ("alibaba", "Alibaba"),
         ("taobao", "Taobao"),
         ("temu", "Temu"),
