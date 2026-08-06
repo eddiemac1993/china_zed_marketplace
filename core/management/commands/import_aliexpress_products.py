@@ -128,6 +128,11 @@ class Command(BaseCommand):
         parser.add_argument("--category", default="AliExpress Finds", help="Category name to use or create.")
         parser.add_argument("--status", choices=["draft", "active"], default="draft")
         parser.add_argument("--usd-to-rmb", default="7.20", help="USD to RMB conversion rate. Default: 7.20.")
+        parser.add_argument("--name", help="Manual product name to use when importing one URL.")
+        parser.add_argument("--description", help="Manual product description.")
+        parser.add_argument("--price-usd", help="Manual AliExpress price in USD when the page price cannot be read.")
+        parser.add_argument("--price-rmb", help="Manual product cost in RMB. Overrides --price-usd.")
+        parser.add_argument("--image-url", help="Manual product image URL.")
         parser.add_argument("--download-images", action="store_true", help="Download the main product image into the product image field.")
         parser.add_argument("--dry-run", action="store_true", help="Preview scraped product data without saving.")
 
@@ -138,6 +143,8 @@ class Command(BaseCommand):
                 urls.extend(line.strip() for line in handle if line.strip() and not line.startswith("#"))
         if not urls:
             raise CommandError("Provide at least one AliExpress URL or --file.")
+        if len(urls) > 1 and any(options[name] for name in ["name", "description", "price_usd", "price_rmb", "image_url"]):
+            raise CommandError("Manual product fields can only be used when importing one URL.")
 
         usd_to_rmb = parse_decimal(options["usd_to_rmb"])
         if not usd_to_rmb:
@@ -153,15 +160,37 @@ class Command(BaseCommand):
             response.raise_for_status()
             data = extract_product_data(response.text, url)
 
-            price = data["price"]
+            if options["name"]:
+                data["title"] = options["name"]
+            if options["description"]:
+                data["description"] = options["description"]
+            if options["image_url"]:
+                data["image_url"] = options["image_url"]
+
+            manual_rmb_price = parse_decimal(options["price_rmb"])
+            manual_usd_price = parse_decimal(options["price_usd"])
+
+            if manual_rmb_price is not None:
+                price = manual_rmb_price
+                currency = "RMB"
+            elif manual_usd_price is not None:
+                price = manual_usd_price
+                currency = "USD"
+            else:
+                price = data["price"]
+                currency = data["currency"]
+
             if price is None:
-                self.stdout.write(self.style.WARNING(f"Skipped {url}: price was not found."))
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Skipped {url}: price was not found. Add --price-usd 25.50 or --price-rmb 183.60."
+                    )
+                )
                 continue
 
-            currency = data["currency"]
             if currency in {"USD", "US"}:
                 rmb_price = money(price * usd_to_rmb)
-            elif currency in {"CNY", "RMB", "CN¥", "¥"}:
+            elif currency in {"CNY", "RMB", "CN¥", "¥", "CNÂ¥", "Â¥"}:
                 rmb_price = money(price)
             else:
                 self.stdout.write(self.style.WARNING(f"Skipped {url}: unsupported currency {currency}."))

@@ -272,3 +272,25 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(product.product_type, "preorder")
         self.assertEqual(product.status, "active")
         self.assertEqual(product.category.name, "Electronics")
+
+    @patch("core.management.commands.import_aliexpress_products.requests.get")
+    def test_import_aliexpress_product_accepts_manual_price_when_scrape_has_no_price(self, mock_get):
+        mock_get.return_value = FakeResponse("<html><title>Blocked page</title></html>")
+        out = StringIO()
+
+        call_command(
+            "import_aliexpress_products",
+            "https://www.aliexpress.com/item/100500-manual.html",
+            "--name",
+            "Manual AliExpress Watch",
+            "--price-usd",
+            "12.00",
+            "--usd-to-rmb",
+            "7.20",
+            stdout=out,
+        )
+
+        product = Product.objects.get(source_platform="aliexpress")
+        self.assertEqual(product.name, "Manual AliExpress Watch")
+        self.assertEqual(product.rmb_price, Decimal("86.40"))
+        self.assertEqual(product.status, "draft")
