@@ -531,18 +531,33 @@
         .footer-bottom { border-top: 1px solid #1E1E1E; padding: 14px 20px; text-align: center; font-size: 11px; color: #333; max-width: 1300px; margin: 0 auto; }
 
         /* ── FLOATING ── */
-        .wa-btn {
-            position: fixed; bottom: 80px; right: 18px; background: linear-gradient(135deg, var(--red), var(--orange));
-            color: #fff; border-radius: 50%; width: 52px; height: 52px;
-            display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900;
-            box-shadow: 0 4px 18px rgba(229,20,26,.42); z-index: 300; transition: transform .15s;
+        .floating-actions {
+            position: fixed; right: 18px; bottom: 76px; z-index: 300;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
         }
-        .wa-btn:hover { transform: scale(1.1); }
+        .float-btn {
+            border: none; text-decoration: none; cursor: pointer; font-family: inherit;
+            box-shadow: 0 4px 18px rgba(229,20,26,.34); transition: transform .15s, box-shadow .15s, background .15s;
+        }
+        .float-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.22); }
+        .wa-btn {
+            background: linear-gradient(135deg, var(--red), var(--orange));
+            color: #fff; border-radius: 999px; min-width: 58px; height: 52px; padding: 0 15px;
+            display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; font-weight: 900;
+            letter-spacing: .02em;
+        }
+        .install-btn {
+            display: none; align-items: center; justify-content: center; gap: 7px;
+            min-height: 42px; padding: 0 13px; border-radius: 999px;
+            background: #111; color: #fff; font-size: 12px; font-weight: 800;
+        }
+        .install-btn.show { display: inline-flex; }
+        .install-icon { font-size: 15px; line-height: 1; }
         .back-top {
-            position: fixed; bottom: 18px; right: 18px; background: rgba(0,0,0,.5);
+            background: rgba(0,0,0,.5);
             color: #fff; border-radius: 50%; width: 40px; height: 40px;
             display: flex; align-items: center; justify-content: center; font-size: 16px;
-            z-index: 300; cursor: pointer; transition: background .15s; opacity: 0;
+            cursor: pointer; transition: background .15s, opacity .15s; opacity: 0;
         }
         .back-top:hover { background: var(--red); }
 
@@ -660,6 +675,9 @@
             .partner-actions { align-items: stretch; min-width: 0; margin-top: 16px; }
             .partner-note { text-align: center; }
             .mobile-bottom-nav { display: block; }
+            .floating-actions { right: 12px; bottom: 102px; gap: 8px; }
+            .wa-btn { height: 48px; min-width: 54px; padding: 0 13px; font-size: 12px; }
+            .install-btn { min-height: 40px; padding: 0 12px; font-size: 11px; }
             .back-top { display: none; }
             body { padding-bottom: 92px; }
         }
@@ -1212,8 +1230,15 @@
 </footer>
 
 <!-- FLOATING -->
-<a href="{% url 'assistant' %}" class="wa-btn" title="AI Assistant" aria-label="AI Assistant">AI</a>
-<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+<div class="floating-actions" aria-label="Quick actions">
+    <a href="{% url 'assistant' %}" class="float-btn wa-btn" title="AI Assistant" aria-label="AI Assistant">
+        <span>AI</span><span>Help</span>
+    </a>
+    <button type="button" class="float-btn install-btn" id="installAppBtn" aria-label="Install ChinaZed app">
+        <span class="install-icon">↓</span><span>Install</span>
+    </button>
+    <div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+</div>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-bottom-nav">
@@ -1311,6 +1336,38 @@
         var btn = document.getElementById('backTop');
         if (btn) btn.style.opacity = window.scrollY > 400 ? '1' : '0';
     });
+
+    // ── INSTALL APP ──
+    (function () {
+        var installBtn = document.getElementById('installAppBtn');
+        var deferredPrompt = null;
+        if (!installBtn) return;
+
+        function isStandalone() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        }
+
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();
+            deferredPrompt = event;
+            if (!isStandalone()) installBtn.classList.add('show');
+        });
+
+        installBtn.addEventListener('click', async function () {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice.catch(function () {});
+                deferredPrompt = null;
+                installBtn.classList.remove('show');
+                return;
+            }
+            alert('To install ChinaZed, open your browser menu and choose Add to Home screen or Install app.');
+        });
+
+        if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) {
+            installBtn.classList.add('show');
+        }
+    })();
 </script>
 <script>
 (function(){
