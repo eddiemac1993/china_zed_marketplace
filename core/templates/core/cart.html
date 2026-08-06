@@ -960,8 +960,8 @@
 
                     <!-- IMAGE -->
                     <a href="{% url 'product_detail' item.product.slug %}" class="item-img-box">
-                        {% if item.product.image %}
-                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" loading="lazy">
+                        {% if item.product.display_image_url %}
+                            <img src="{{ item.product.display_image_url }}" alt="{{ item.product.name }}" loading="lazy">
                         {% else %}
                             <div class="item-no-img">No Image</div>
                         {% endif %}

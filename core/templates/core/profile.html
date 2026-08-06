@@ -563,8 +563,8 @@
                             {% for item in order.items.all %}
                                 <div class="item-row">
                                     <a class="item-thumb" href="{% url 'product_detail' item.product.slug %}">
-                                        {% if item.product.image %}
-                                            <img src="{{ item.product.image.url }}" alt="{{ item.product_name }}" loading="lazy">
+                                        {% if item.product.display_image_url %}
+                                            <img src="{{ item.product.display_image_url }}" alt="{{ item.product_name }}" loading="lazy">
                                         {% else %}
                                             No Image
                                         {% endif %}

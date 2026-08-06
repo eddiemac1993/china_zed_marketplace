@@ -850,8 +850,8 @@
         <!-- LEFT: IMAGE PANEL -->
         <div class="image-panel">
             <div class="main-image-box">
-                {% if product.image %}
-                    <img id="mainProductImage" src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% if product.display_image_url %}
+                    <img id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}">
                 {% else %}
                     <div class="main-no-img">No Image Available</div>
                 {% endif %}
@@ -867,11 +867,11 @@
             </div>
 
             <!-- THUMBNAILS -->
-            {% if product.image or product.gallery_images.all %}
+            {% if product.display_image_url or product.gallery_images.all %}
             <div class="thumb-row">
-                {% if product.image %}
-                    <div class="thumb active" onclick="setMainImage(this, '{{ product.image.url }}')">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% if product.display_image_url %}
+                    <div class="thumb active" onclick="setMainImage(this, '{{ product.display_image_url }}')">
+                        <img src="{{ product.display_image_url }}" alt="{{ product.name }}">
                     </div>
                 {% endif %}
                 {% for img in product.gallery_images.all %}
@@ -1019,8 +1019,8 @@
                 <div class="prod-card">
                     <a href="{% url 'product_detail' rel.slug %}">
                         <div class="prod-img-box">
-                            {% if rel.image %}
-                                <img src="{{ rel.image.url }}" alt="{{ rel.name }}" class="prod-card-img" loading="lazy">
+                            {% if rel.display_image_url %}
+                                <img src="{{ rel.display_image_url }}" alt="{{ rel.name }}" class="prod-card-img" loading="lazy">
                             {% else %}
                                 <div class="prod-no-img-box">No Image</div>
                             {% endif %}

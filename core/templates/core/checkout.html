@@ -427,8 +427,8 @@
                     {% for item in cart_items %}
                         <div class="cart-item">
                             <div class="item-img">
-                                {% if item.product.image %}
-                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                {% if item.product.display_image_url %}
+                                    <img src="{{ item.product.display_image_url }}" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="item-no-img">No Image</div>
                                 {% endif %}

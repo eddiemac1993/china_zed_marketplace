@@ -269,9 +269,13 @@ class MarketplaceFlowTests(TestCase):
         product = Product.objects.get(source_platform="aliexpress")
         self.assertEqual(product.name, "Portable Mini Projector")
         self.assertEqual(product.rmb_price, Decimal("183.60"))
+        self.assertEqual(product.external_image_url, "https://example.com/projector.jpg")
         self.assertEqual(product.product_type, "preorder")
         self.assertEqual(product.status, "active")
         self.assertEqual(product.category.name, "Electronics")
+
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "https://example.com/projector.jpg")
 
     @patch("core.management.commands.import_aliexpress_products.requests.get")
     def test_import_aliexpress_product_accepts_manual_price_when_scrape_has_no_price(self, mock_get):
@@ -316,3 +320,12 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(product.name, "Big Screen Smart TV")
         self.assertEqual(product.rmb_price, Decimal("864.00"))
         self.assertEqual(product.supplier_name, "Alibaba")
+
+    def test_product_display_image_url_prefers_external_image_when_no_upload(self):
+        product = self.create_preorder_product(name="External image item")
+        product.external_image_url = "https://example.com/product.png"
+        product.save(update_fields=["external_image_url"])
+
+        self.assertEqual(product.display_image_url(), "https://example.com/product.png")
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "https://example.com/product.png")

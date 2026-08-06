@@ -193,6 +193,7 @@ class ProductAdmin(admin.ModelAdmin):
                 "category",
                 "description",
                 "image",
+                "external_image_url",
                 "image_preview_large",
             )
         }),

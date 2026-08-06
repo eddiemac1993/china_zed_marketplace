@@ -917,7 +917,7 @@
                         <div class="prod-card">
                             <a href="{% url 'product_detail' product.slug %}">
                                 <div class="prod-img-box">
-                                    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
+                                    {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
                                     {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
                                     {% if product.product_type == "local" %}<span class="badge b-tl b-local">ZM STOCK</span>
                                     {% else %}<span class="badge b-tl b-china">CHINA</span>{% endif %}
@@ -966,7 +966,7 @@
                 <div class="prod-card">
                     <a href="{% url 'product_detail' product.slug %}">
                         <div class="prod-img-box">
-                            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
+                            {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
                             {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
                             <span class="badge b-tl b-local">STOCK: {{ product.stock_quantity }}</span>
                         </div>
@@ -1007,7 +1007,7 @@
                 <div class="prod-card">
                     <a href="{% url 'product_detail' product.slug %}">
                         <div class="prod-img-box">
-                            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
+                            {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
                             {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
                             <span class="badge b-tl b-china">CHINA</span>
                         </div>
@@ -1073,7 +1073,7 @@
                     <div class="prod-card">
                         <a href="{% url 'product_detail' product.slug %}">
                             <div class="prod-img-box">
-                                {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
+                                {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
                                 {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
                                 {% if product.category %}<span class="badge b-tl" style="background:rgba(0,0,0,.55);color:#fff;font-size:9px;">{{ product.category.name }}</span>{% endif %}
                                 {% if product.is_featured %}<span class="badge b-tr b-hot">HOT</span>{% endif %}

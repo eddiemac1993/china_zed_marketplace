@@ -90,6 +90,7 @@ class Product(TimeStampedModel):
     )
 
     image = models.ImageField(upload_to="products/", blank=True, null=True)
+    external_image_url = models.URLField(blank=True)
 
     product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default="preorder")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
@@ -173,6 +174,11 @@ class Product(TimeStampedModel):
 
     def balance_amount(self):
         return money(self.selling_price() - self.deposit_amount())
+
+    def display_image_url(self):
+        if self.image:
+            return self.image.url
+        return self.external_image_url
 
     def delivery_range(self):
         return f"{self.delivery_min_days} to {self.delivery_max_days} days"

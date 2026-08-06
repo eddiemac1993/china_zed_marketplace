@@ -222,6 +222,7 @@ class Command(BaseCommand):
                     "name": data["title"][:200],
                     "description": data["description"],
                     "rmb_price": rmb_price,
+                    "external_image_url": data["image_url"],
                     "category": category,
                     "product_type": "preorder",
                     "status": options["status"],

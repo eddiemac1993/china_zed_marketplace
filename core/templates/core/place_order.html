@@ -56,8 +56,8 @@
 
             <!-- IMAGE -->
             <div class="h-48 bg-slate-100 rounded-xl overflow-hidden mb-4">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}"
+                {% if product.display_image_url %}
+                    <img src="{{ product.display_image_url }}"
                          class="w-full h-full object-cover">
                 {% else %}
                     <div class="h-full flex items-center justify-center text-slate-400">
