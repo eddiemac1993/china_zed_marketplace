@@ -56,43 +56,6 @@
             margin: 18px auto;
             padding: 0 14px 24px;
         }
-        .hero {
-            background: #111;
-            color: #fff;
-            border-radius: 12px;
-            padding: 22px;
-            margin-bottom: 12px;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            align-items: center;
-        }
-        .hero-kicker {
-            color: #FFC107;
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-        .hero h1 {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 34px;
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-        .hero p { color: rgba(255,255,255,.76); font-size: 13px; line-height: 1.6; }
-        .bot-badge {
-            width: 76px;
-            height: 76px;
-            border-radius: 22px;
-            background: linear-gradient(135deg, var(--red), var(--orange));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 34px;
-            box-shadow: 0 16px 40px rgba(229,20,26,.32);
-        }
         .chat-card {
             background: var(--white);
             border: 1px solid var(--border);
@@ -162,9 +125,6 @@
         .note { color: var(--muted); font-size: 11px; margin-top: 10px; line-height: 1.5; }
         @media (max-width: 640px) {
             .top-links a:not(:first-child) { display: none; }
-            .hero { grid-template-columns: 1fr; }
-            .bot-badge { width: 58px; height: 58px; font-size: 26px; border-radius: 16px; }
-            .hero h1 { font-size: 29px; }
             .messages { height: 58vh; min-height: 330px; }
             .msg { max-width: 92%; }
             .chat-form button { padding: 0 14px; }
@@ -190,15 +150,6 @@
     </header>
 
     <main class="wrap">
-        <section class="hero">
-            <div>
-                <div class="hero-kicker">ChinaZed AI Assistant</div>
-                <h1>Ask About Orders, Delivery, Deposits, and Quotes</h1>
-                <p>Get quick answers before ordering. For final payment verification, refunds, and order changes, ChinaZed staff will still review and confirm.</p>
-            </div>
-            <div class="bot-badge">AI</div>
-        </section>
-
         <section class="chat-card">
             <div class="quick">
                 <button type="button" data-question="How does the 35% deposit work?">35% deposit</button>
