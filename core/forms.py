@@ -324,6 +324,13 @@ class AliExpressProductImportForm(forms.Form):
             "placeholder": "Main product image URL",
         }),
     )
+    uploaded_image = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={
+            "class": "form-control",
+            "accept": "image/*",
+        }),
+    )
     external_gallery_urls = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={

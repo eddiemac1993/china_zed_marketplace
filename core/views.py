@@ -1051,7 +1051,7 @@ def aliexpress_import_view(request):
 
     if request.method == "POST":
         action = request.POST.get("action", "preview")
-        form = AliExpressProductImportForm(request.POST)
+        form = AliExpressProductImportForm(request.POST, request.FILES)
 
         if form.is_valid() and action == "preview":
             product_url = form.cleaned_data["product_url"]
@@ -1132,6 +1132,11 @@ def aliexpress_import_view(request):
                         "supplier_note": "Created from the staff AliExpress import page. Confirm availability, variants, shipping, and final landed price before sourcing.",
                     },
                 )
+                uploaded_image = cleaned.get("uploaded_image")
+                if uploaded_image:
+                    product.image = uploaded_image
+                    product.save(update_fields=["image", "updated_at"])
+
                 messages.success(
                     request,
                     f"{'Created' if created else 'Updated'} {product.name}.",

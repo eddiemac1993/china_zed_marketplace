@@ -199,7 +199,7 @@
             <section class="card">
                 <div class="card-head">Import Details</div>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
 
                         <div class="form-grid">
@@ -259,6 +259,13 @@
                             </div>
 
                             <div class="full">
+                                <label for="{{ form.uploaded_image.id_for_label }}">Upload product image</label>
+                                {{ form.uploaded_image }}
+                                {% if form.uploaded_image.errors %}<div class="error">{{ form.uploaded_image.errors.0 }}</div>{% endif %}
+                                <div class="help">Use this when AliExpress blocks the image. The uploaded image becomes the main product photo.</div>
+                            </div>
+
+                            <div class="full">
                                 <label for="{{ form.external_gallery_urls.id_for_label }}">Extra image URLs</label>
                                 {{ form.external_gallery_urls }}
                                 <div class="help">Paste one image URL per line for color or angle images.</div>
@@ -294,7 +301,7 @@
                     {% if form.external_image_url.value %}
                         <img class="preview-img" src="{{ form.external_image_url.value }}" alt="Product preview">
                     {% else %}
-                        <div class="empty-img">No image yet. Fetch from AliExpress or paste the main image URL.</div>
+                        <div class="empty-img">No image yet. Fetch from AliExpress, paste an image URL, or upload the product photo before creating.</div>
                     {% endif %}
 
                     <div class="checklist">

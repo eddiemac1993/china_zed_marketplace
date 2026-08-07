@@ -1,10 +1,12 @@
 from decimal import Decimal
 from io import StringIO
+import tempfile
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -516,3 +518,36 @@ class MarketplaceFlowTests(TestCase):
             "https://example.com/watch-black.jpg",
         ])
         self.assertEqual(product.color_option_list(), ["Blue", "Black"])
+
+    def test_staff_can_upload_main_image_when_creating_aliexpress_product(self):
+        staff = self.create_user(username="staff", email="staff@example.com")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+        image = SimpleUploadedFile(
+            "watch.gif",
+            b"GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00\xff\xff\xff,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;",
+            content_type="image/gif",
+        )
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                response = self.client.post(
+                    reverse("aliexpress_import"),
+                    {
+                        "action": "create",
+                        "product_url": "https://www.aliexpress.com/item/100500-upload.html",
+                        "name": "Uploaded Image Watch",
+                        "description": "Watch imported with a manually uploaded image.",
+                        "price_usd": "8.50",
+                        "usd_to_rmb": "7.20",
+                        "new_category": "Smart Watches",
+                        "status": "active",
+                        "uploaded_image": image,
+                    },
+                )
+
+                product = Product.objects.get(source_link="https://www.aliexpress.com/item/100500-upload.html")
+                self.assertRedirects(response, reverse("product_detail", kwargs={"slug": product.slug}))
+                self.assertTrue(product.image.name.startswith("products/"))
+                self.assertIn("watch", product.display_image_url())
