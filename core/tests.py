@@ -424,6 +424,31 @@ class MarketplaceFlowTests(TestCase):
         self.assertContains(response, "Portable Mini Projector")
         self.assertContains(response, "https://example.com/projector.jpg")
         self.assertContains(response, 'value="25.50"')
+        self.assertContains(response, "https://www.aliexpress.com/item/100500-preview.html")
+
+    @patch("core.views.requests.get")
+    def test_staff_can_preview_aliexpress_product_import_without_url_scheme(self, mock_get):
+        mock_get.return_value = FakeResponse("<html><title>AliExpress Phone Case</title></html>")
+        staff = self.create_user(username="staff", email="staff@example.com")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse("aliexpress_import"),
+            {
+                "action": "preview",
+                "product_url": "aliexpress.com/item/1005006227982959.html?spm=test",
+                "usd_to_rmb": "7.20",
+                "status": "active",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_get.assert_called_once()
+        fetched_url = mock_get.call_args.args[0]
+        self.assertEqual(fetched_url, "https://www.aliexpress.com/item/1005006227982959.html?spm=test")
+        self.assertContains(response, "https://www.aliexpress.com/item/1005006227982959.html?spm=test")
 
     def test_staff_can_create_aliexpress_product_from_import_form(self):
         staff = self.create_user(username="staff", email="staff@example.com")

@@ -1058,7 +1058,7 @@ def aliexpress_import_view(request):
             try:
                 initial = aliexpress_prefill_from_url(product_url)
                 for key, value in request.POST.items():
-                    if value and key in initial:
+                    if value and key in initial and key != "product_url":
                         initial[key] = value
                 form = AliExpressProductImportForm(initial=initial)
                 preview_loaded = True

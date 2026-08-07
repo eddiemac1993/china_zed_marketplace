@@ -242,11 +242,11 @@ class CustomerProductRequestForm(forms.ModelForm):
 
 
 class AliExpressProductImportForm(forms.Form):
-    product_url = forms.URLField(
+    product_url = forms.CharField(
         label="AliExpress product link",
-        widget=forms.URLInput(attrs={
+        widget=forms.TextInput(attrs={
             "class": "form-control",
-            "placeholder": "Paste AliExpress product link",
+            "placeholder": "Paste AliExpress product link, with or without https://",
         }),
     )
     name = forms.CharField(
@@ -359,6 +359,12 @@ class AliExpressProductImportForm(forms.Form):
 
     def clean_product_url(self):
         product_url = self.cleaned_data["product_url"].strip()
+        if not product_url.lower().startswith(("http://", "https://")):
+            product_url = f"https://{product_url}"
+        if product_url.startswith("https://aliexpress.com"):
+            product_url = product_url.replace("https://aliexpress.com", "https://www.aliexpress.com", 1)
+        if product_url.startswith("http://aliexpress.com"):
+            product_url = product_url.replace("http://aliexpress.com", "https://www.aliexpress.com", 1)
         if "aliexpress." not in product_url.lower():
             raise forms.ValidationError("Please paste an AliExpress product link.")
         return product_url
