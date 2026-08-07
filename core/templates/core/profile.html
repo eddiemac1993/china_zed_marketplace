@@ -123,6 +123,26 @@
             letter-spacing: -.5px;
         }
         .hero-desc { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.6; }
+        .admin-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: -4px 0 14px;
+        }
+        .admin-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #111;
+            color: #fff;
+            border-radius: 7px;
+            padding: 10px 13px;
+            font-size: 12px;
+            font-weight: 900;
+            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+        }
+        .admin-action:hover { background: var(--red); }
 
         /* STATS */
         .stats-grid {
@@ -448,6 +468,12 @@
         <div class="hero-name">{{ request.user.username }}</div>
         <div class="hero-desc">View your order status, ask the AI assistant for help, and generate receipts once goods arrive.</div>
     </div>
+
+    {% if request.user.is_staff %}
+        <div class="admin-actions">
+            <a href="{% url 'aliexpress_import' %}" class="admin-action">Import AliExpress Product</a>
+        </div>
+    {% endif %}
 
     <!-- STATS -->
     <div class="stats-grid">

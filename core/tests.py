@@ -14,6 +14,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from .forms import CustomUserRegistrationForm
+from .management.commands.import_aliexpress_products import extract_product_data
 from .models import (
     Cart,
     CartItem,
@@ -451,6 +452,15 @@ class MarketplaceFlowTests(TestCase):
         fetched_url = mock_get.call_args.args[0]
         self.assertEqual(fetched_url, "https://www.aliexpress.com/item/1005006227982959.html?spm=test")
         self.assertContains(response, "https://www.aliexpress.com/item/1005006227982959.html?spm=test")
+        self.assertContains(response, "AliExpress Phone Case")
+
+    def test_aliexpress_fallback_title_does_not_show_product_id_filename(self):
+        data = extract_product_data(
+            "<html><body>Blocked AliExpress page</body></html>",
+            "https://www.aliexpress.com/item/1005006227982959.html",
+        )
+
+        self.assertEqual(data["title"], "AliExpress product")
 
     @patch("core.views.requests.get")
     def test_staff_preview_extracts_price_from_aliexpress_url_tracking_data(self, mock_get):
@@ -551,3 +561,14 @@ class MarketplaceFlowTests(TestCase):
                 self.assertRedirects(response, reverse("product_detail", kwargs={"slug": product.slug}))
                 self.assertTrue(product.image.name.startswith("products/"))
                 self.assertIn("watch", product.display_image_url())
+
+    def test_staff_profile_links_to_aliexpress_importer(self):
+        staff = self.create_user(username="staff", email="staff@example.com")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse("profile"))
+
+        self.assertContains(response, "Import AliExpress Product")
+        self.assertContains(response, reverse("aliexpress_import"))

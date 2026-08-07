@@ -142,7 +142,7 @@ def extract_product_data(html, url):
     return {
         "platform_code": platform_code,
         "platform_name": platform_name,
-        "title": title or f"{platform_name} product {urlparse(url).path.strip('/').split('/')[-1]}",
+        "title": title or f"{platform_name} product",
         "description": description or f"{platform_name} pre-order product. Final availability and landed Zambia price must be confirmed by ChinaZed staff before sourcing.",
         "image_url": image,
         "price": price,
