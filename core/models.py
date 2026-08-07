@@ -91,11 +91,30 @@ class Product(TimeStampedModel):
 
     image = models.ImageField(upload_to="products/", blank=True, null=True)
     external_image_url = models.URLField(blank=True)
+    external_gallery_urls = models.TextField(
+        blank=True,
+        help_text="One external product image URL per line.",
+    )
 
     product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default="preorder")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
 
     stock_quantity = models.PositiveIntegerField(default=0)
+    available_quantity = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Optional supplier availability for pre-order products.",
+    )
+    size_options = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Comma-separated sizes, for example: S, M, L, XL or 50 inch, 55 inch.",
+    )
+    color_options = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Comma-separated colors, for example: Black, White, Blue.",
+    )
 
     is_available = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
@@ -179,6 +198,32 @@ class Product(TimeStampedModel):
         if self.image:
             return self.image.url
         return self.external_image_url
+
+    def display_gallery_urls(self):
+        urls = []
+        main_url = self.display_image_url()
+        if main_url:
+            urls.append(main_url)
+        urls.extend(img.image.url for img in self.gallery_images.all())
+        urls.extend(
+            line.strip()
+            for line in self.external_gallery_urls.splitlines()
+            if line.strip()
+        )
+        return list(dict.fromkeys(urls))
+
+    def size_option_list(self):
+        return [item.strip() for item in self.size_options.split(",") if item.strip()]
+
+    def color_option_list(self):
+        return [item.strip() for item in self.color_options.split(",") if item.strip()]
+
+    def availability_label(self):
+        if self.product_type == "local":
+            return self.stock_status()
+        if self.available_quantity is not None:
+            return f"Supplier availability: {self.available_quantity}"
+        return "Availability confirmed before purchase"
 
     def delivery_range(self):
         return f"{self.delivery_min_days} to {self.delivery_max_days} days"

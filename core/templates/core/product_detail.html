@@ -264,6 +264,7 @@
             background: #F8F8F8;
             overflow: hidden;
             aspect-ratio: 1;
+            cursor: zoom-in;
         }
         .main-image-box img {
             width: 100%;
@@ -322,6 +323,89 @@
         .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .thumb:hover { border-color: var(--orange); }
         .thumb.active { border-color: var(--red); }
+        .zoom-hint {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            background: rgba(0,0,0,.62);
+            color: #fff;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 800;
+            z-index: 3;
+        }
+        .product-options {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 14px 16px;
+        }
+        .option-row { margin-bottom: 13px; }
+        .option-row:last-child { margin-bottom: 0; }
+        .option-label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 8px;
+        }
+        .option-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .option-pill {
+            border: 1px solid var(--border);
+            background: #fff;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+        .option-pill.color { padding-left: 11px; }
+        .availability-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #F0FFF4;
+            border: 1px solid #C6F6D5;
+            color: #137333;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .zoom-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,.88);
+            padding: 18px;
+        }
+        .zoom-modal.open { display: flex; }
+        .zoom-modal img {
+            max-width: min(96vw, 980px);
+            max-height: 92vh;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .zoom-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            border: 0;
+            border-radius: 999px;
+            width: 42px;
+            height: 42px;
+            background: #fff;
+            color: #111;
+            font-size: 24px;
+            cursor: pointer;
+        }
 
         /* ── INFO PANEL ── */
         .info-panel {
@@ -849,9 +933,10 @@
 
         <!-- LEFT: IMAGE PANEL -->
         <div class="image-panel">
-            <div class="main-image-box">
+            <div class="main-image-box" onclick="openImageZoom()">
                 {% if product.display_image_url %}
                     <img id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}">
+                    <span class="zoom-hint">Tap to zoom</span>
                 {% else %}
                     <div class="main-no-img">No Image Available</div>
                 {% endif %}
@@ -867,16 +952,11 @@
             </div>
 
             <!-- THUMBNAILS -->
-            {% if product.display_image_url or product.gallery_images.all %}
+            {% if product.display_gallery_urls %}
             <div class="thumb-row">
-                {% if product.display_image_url %}
-                    <div class="thumb active" onclick="setMainImage(this, '{{ product.display_image_url }}')">
-                        <img src="{{ product.display_image_url }}" alt="{{ product.name }}">
-                    </div>
-                {% endif %}
-                {% for img in product.gallery_images.all %}
-                    <div class="thumb" onclick="setMainImage(this, '{{ img.image.url }}')">
-                        <img src="{{ img.image.url }}" alt="{{ product.name }}">
+                {% for image_url in product.display_gallery_urls %}
+                    <div class="thumb {% if forloop.first %}active{% endif %}" onclick="setMainImage(event, this, '{{ image_url }}')">
+                        <img src="{{ image_url }}" alt="{{ product.name }}">
                     </div>
                 {% endfor %}
             </div>
@@ -1000,6 +1080,33 @@
                 </div>
             </div>
 
+            <div class="product-options">
+                <div class="option-row">
+                    <span class="option-label">Availability</span>
+                    <div class="availability-box">✓ {{ product.availability_label }}</div>
+                </div>
+                {% if product.size_option_list %}
+                <div class="option-row">
+                    <span class="option-label">Size</span>
+                    <div class="option-pills">
+                        {% for size in product.size_option_list %}
+                            <span class="option-pill">{{ size }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if product.color_option_list %}
+                <div class="option-row">
+                    <span class="option-label">Color</span>
+                    <div class="option-pills">
+                        {% for color in product.color_option_list %}
+                            <span class="option-pill color">{{ color }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
         </div><!-- end info-panel -->
     </div><!-- end product-layout -->
 
@@ -1116,6 +1223,13 @@
 <a href="{% url 'assistant' %}" class="wa-btn" title="AI Assistant" aria-label="AI Assistant">AI</a>
 <div class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
 
+{% if product.display_image_url %}
+<div class="zoom-modal" id="imageZoomModal" onclick="closeImageZoom()">
+    <button type="button" class="zoom-close" aria-label="Close image zoom">×</button>
+    <img id="zoomImage" src="{{ product.display_image_url }}" alt="{{ product.name }}">
+</div>
+{% endif %}
+
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-bottom-nav">
     <div class="mobile-bottom-nav-inner">
@@ -1157,11 +1271,34 @@
 </nav>
 
 <script>
-function setMainImage(thumbEl, url) {
-    document.getElementById('mainProductImage').src = url;
+function setMainImage(event, thumbEl, url) {
+    if (event) event.stopPropagation();
+    const mainImage = document.getElementById('mainProductImage');
+    if (!mainImage) return;
+    mainImage.src = url;
+    const zoomImage = document.getElementById('zoomImage');
+    if (zoomImage) zoomImage.src = url;
     document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
     thumbEl.classList.add('active');
 }
+function openImageZoom() {
+    const mainImage = document.getElementById('mainProductImage');
+    const zoom = document.getElementById('imageZoomModal');
+    const zoomImage = document.getElementById('zoomImage');
+    if (!mainImage || !zoom || !zoomImage) return;
+    zoomImage.src = mainImage.src;
+    zoom.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeImageZoom() {
+    const zoom = document.getElementById('imageZoomModal');
+    if (!zoom) return;
+    zoom.classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') closeImageZoom();
+});
 window.addEventListener('scroll', () => {
     const btn = document.querySelector('.back-top');
     if (btn) btn.style.opacity = window.scrollY > 400 ? '1' : '0';

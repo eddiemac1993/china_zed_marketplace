@@ -194,6 +194,7 @@ class ProductAdmin(admin.ModelAdmin):
                 "description",
                 "image",
                 "external_image_url",
+                "external_gallery_urls",
                 "image_preview_large",
             )
         }),
@@ -210,6 +211,9 @@ class ProductAdmin(admin.ModelAdmin):
                 "product_type",
                 "status",
                 "stock_quantity",
+                "available_quantity",
+                "size_options",
+                "color_options",
                 "is_available",
                 "is_featured",
             )

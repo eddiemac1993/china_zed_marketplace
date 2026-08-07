@@ -311,6 +311,14 @@ class MarketplaceFlowTests(TestCase):
             "Big Screen Smart TV",
             "--price-usd",
             "120.00",
+            "--gallery-url",
+            "https://example.com/tv-side.jpg",
+            "--available-quantity",
+            "12",
+            "--sizes",
+            "50 inch, 55 inch, 65 inch",
+            "--colors",
+            "Black, Silver",
             "--category",
             "Electronics",
             stdout=out,
@@ -320,12 +328,45 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(product.name, "Big Screen Smart TV")
         self.assertEqual(product.rmb_price, Decimal("864.00"))
         self.assertEqual(product.supplier_name, "Alibaba")
+        self.assertEqual(product.external_gallery_urls, "https://example.com/tv-side.jpg")
+        self.assertEqual(product.available_quantity, 12)
+        self.assertEqual(product.size_option_list(), ["50 inch", "55 inch", "65 inch"])
+        self.assertEqual(product.color_option_list(), ["Black", "Silver"])
 
     def test_product_display_image_url_prefers_external_image_when_no_upload(self):
         product = self.create_preorder_product(name="External image item")
         product.external_image_url = "https://example.com/product.png"
-        product.save(update_fields=["external_image_url"])
+        product.external_gallery_urls = "https://example.com/product-blue.png\nhttps://example.com/product-red.png"
+        product.available_quantity = 25
+        product.size_options = "S, M, L"
+        product.color_options = "Black, Blue"
+        product.save(update_fields=[
+            "external_image_url",
+            "external_gallery_urls",
+            "available_quantity",
+            "size_options",
+            "color_options",
+        ])
 
         self.assertEqual(product.display_image_url(), "https://example.com/product.png")
+        self.assertEqual(
+            product.display_gallery_urls(),
+            [
+                "https://example.com/product.png",
+                "https://example.com/product-blue.png",
+                "https://example.com/product-red.png",
+            ],
+        )
+        self.assertEqual(product.size_option_list(), ["S", "M", "L"])
+        self.assertEqual(product.color_option_list(), ["Black", "Blue"])
+        self.assertEqual(product.availability_label(), "Supplier availability: 25")
+
         response = self.client.get(reverse("home"))
         self.assertContains(response, "https://example.com/product.png")
+
+        detail_response = self.client.get(reverse("product_detail", kwargs={"slug": product.slug}))
+        self.assertContains(detail_response, "https://example.com/product-blue.png")
+        self.assertContains(detail_response, "Tap to zoom")
+        self.assertContains(detail_response, "Supplier availability: 25")
+        self.assertContains(detail_response, "Black")
+        self.assertContains(detail_response, "S")

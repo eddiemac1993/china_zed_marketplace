@@ -145,6 +145,10 @@ class Command(BaseCommand):
         parser.add_argument("--price-usd", help="Manual product price in USD when the page price cannot be read.")
         parser.add_argument("--price-rmb", help="Manual product cost in RMB. Overrides --price-usd.")
         parser.add_argument("--image-url", help="Manual product image URL.")
+        parser.add_argument("--gallery-url", action="append", default=[], help="Extra product image URL. Can be used multiple times.")
+        parser.add_argument("--available-quantity", type=int, help="Supplier available quantity to show on the product page.")
+        parser.add_argument("--sizes", help="Comma-separated size options, for example: S, M, L or 50 inch, 55 inch.")
+        parser.add_argument("--colors", help="Comma-separated color options, for example: Black, White, Blue.")
         parser.add_argument("--download-images", action="store_true", help="Download the main product image into the product image field.")
         parser.add_argument("--dry-run", action="store_true", help="Preview scraped product data without saving.")
 
@@ -155,7 +159,18 @@ class Command(BaseCommand):
                 urls.extend(line.strip() for line in handle if line.strip() and not line.startswith("#"))
         if not urls:
             raise CommandError("Provide at least one AliExpress URL or --file.")
-        if len(urls) > 1 and any(options[name] for name in ["name", "description", "price_usd", "price_rmb", "image_url"]):
+        manual_option_names = [
+            "name",
+            "description",
+            "price_usd",
+            "price_rmb",
+            "image_url",
+            "gallery_url",
+            "available_quantity",
+            "sizes",
+            "colors",
+        ]
+        if len(urls) > 1 and any(options[name] for name in manual_option_names):
             raise CommandError("Manual product fields can only be used when importing one URL.")
 
         usd_to_rmb = parse_decimal(options["usd_to_rmb"])
@@ -223,9 +238,13 @@ class Command(BaseCommand):
                     "description": data["description"],
                     "rmb_price": rmb_price,
                     "external_image_url": data["image_url"],
+                    "external_gallery_urls": "\n".join(options["gallery_url"]),
                     "category": category,
                     "product_type": "preorder",
                     "status": options["status"],
+                    "available_quantity": options["available_quantity"],
+                    "size_options": options["sizes"] or "",
+                    "color_options": options["colors"] or "",
                     "is_available": options["status"] == "active",
                     "delivery_min_days": 14,
                     "delivery_max_days": 30,
