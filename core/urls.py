@@ -28,6 +28,7 @@ urlpatterns = [
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),
     path("product/<slug:slug>/order/", views.place_order_view, name="place_order"),
     path("request-product/", views.request_product_view, name="request_product"),
+    path("staff/aliexpress-import/", views.aliexpress_import_view, name="aliexpress_import"),
 
     # =========================
     # CART SYSTEM

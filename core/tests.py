@@ -370,3 +370,95 @@ class MarketplaceFlowTests(TestCase):
         self.assertContains(detail_response, "Supplier availability: 25")
         self.assertContains(detail_response, "Black")
         self.assertContains(detail_response, "S")
+
+    def test_aliexpress_import_page_requires_staff(self):
+        response = self.client.get(reverse("aliexpress_import"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])
+
+        user = self.create_user()
+        self.client.force_login(user)
+        response = self.client.get(reverse("aliexpress_import"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])
+
+    @patch("core.views.requests.get")
+    def test_staff_can_preview_aliexpress_product_import(self, mock_get):
+        html = """
+        <html>
+            <head>
+                <script type="application/ld+json">
+                {
+                    "@type": "Product",
+                    "name": "Portable Mini Projector",
+                    "description": "Compact projector for home entertainment.",
+                    "image": "https://example.com/projector.jpg",
+                    "offers": {
+                        "price": "25.50",
+                        "priceCurrency": "USD"
+                    }
+                }
+                </script>
+            </head>
+        </html>
+        """
+        mock_get.return_value = FakeResponse(html)
+        staff = self.create_user(username="staff", email="staff@example.com")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse("aliexpress_import"),
+            {
+                "action": "preview",
+                "product_url": "https://www.aliexpress.com/item/100500-preview.html",
+                "usd_to_rmb": "7.20",
+                "status": "active",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Portable Mini Projector")
+        self.assertContains(response, "https://example.com/projector.jpg")
+        self.assertContains(response, 'value="25.50"')
+
+    def test_staff_can_create_aliexpress_product_from_import_form(self):
+        staff = self.create_user(username="staff", email="staff@example.com")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse("aliexpress_import"),
+            {
+                "action": "create",
+                "product_url": "https://www.aliexpress.com/item/100500-create.html",
+                "name": "AliExpress Smart Watch",
+                "description": "Smart watch with multiple strap colors.",
+                "price_usd": "12.00",
+                "usd_to_rmb": "7.20",
+                "new_category": "Smart Watches",
+                "status": "active",
+                "external_image_url": "https://example.com/watch-main.jpg",
+                "external_gallery_urls": "https://example.com/watch-blue.jpg\nhttps://example.com/watch-black.jpg",
+                "available_quantity": "50",
+                "size_options": "One size",
+                "color_options": "Blue, Black",
+            },
+        )
+
+        product = Product.objects.get(source_link="https://www.aliexpress.com/item/100500-create.html")
+        self.assertRedirects(response, reverse("product_detail", kwargs={"slug": product.slug}))
+        self.assertEqual(product.name, "AliExpress Smart Watch")
+        self.assertEqual(product.rmb_price, Decimal("86.40"))
+        self.assertEqual(product.category.name, "Smart Watches")
+        self.assertEqual(product.source_platform, "aliexpress")
+        self.assertEqual(product.available_quantity, 50)
+        self.assertEqual(product.display_gallery_urls()[1:], [
+            "https://example.com/watch-blue.jpg",
+            "https://example.com/watch-black.jpg",
+        ])
+        self.assertEqual(product.color_option_list(), ["Blue", "Black"])

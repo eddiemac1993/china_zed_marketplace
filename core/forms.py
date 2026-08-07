@@ -1,5 +1,5 @@
 from django import forms
-from .models import CustomerProductRequest, SupplierProductRequest, Order
+from .models import Category, CustomerProductRequest, SupplierProductRequest, Order
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -239,6 +239,135 @@ class CustomerProductRequestForm(forms.ModelForm):
                 "accept": "image/*",
             }),
         }
+
+
+class AliExpressProductImportForm(forms.Form):
+    product_url = forms.URLField(
+        label="AliExpress product link",
+        widget=forms.URLInput(attrs={
+            "class": "form-control",
+            "placeholder": "Paste AliExpress product link",
+        }),
+    )
+    name = forms.CharField(
+        required=False,
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Product name",
+        }),
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "rows": 4,
+            "placeholder": "Short product description",
+        }),
+    )
+    price_usd = forms.DecimalField(
+        required=False,
+        min_value=0,
+        decimal_places=2,
+        max_digits=12,
+        widget=forms.NumberInput(attrs={
+            "class": "form-control",
+            "placeholder": "Price in USD",
+            "step": "0.01",
+        }),
+    )
+    price_rmb = forms.DecimalField(
+        required=False,
+        min_value=0,
+        decimal_places=2,
+        max_digits=12,
+        widget=forms.NumberInput(attrs={
+            "class": "form-control",
+            "placeholder": "Price in RMB",
+            "step": "0.01",
+        }),
+    )
+    usd_to_rmb = forms.DecimalField(
+        required=True,
+        initial="7.20",
+        min_value=0,
+        decimal_places=2,
+        max_digits=8,
+        widget=forms.NumberInput(attrs={
+            "class": "form-control",
+            "step": "0.01",
+        }),
+    )
+    category = forms.ModelChoiceField(
+        required=False,
+        queryset=Category.objects.all().order_by("name"),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    new_category = forms.CharField(
+        required=False,
+        initial="AliExpress Finds",
+        max_length=120,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "New category name",
+        }),
+    )
+    status = forms.ChoiceField(
+        choices=[("active", "Active"), ("draft", "Draft")],
+        initial="active",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+    external_image_url = forms.URLField(
+        required=False,
+        widget=forms.URLInput(attrs={
+            "class": "form-control",
+            "placeholder": "Main product image URL",
+        }),
+    )
+    external_gallery_urls = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "rows": 3,
+            "placeholder": "One extra image URL per line",
+        }),
+    )
+    available_quantity = forms.IntegerField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs={
+            "class": "form-control",
+            "placeholder": "Supplier quantity, optional",
+        }),
+    )
+    size_options = forms.CharField(
+        required=False,
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "S, M, L or 50 inch, 55 inch",
+        }),
+    )
+    color_options = forms.CharField(
+        required=False,
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Black, White, Blue",
+        }),
+    )
+
+    def clean_product_url(self):
+        product_url = self.cleaned_data["product_url"].strip()
+        if "aliexpress." not in product_url.lower():
+            raise forms.ValidationError("Please paste an AliExpress product link.")
+        return product_url
+
+    def require_create_fields(self):
+        if not self.cleaned_data.get("name"):
+            self.add_error("name", "Enter the product name before creating.")
+        if not self.cleaned_data.get("price_rmb") and not self.cleaned_data.get("price_usd"):
+            self.add_error("price_usd", "Enter either a USD price or an RMB price before creating.")
 
 
 class OrderForm(forms.Form):
