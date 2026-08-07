@@ -450,6 +450,35 @@ class MarketplaceFlowTests(TestCase):
         self.assertEqual(fetched_url, "https://www.aliexpress.com/item/1005006227982959.html?spm=test")
         self.assertContains(response, "https://www.aliexpress.com/item/1005006227982959.html?spm=test")
 
+    @patch("core.views.requests.get")
+    def test_staff_preview_extracts_price_from_aliexpress_url_tracking_data(self, mock_get):
+        mock_get.return_value = FakeResponse("<html><title>Fresh AliExpress Cable</title></html>")
+        staff = self.create_user(username="staff", email="staff@example.com")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+
+        product_url = (
+            "https://www.aliexpress.com/item/1005004196279246.html?"
+            "pdp_npi=6%40dis%21ZMW%21ZMW+69.13%21ZMW+53.13%21%21%213.24%212.49%21%402101"
+        )
+        response = self.client.post(
+            reverse("aliexpress_import"),
+            {
+                "action": "preview",
+                "product_url": product_url,
+                "name": "Old Product Name",
+                "price_usd": "99.99",
+                "usd_to_rmb": "7.20",
+                "status": "active",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Fresh AliExpress Cable")
+        self.assertNotContains(response, "Old Product Name")
+        self.assertContains(response, 'value="2.49"')
+
     def test_staff_can_create_aliexpress_product_from_import_form(self):
         staff = self.create_user(username="staff", email="staff@example.com")
         staff.is_staff = True

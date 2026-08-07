@@ -1057,8 +1057,16 @@ def aliexpress_import_view(request):
             product_url = form.cleaned_data["product_url"]
             try:
                 initial = aliexpress_prefill_from_url(product_url)
+                fetched_field_names = {
+                    "product_url",
+                    "name",
+                    "description",
+                    "price_usd",
+                    "price_rmb",
+                    "external_image_url",
+                }
                 for key, value in request.POST.items():
-                    if value and key in initial and key != "product_url":
+                    if value and key in initial and key not in fetched_field_names:
                         initial[key] = value
                 form = AliExpressProductImportForm(initial=initial)
                 preview_loaded = True

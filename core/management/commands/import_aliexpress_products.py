@@ -1,7 +1,7 @@
 import json
 import re
 from decimal import Decimal, InvalidOperation
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, unquote_plus, urlparse
 
 import requests
 from django.core.files.base import ContentFile
@@ -74,6 +74,24 @@ def find_product_json_ld(html):
     return {}
 
 
+def extract_price_from_aliexpress_url(url):
+    query = parse_qs(urlparse(url).query)
+    pdp_npi = query.get("pdp_npi", [""])[0]
+    if not pdp_npi:
+        return None, ""
+
+    decoded = unquote_plus(pdp_npi)
+    usd_pair = re.search(r"!!!([0-9]+(?:\.[0-9]+)?)!([0-9]+(?:\.[0-9]+)?)!", decoded)
+    if usd_pair:
+        return parse_decimal(usd_pair.group(2)), "USD"
+
+    zmw_prices = re.findall(r"ZMW\s*([0-9]+(?:\.[0-9]+)?)", decoded)
+    if zmw_prices:
+        return parse_decimal(zmw_prices[-1]), "ZMW"
+
+    return None, ""
+
+
 def extract_product_data(html, url):
     platform_code, platform_name = detect_platform(url)
     product_json = find_product_json_ld(html)
@@ -118,6 +136,8 @@ def extract_product_data(html, url):
         price = parse_decimal(first_match([r'"salePrice"\s*:\s*"([^"]+)"', r'"price"\s*:\s*"([^"]+)"'], html))
     if not currency:
         currency = first_match([r'"priceCurrency"\s*:\s*"([^"]+)"', r'"currencyCode"\s*:\s*"([^"]+)"'], html)
+    if price is None:
+        price, currency = extract_price_from_aliexpress_url(url)
 
     return {
         "platform_code": platform_code,
