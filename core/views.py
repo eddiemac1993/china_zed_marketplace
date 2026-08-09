@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -17,14 +17,12 @@ from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
-    AliExpressProductImportForm,
     CustomerProductRequestForm,
     OrderForm,
     SupplierProductRequestForm,
     CustomUserRegistrationForm,
     PaymentProofForm,
 )
-from .management.commands.import_aliexpress_products import USER_AGENT, extract_product_data
 from .models import (
     Product,
     ProductReview,
@@ -34,6 +32,7 @@ from .models import (
     Cart,
     CartItem,
     Category,
+    SupplierProductRequest,
     SupplierProductRequestImage,
     money,
 )
@@ -958,7 +957,19 @@ def order_policy(request):
     return render(request, "core/order_policy.html")
 
 
+def is_approved_supplier(user):
+    """Approved suppliers are granted 'core.can_submit_products' by an admin."""
+    if not user.is_authenticated:
+        return False
+    return user.is_staff or user.has_perm("core.can_submit_products")
+
+
 def supplier_submit_product(request):
+    # Anyone may reach this URL, but only approved suppliers see the form.
+    # Everyone else gets the "how to become a supplier" page.
+    if not is_approved_supplier(request.user):
+        return render(request, "core/supplier_access_required.html")
+
     if request.method == "POST":
         form = SupplierProductRequestForm(
             request.POST,
@@ -967,6 +978,7 @@ def supplier_submit_product(request):
 
         if form.is_valid():
             supplier_request = form.save(commit=False)
+            supplier_request.submitted_by = request.user
 
             # Set preview image from first uploaded image later
             uploaded_images = request.FILES.getlist("images")
@@ -1004,154 +1016,35 @@ def supplier_submit_product(request):
             )
 
     else:
-        form = SupplierProductRequestForm()
+        # Prefill the supplier's details from their last submission so
+        # repeat posting only needs the product fields.
+        last = (
+            SupplierProductRequest.objects
+            .filter(submitted_by=request.user)
+            .order_by("-created_at")
+            .first()
+        )
+        initial = {}
+        if last:
+            initial = {
+                "supplier_name": last.supplier_name,
+                "supplier_contact": last.supplier_contact,
+            }
+        form = SupplierProductRequestForm(initial=initial)
+
+    my_submissions = (
+        SupplierProductRequest.objects
+        .filter(submitted_by=request.user)
+        .order_by("-created_at")[:8]
+    )
 
     return render(
         request,
         "core/supplier_submit_product.html",
         {
             "form": form,
+            "my_submissions": my_submissions,
         }
-    )
-
-
-def staff_user_required(user):
-    return user.is_authenticated and user.is_staff
-
-
-def aliexpress_prefill_from_url(product_url):
-    response = requests.get(product_url, headers={"User-Agent": USER_AGENT}, timeout=20)
-    response.raise_for_status()
-    data = extract_product_data(response.text, product_url)
-
-    initial = {
-        "product_url": product_url,
-        "name": data.get("title", ""),
-        "description": data.get("description", ""),
-        "external_image_url": data.get("image_url", ""),
-        "usd_to_rmb": "7.20",
-        "new_category": "AliExpress Finds",
-        "status": "active",
-    }
-
-    currency = (data.get("currency") or "").upper()
-    price = data.get("price")
-    if price is not None:
-        if currency in {"USD", "US"}:
-            initial["price_usd"] = price
-        elif currency in {"CNY", "RMB", "CN¥", "¥", "CNÂ¥", "Â¥", "CNÃ‚Â¥", "Ã‚Â¥"}:
-            initial["price_rmb"] = price
-
-    return initial
-
-
-@user_passes_test(staff_user_required, login_url="login")
-def aliexpress_import_view(request):
-    preview_loaded = False
-
-    if request.method == "POST":
-        action = request.POST.get("action", "preview")
-        form = AliExpressProductImportForm(request.POST, request.FILES)
-
-        if form.is_valid() and action == "preview":
-            product_url = form.cleaned_data["product_url"]
-            try:
-                initial = aliexpress_prefill_from_url(product_url)
-                fetched_field_names = {
-                    "product_url",
-                    "name",
-                    "description",
-                    "price_usd",
-                    "price_rmb",
-                    "external_image_url",
-                }
-                for key, value in request.POST.items():
-                    if value and key in initial and key not in fetched_field_names:
-                        initial[key] = value
-                form = AliExpressProductImportForm(initial=initial)
-                preview_loaded = True
-
-                missing = [
-                    label
-                    for field, label in [
-                        ("name", "product name"),
-                        ("external_image_url", "main image"),
-                    ]
-                    if not initial.get(field)
-                ]
-                if not initial.get("price_usd") and not initial.get("price_rmb"):
-                    missing.append("price")
-
-                if missing:
-                    messages.warning(
-                        request,
-                        "AliExpress did not provide: " + ", ".join(missing) + ". Please fill those fields before creating.",
-                    )
-                else:
-                    messages.success(request, "Product details were fetched. Review them, then create the product.")
-            except Exception:
-                messages.error(
-                    request,
-                    "We could not fetch this AliExpress page automatically. Fill the product details manually below.",
-                )
-                preview_loaded = True
-
-        elif form.is_valid() and action == "create":
-            form.require_create_fields()
-            if form.is_valid():
-                cleaned = form.cleaned_data
-                price_rmb = cleaned.get("price_rmb")
-                if price_rmb is None:
-                    price_rmb = cleaned["price_usd"] * cleaned["usd_to_rmb"]
-
-                category = cleaned.get("category")
-                if category is None:
-                    category_name = cleaned.get("new_category") or "AliExpress Finds"
-                    category, _ = Category.objects.get_or_create(name=category_name.strip())
-
-                status = cleaned["status"]
-                product, created = Product.objects.update_or_create(
-                    source_link=cleaned["product_url"],
-                    defaults={
-                        "name": cleaned["name"][:200],
-                        "description": cleaned.get("description") or "AliExpress pre-order product. Availability, variants, shipping, and final landed price are confirmed before purchase.",
-                        "rmb_price": money(price_rmb),
-                        "external_image_url": cleaned.get("external_image_url") or "",
-                        "external_gallery_urls": cleaned.get("external_gallery_urls") or "",
-                        "category": category,
-                        "product_type": "preorder",
-                        "status": status,
-                        "available_quantity": cleaned.get("available_quantity"),
-                        "size_options": cleaned.get("size_options") or "",
-                        "color_options": cleaned.get("color_options") or "",
-                        "is_available": status == "active",
-                        "delivery_min_days": 14,
-                        "delivery_max_days": 30,
-                        "source_platform": "aliexpress",
-                        "supplier_name": "AliExpress",
-                        "supplier_note": "Created from the staff AliExpress import page. Confirm availability, variants, shipping, and final landed price before sourcing.",
-                    },
-                )
-                uploaded_image = cleaned.get("uploaded_image")
-                if uploaded_image:
-                    product.image = uploaded_image
-                    product.save(update_fields=["image", "updated_at"])
-
-                messages.success(
-                    request,
-                    f"{'Created' if created else 'Updated'} {product.name}.",
-                )
-                return redirect("product_detail", slug=product.slug)
-    else:
-        form = AliExpressProductImportForm()
-
-    return render(
-        request,
-        "core/aliexpress_import.html",
-        {
-            "form": form,
-            "preview_loaded": preview_loaded,
-        },
     )
 
 

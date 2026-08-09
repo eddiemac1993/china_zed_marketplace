@@ -638,6 +638,7 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
         "image_preview_small",
         "product_name",
         "supplier_name",
+        "submitted_by",
         "product_type",
         "source_platform",
         "price_display",
@@ -664,6 +665,7 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
         "product_name",
         "supplier_name",
         "supplier_contact",
+        "submitted_by__username",
         "source_link",
         "description",
     )
@@ -679,6 +681,7 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
         ("Supplier", {
             "fields": (
                 "uuid",
+                "submitted_by",
                 "supplier_name",
                 "supplier_contact",
             )

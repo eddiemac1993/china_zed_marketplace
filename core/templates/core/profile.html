@@ -123,26 +123,28 @@
             letter-spacing: -.5px;
         }
         .hero-desc { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.6; }
-        .admin-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: -4px 0 14px;
+
+        /* SUPPLIER PORTAL BANNER */
+        .supplier-banner {
+            display: flex; align-items: center; gap: 14px;
+            background: linear-gradient(135deg, #111 0%, #2a2a2a 55%, #4A0B0D 100%);
+            border-radius: 10px; padding: 15px 18px; margin: -4px 0 14px;
+            color: #fff; text-decoration: none; transition: transform .15s, box-shadow .15s;
+            box-shadow: 0 8px 22px rgba(0,0,0,.14);
         }
-        .admin-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            background: #111;
-            color: #fff;
-            border-radius: 7px;
-            padding: 10px 13px;
-            font-size: 12px;
-            font-weight: 900;
-            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+        .supplier-banner:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.20); }
+        .supplier-banner-icon { font-size: 26px; flex-shrink: 0; }
+        .supplier-banner-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .supplier-banner-text strong { font-size: 14px; font-weight: 900; letter-spacing: .02em; }
+        .supplier-banner-text span { font-size: 11px; color: rgba(255,255,255,.72); line-height: 1.5; }
+        .supplier-banner-cta {
+            flex-shrink: 0; background: #FFE500; color: #B50F14;
+            border-radius: 7px; padding: 10px 15px; font-size: 12px; font-weight: 900; white-space: nowrap;
         }
-        .admin-action:hover { background: var(--red); }
+        @media (max-width: 600px) {
+            .supplier-banner { flex-wrap: wrap; gap: 10px; }
+            .supplier-banner-cta { width: 100%; text-align: center; }
+        }
 
         /* STATS */
         .stats-grid {
@@ -469,10 +471,16 @@
         <div class="hero-desc">View your order status, ask the AI assistant for help, and generate receipts once goods arrive.</div>
     </div>
 
-    {% if request.user.is_staff %}
-        <div class="admin-actions">
-            <a href="{% url 'aliexpress_import' %}" class="admin-action">Import AliExpress Product</a>
-        </div>
+    {% if is_approved_supplier %}
+    <!-- SUPPLIER PORTAL (approved suppliers only) -->
+    <a href="{% url 'supplier_submit_product' %}" class="supplier-banner">
+        <span class="supplier-banner-icon">🏪</span>
+        <span class="supplier-banner-text">
+            <strong>Supplier Portal</strong>
+            <span>Post a new product for review — Zambia stock or China pre-order.</span>
+        </span>
+        <span class="supplier-banner-cta">Submit a Product →</span>
+    </a>
     {% endif %}
 
     <!-- STATS -->

@@ -323,6 +323,15 @@ class SupplierProductRequest(TimeStampedModel):
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
+    submitted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="supplier_submissions",
+        help_text="The approved supplier account that submitted this product.",
+    )
+
     supplier_name = models.CharField(max_length=150)
     supplier_contact = models.CharField(max_length=100, blank=True)
 
@@ -349,6 +358,9 @@ class SupplierProductRequest(TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+        permissions = [
+            ("can_submit_products", "Can submit products as an approved supplier"),
+        ]
 
     def is_local(self):
         return self.product_type == "local"
@@ -360,6 +372,12 @@ class SupplierProductRequest(TimeStampedModel):
         if self.product_type == "local":
             return f"K{self.local_price or Decimal('0.00')}"
         return f"¥{self.rmb_price or Decimal('0.00')}"
+
+    def review_status(self):
+        """Simple label for the supplier's own submission list."""
+        if not self.is_reviewed:
+            return "pending"
+        return "approved" if self.is_approved else "rejected"
 
     def __str__(self):
         return f"{self.product_name} ({self.get_product_type_display()})"

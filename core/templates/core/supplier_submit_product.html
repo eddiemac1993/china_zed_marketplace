@@ -1,707 +1,537 @@
-﻿{% load static %}
+{% extends "core/base.html" %}
+{% load humanize %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit a Product · ChinaZed 中赞商城</title>
+{% block title %}Submit a Product · Supplier Portal · ChinaZed{% endblock %}
 
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+{% block extra_style %}
+        .sp-layout { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
 
-    <style>
-        :root {
-            --red: #E5141A;
-            --red-dark: #B50F14;
-            --orange: #FF6600;
-            --orange-light: #FF8C00;
-            --gold: #FFC107;
-            --yellow: #FFE500;
-            --bg: #F2F2F2;
-            --white: #FFFFFF;
-            --ink: #1A1A1A;
-            --muted: #888;
-            --border: #E0E0E0;
-            --card-radius: 8px;
+        /* ── HERO ── */
+        .sp-hero {
+            background: linear-gradient(135deg, #111 0%, #2a2a2a 45%, #4A0B0D 100%);
+            border-radius: var(--card-radius); padding: 22px 24px; color: #fff;
+            margin-bottom: 14px; position: relative; overflow: hidden;
         }
+        .sp-hero::after {
+            content: '🏪'; position: absolute; right: 18px; bottom: -14px;
+            font-size: 96px; opacity: .10; pointer-events: none;
+        }
+        .sp-hero-badge {
+            display: inline-block; background: var(--yellow); color: var(--red-dark);
+            font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase;
+            padding: 4px 10px; border-radius: 4px; margin-bottom: 10px;
+        }
+        .sp-hero h1 {
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+            font-size: 30px; line-height: 1.05; margin-bottom: 6px;
+        }
+        .sp-hero p { font-size: 13px; color: rgba(255,255,255,.75); line-height: 1.7; max-width: 620px; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 13px;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
+        /* ── STEPS ── */
+        .sp-steps { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+        .sp-step {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.16);
+            border-radius: 999px; padding: 7px 13px; font-size: 11px; font-weight: 700;
         }
-
-        a { text-decoration: none; color: inherit; }
-
-        /* ── UTILITY BAR ── */
-        .utility-bar {
-            background: #1a1a1a;
-            color: #999;
-            font-size: 11px;
-            padding: 6px 0;
-        }
-        .utility-bar-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .03em; }
-        .utility-bar-links { display: flex; align-items: center; }
-        .utility-bar a { color: #888; transition: color .15s; padding: 0 8px; border-right: 1px solid #333; }
-        .utility-bar a:last-child { border-right: none; }
-        .utility-bar a:hover { color: #fff; }
-        .utility-bar a.highlight { color: var(--gold); font-weight: 600; }
-
-        /* ── HEADER ── */
-        .main-header {
-            background: var(--red);
-            box-shadow: 0 2px 12px rgba(0,0,0,.25);
-        }
-        .header-top {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-        .site-logo {
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            text-decoration: none;
-        }
-        .logo-main {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 28px;
-            color: #fff;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-        .logo-sub {
-            font-size: 9px;
-            color: rgba(255,255,255,0.65);
-            letter-spacing: 0.1em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .header-spacer { flex: 1; }
-        .hdr-back {
-            color: rgba(255,255,255,.85);
-            font-size: 12px;
-            font-weight: 700;
-            padding: 7px 14px;
-            border: 1px solid rgba(255,255,255,.3);
-            border-radius: 4px;
-            transition: background .15s;
-        }
-        .hdr-back:hover { background: rgba(255,255,255,.15); color: #fff; }
-
-        /* ── PAGE WRAPPER ── */
-        .page-body {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px 16px 40px;
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 16px;
-            align-items: start;
+        .sp-step b {
+            width: 18px; height: 18px; border-radius: 50%; background: var(--yellow);
+            color: var(--red-dark); display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900; flex-shrink: 0;
         }
 
-        /* ── FORM CARD ── */
-        .form-card {
-            background: var(--white);
-            border-radius: var(--card-radius);
-            border: 1px solid var(--border);
-            overflow: hidden;
+        /* ── CARD ── */
+        .sp-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--card-radius); overflow: hidden; margin-bottom: 14px;
+        }
+        .sp-card-head {
+            padding: 13px 18px; border-bottom: 1px solid #F0F0F0;
+            background: linear-gradient(to right, #FFFAF9, #fff);
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .sp-card-title {
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+            font-size: 18px; color: var(--red); letter-spacing: .4px;
+        }
+        .sp-card-body { padding: 18px; }
+
+        /* ── SECTIONS ── */
+        .sp-section { margin-bottom: 24px; }
+        .sp-section:last-child { margin-bottom: 0; }
+        .sp-section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+        .sp-section-num {
+            width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: #fff;
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .sp-section-title { font-size: 14px; font-weight: 900; color: var(--ink); }
+        .sp-section-note { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+        .sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* ── TYPE CARDS ── */
+        .type-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .type-card {
+            position: relative; border: 2px solid var(--border); border-radius: 9px;
+            padding: 14px; cursor: pointer; transition: all .15s; background: #fff; display: block;
+        }
+        .type-card:hover { border-color: var(--red); background: #FFFAFA; }
+        .type-card input { position: absolute; opacity: 0; pointer-events: none; }
+        .type-card-icon { font-size: 24px; margin-bottom: 7px; }
+        .type-card-title { font-size: 13px; font-weight: 900; color: var(--ink); margin-bottom: 3px; }
+        .type-card-desc { font-size: 11px; color: var(--muted); line-height: 1.55; }
+        .type-card.selected { border-color: var(--red); background: #FFF4F4; box-shadow: 0 4px 16px rgba(229,20,26,.12); }
+        .type-card.selected::after {
+            content: '✓'; position: absolute; top: 10px; right: 12px;
+            width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff;
+            font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center;
         }
 
-        .card-header {
-            background: var(--orange);
-            padding: 18px 24px;
+        /* conditional field groups */
+        .when-local, .when-preorder { display: none; }
+        .sp-form[data-type="local"] .when-local { display: block; }
+        .sp-form[data-type="preorder"] .when-preorder { display: block; }
+
+        /* ── IMAGES ── */
+        .drop-zone {
+            border: 2px dashed var(--border); border-radius: 9px; padding: 22px 16px;
+            text-align: center; cursor: pointer; transition: all .15s; background: #FAFAFA;
         }
-        .card-header-eyebrow {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            color: rgba(255,255,255,.7);
-            margin-bottom: 4px;
+        .drop-zone:hover { border-color: var(--red); background: #FFF6F6; }
+        .drop-zone-icon { font-size: 30px; margin-bottom: 7px; }
+        .drop-zone-text { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
+        .drop-zone-hint { font-size: 11px; color: var(--muted); }
+        .drop-zone input[type=file] { display: none; }
+        .preview-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .preview-thumb {
+            width: 68px; height: 68px; border-radius: 6px; overflow: hidden;
+            border: 1px solid var(--border); position: relative; background: #F5F5F5;
         }
-        .card-header-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 26px;
-            color: #fff;
-            letter-spacing: .5px;
-            line-height: 1;
-        }
-        .card-header-sub {
-            font-size: 12px;
-            color: rgba(255,255,255,.8);
-            margin-top: 5px;
+        .preview-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .preview-thumb:first-child::after {
+            content: 'COVER'; position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(229,20,26,.92); color: #fff; font-size: 8px; font-weight: 900;
+            text-align: center; padding: 2px 0; letter-spacing: .04em;
         }
 
-        .card-body { padding: 24px; }
+        /* ── ALERTS ── */
+        .sp-alert {
+            border-radius: 7px; padding: 12px 14px; font-size: 12px;
+            line-height: 1.6; margin-bottom: 16px;
+        }
+        .sp-alert.ok { background: #F0FFF4; border: 1px solid #B7EBC5; color: #1D6A34; }
+        .sp-alert.bad { background: #FFF0F0; border: 1px solid #FFC5C5; color: #A31414; }
+        .sp-alert ul { margin: 7px 0 0 18px; }
+        .sp-alert li { margin-bottom: 3px; }
 
-        /* SUCCESS */
-        .success-box {
-            background: #F0FFF4;
-            border: 1px solid #B7EBC5;
-            border-left: 3px solid #00A854;
-            color: #1D6A34;
-            padding: 12px 14px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        /* ── SUBMIT BAR ── */
+        .sp-submit-bar {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 15px 18px; border-top: 1px solid #F0F0F0; background: #FAFAFA; flex-wrap: wrap;
         }
-
-        /* SECTION DIVIDER */
-        .form-section-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 15px;
-            color: var(--orange);
-            letter-spacing: .5px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #F0F0F0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .sp-submit-note { font-size: 11px; color: var(--muted); line-height: 1.5; flex: 1; min-width: 180px; }
+        .btn-submit-product {
+            background: var(--red); color: #fff; border: none; border-radius: 7px;
+            padding: 13px 26px; font-size: 14px; font-weight: 900; font-family: inherit;
+            cursor: pointer; transition: background .15s, transform .1s; white-space: nowrap;
         }
-        .form-section-title::before {
-            content: '';
-            display: block;
-            width: 3px;
-            height: 14px;
-            background: var(--orange);
-            border-radius: 2px;
-            flex-shrink: 0;
-        }
-
-        .form-section { margin-bottom: 20px; }
-
-        /* FIELD */
-        .form-group { margin-bottom: 12px; }
-        .form-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-        }
-        .form-label .req { color: var(--red); margin-left: 2px; }
-        .form-input,
-        .form-textarea {
-            width: 100%;
-            padding: 10px 13px;
-            background: #FAFAFA;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-            color: var(--ink);
-            transition: border-color .15s, box-shadow .15s;
-            outline: none;
-        }
-        .form-input:focus,
-        .form-textarea:focus {
-            border-color: var(--orange);
-            box-shadow: 0 0 0 3px rgba(255,102,0,.08);
-            background: #fff;
-        }
-        .form-input::placeholder,
-        .form-textarea::placeholder { color: #BBB; }
-        .form-textarea { resize: vertical; min-height: 90px; }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        /* FILE UPLOAD */
-        .file-drop {
-            border: 2px dashed var(--border);
-            border-radius: 4px;
-            padding: 20px 16px;
-            text-align: center;
-            transition: border-color .15s, background .15s;
-            cursor: pointer;
-            position: relative;
-        }
-        .file-drop:hover {
-            border-color: var(--orange);
-            background: #FFF8F0;
-        }
-        .file-drop input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-        .file-drop-icon { font-size: 28px; margin-bottom: 6px; }
-        .file-drop-text { font-size: 12px; color: var(--ink); font-weight: 700; margin-bottom: 3px; }
-        .file-drop-hint { font-size: 11px; color: var(--muted); }
-
-        /* SUBMIT */
-        .btn-submit {
-            display: block;
-            width: 100%;
-            background: var(--orange);
-            color: #fff;
-            border: none;
-            padding: 13px 0;
-            font-size: 15px;
-            font-weight: 900;
-            font-family: 'Barlow Condensed', sans-serif;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-transform: uppercase;
-            transition: background .15s, transform .1s;
-            margin-top: 4px;
-        }
-        .btn-submit:hover { background: #D95500; }
-        .btn-submit:active { transform: scale(.99); }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 14px;
-            transition: color .15s;
-        }
-        .back-link:hover { color: var(--orange); }
+        .btn-submit-product:hover { background: var(--red-dark); }
+        .btn-submit-product:active { transform: scale(.98); }
 
         /* ── SIDEBAR ── */
-        .sidebar { display: flex; flex-direction: column; gap: 12px; }
-
-        .info-card {
-            background: var(--white);
-            border-radius: var(--card-radius);
-            border: 1px solid var(--border);
-            overflow: hidden;
+        .side-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--card-radius); overflow: hidden; margin-bottom: 12px;
         }
-        .info-card-header {
-            background: #1A1A1A;
-            padding: 11px 16px;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 14px;
-            color: #fff;
-            letter-spacing: .5px;
+        .side-head {
+            background: #111; color: #fff; padding: 11px 15px;
+            font-size: 12px; font-weight: 900; letter-spacing: .04em;
         }
-        .info-card-body { padding: 14px 16px; }
+        .side-body { padding: 14px 15px; }
+        .tip { display: flex; gap: 9px; margin-bottom: 13px; }
+        .tip:last-child { margin-bottom: 0; }
+        .tip-icon { font-size: 15px; flex-shrink: 0; line-height: 1.3; }
+        .tip-text h5 { font-size: 12px; font-weight: 800; color: var(--ink); margin-bottom: 2px; }
+        .tip-text p { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
-        .info-step {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 12px;
+        /* ── MY SUBMISSIONS ── */
+        .sub-item { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid #F5F5F5; }
+        .sub-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .sub-thumb {
+            width: 42px; height: 42px; border-radius: 5px; overflow: hidden; flex-shrink: 0;
+            background: #F5F5F5; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; font-size: 15px;
         }
-        .info-step:last-child { margin-bottom: 0; }
-        .info-step-num {
-            width: 22px;
-            height: 22px;
-            background: var(--orange);
-            color: #fff;
-            border-radius: 50%;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px;
+        .sub-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .sub-body { flex: 1; min-width: 0; }
+        .sub-name {
+            font-size: 12px; font-weight: 700; color: var(--ink); line-height: 1.35;
+            margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .info-step-text h4 { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-        .info-step-text p { font-size: 11px; color: var(--muted); line-height: 1.5; }
-
-        .contact-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid #F5F5F5;
-            font-size: 12px;
+        .sub-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .sub-badge {
+            font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px;
+            text-transform: uppercase; letter-spacing: .04em;
         }
-        .contact-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .contact-row-icon { font-size: 18px; flex-shrink: 0; }
-        .contact-row a { color: var(--orange); font-weight: 700; }
-        .contact-row a:hover { text-decoration: underline; }
+        .sub-badge.pending { background: #FFF8E1; color: #8B6914; }
+        .sub-badge.approved { background: #EAFBF1; color: #008743; }
+        .sub-badge.rejected { background: #FFF0F0; color: #C00; }
+        .sub-date { font-size: 10px; color: var(--muted); }
+        .sub-empty { text-align: center; padding: 18px 6px; color: var(--muted); font-size: 12px; }
+        .sub-empty::before { content: '📦'; display: block; font-size: 26px; margin-bottom: 7px; }
 
-        .tip-list { list-style: none; }
-        .tip-list li {
-            font-size: 11px;
-            color: #555;
-            padding: 5px 0;
-            border-bottom: 1px solid #F5F5F5;
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            line-height: 1.5;
+        @media (max-width: 900px) {
+            .sp-layout { grid-template-columns: 1fr; }
         }
-        .tip-list li:last-child { border-bottom: none; }
-        .tip-list li::before { content: '✓'; color: #00A854; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
-
-        /* ── FOOTER ── */
-        .site-footer { background: #1A1A1A; margin-top: 24px; }
-        .footer-bottom {
-            padding: 14px 20px;
-            text-align: center;
-            font-size: 11px;
-            color: #444;
-            max-width: 1280px;
-            margin: 0 auto;
+        @media (max-width: 640px) {
+            .sp-row, .type-cards { grid-template-columns: 1fr; }
+            .sp-hero { padding: 18px; }
+            .sp-hero h1 { font-size: 23px; }
+            .btn-submit-product { width: 100%; }
         }
+{% endblock %}
 
-        /* ── MOBILE ── */
-        @media (max-width: 760px) {
-            .page-body {
-                grid-template-columns: 1fr;
-                padding: 12px 12px 32px;
-            }
-            .utility-bar { display: none; }
-            .logo-sub { display: none; }
-            .form-row { grid-template-columns: 1fr; gap: 12px; }
-        }
-    </style>
-</head>
-<body>
-
-<!-- UTILITY BAR -->
-<div class="utility-bar">
-    <div class="utility-bar-inner">
-        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
-        <div class="utility-bar-links">
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'profile' %}">My Account</a>
-                <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Sign In</a>
-                <a href="{% url 'register' %}" class="highlight">Register Free</a>
-            {% endif %}
-            <a href="{% url 'home' %}">← Marketplace</a>
-        </div>
-    </div>
-</div>
-
-<!-- HEADER -->
-<div class="main-header">
-    <div class="header-top">
-        <a href="{% url 'home' %}" class="site-logo">
-            <div class="logo-main">CHINAZED</div>
-            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
-        </a>
-        <div class="header-spacer"></div>
-        <a href="{% url 'home' %}" class="hdr-back">← Back to Shop</a>
-    </div>
-</div>
-{% if form.errors %}
-    <div style="background:#fff0f0;border:1px solid #ffb3b3;color:#b00020;padding:12px;border-radius:6px;margin-bottom:18px;">
-        <strong>Please fix these errors:</strong>
-
-        <ul style="margin-top:8px;padding-left:18px;">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <li>
-                        <strong>{{ field.label }}:</strong> {{ error }}
-                    </li>
-                {% endfor %}
-            {% endfor %}
-
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endif %}
-<!-- PAGE -->
+{% block content %}
 <div class="page-body">
 
-    <!-- FORM CARD -->
-    <div class="form-card">
-
-        <div class="card-header">
-            <div class="card-header-eyebrow">🏪 Supplier Portal</div>
-            <div class="card-header-title">SUBMIT A PRODUCT</div>
-            <div class="card-header-sub">China suppliers &amp; product scouts — list your products here for review.</div>
+    <!-- HERO -->
+    <div class="sp-hero">
+        <div class="sp-hero-badge">🏪 Approved Supplier Portal</div>
+        <h1>Submit a product for review</h1>
+        <p>List products you can supply — either stock you already hold in Zambia, or items you can source from China. Our team reviews every submission before it goes live on the marketplace.</p>
+        <div class="sp-steps">
+            <span class="sp-step"><b>1</b> Fill in the details</span>
+            <span class="sp-step"><b>2</b> Add clear photos</span>
+            <span class="sp-step"><b>3</b> We review &amp; publish</span>
         </div>
+    </div>
 
-        <div class="card-body">
+    <div class="sp-layout">
 
-            {% if messages %}
-                {% for message in messages %}
-                <div class="success-box">
-                    ✓ {{ message }}
+        <!-- ══ MAIN FORM ══ -->
+        <div>
+            <div class="sp-card">
+                <div class="sp-card-head">
+                    <span class="sp-card-title">PRODUCT DETAILS</span>
+                    <span style="font-size:11px;color:var(--muted);">All fields marked * are required</span>
                 </div>
-                {% endfor %}
-            {% endif %}
 
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
+                <div class="sp-card-body">
 
-                <!-- SUPPLIER INFO -->
-                <div class="form-section">
-                    <div class="form-section-title">Supplier Information</div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Supplier Name <span class="req">*</span></label>
-                            <input type="text" name="supplier_name"
-                                   class="form-input"
-                                   placeholder="e.g. Chen Trading Co."
-                                   required>
+                    {# Flash messages are rendered once by base.html #}
+                    {% if form.errors %}
+                        <div class="sp-alert bad">
+                            <strong>Please fix the following:</strong>
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Contact (WeChat / Phone) <span class="req">*</span></label>
-                            <input type="text" name="supplier_contact"
-                                   class="form-input"
-                                   placeholder="WeChat ID or phone number"
-                                   required>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data" class="sp-form" id="supplierForm"
+                          data-type="{{ form.product_type.value|default:'preorder' }}">
+                        {% csrf_token %}
+
+                        <!-- 1 · TYPE -->
+                        <div class="sp-section">
+                            <div class="sp-section-head">
+                                <span class="sp-section-num">1</span>
+                                <div>
+                                    <div class="sp-section-title">What kind of product is this? *</div>
+                                    <div class="sp-section-note">This decides which details we need from you.</div>
+                                </div>
+                            </div>
+
+                            <div class="type-cards">
+                                {% for radio in form.product_type %}
+                                    <label class="type-card" data-value="{{ radio.data.value }}">
+                                        {{ radio.tag }}
+                                        <div class="type-card-icon">{% if radio.data.value == 'local' %}🇿🇲{% else %}🇨🇳{% endif %}</div>
+                                        <div class="type-card-title">
+                                            {% if radio.data.value == 'local' %}Available in Zambia{% else %}Pre-order from China{% endif %}
+                                        </div>
+                                        <div class="type-card-desc">
+                                            {% if radio.data.value == 'local' %}
+                                                You already have this in stock locally. Buyers get it fast.
+                                            {% else %}
+                                                You can source it from China. Buyers pay 35% deposit up front.
+                                            {% endif %}
+                                        </div>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- 2 · PRODUCT -->
+                        <div class="sp-section">
+                            <div class="sp-section-head">
+                                <span class="sp-section-num">2</span>
+                                <div>
+                                    <div class="sp-section-title">Product information</div>
+                                    <div class="sp-section-note">Be specific — clear names get approved faster.</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Product name *</label>
+                                {{ form.product_name }}
+                                <div class="form-hint">Example: “Anker 20000mAh Power Bank — Black”</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Description *</label>
+                                {{ form.description }}
+                                <div class="form-hint">Include size, colour, model, and anything a buyer would ask.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                {{ form.category }}
+                                <div class="form-hint">Helps buyers find your product. Leave blank if unsure.</div>
+                            </div>
+                        </div>
+
+                        <!-- 3 · PRICE -->
+                        <div class="sp-section">
+                            <div class="sp-section-head">
+                                <span class="sp-section-num">3</span>
+                                <div>
+                                    <div class="sp-section-title">Price &amp; availability</div>
+                                    <div class="sp-section-note">Give us your supply price — we add our margin before listing.</div>
+                                </div>
+                            </div>
+
+                            <!-- Zambia stock -->
+                            <div class="when-local">
+                                <div class="sp-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Your price in Kwacha (ZMW) *</label>
+                                        {{ form.local_price }}
+                                        <div class="form-hint">What you charge us per unit.</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Quantity in stock *</label>
+                                        {{ form.stock_quantity }}
+                                        <div class="form-hint">How many you have right now in Zambia.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- China pre-order -->
+                            <div class="when-preorder">
+                                <div class="form-group">
+                                    <label class="form-label">Your price in RMB (¥) *</label>
+                                    {{ form.rmb_price }}
+                                    <div class="form-hint">Supplier cost per unit in Chinese Yuan. We convert to Kwacha automatically.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4 · PHOTOS -->
+                        <div class="sp-section">
+                            <div class="sp-section-head">
+                                <span class="sp-section-num">4</span>
+                                <div>
+                                    <div class="sp-section-title">Photos</div>
+                                    <div class="sp-section-note">Products with clear photos sell far more.</div>
+                                </div>
+                            </div>
+
+                            <label class="drop-zone" id="dropZone">
+                                <div class="drop-zone-icon">📸</div>
+                                <div class="drop-zone-text">Tap to add product photos</div>
+                                <div class="drop-zone-hint">You can select several at once · first photo becomes the cover</div>
+                                {{ form.images }}
+                            </label>
+                            <div class="preview-grid" id="previewGrid"></div>
+
+                            <div class="form-group" style="margin-top:14px;">
+                                <label class="form-label">Cover photo (optional)</label>
+                                {{ form.image }}
+                                <div class="form-hint">Only needed if you want a specific photo as the main image.</div>
+                            </div>
+                        </div>
+
+                        <!-- 5 · CONTACT -->
+                        <div class="sp-section">
+                            <div class="sp-section-head">
+                                <span class="sp-section-num">5</span>
+                                <div>
+                                    <div class="sp-section-title">How we reach you</div>
+                                    <div class="sp-section-note">We contact you once a buyer orders this product.</div>
+                                </div>
+                            </div>
+
+                            <div class="sp-row">
+                                <div class="form-group">
+                                    <label class="form-label">Supplier / shop name *</label>
+                                    {{ form.supplier_name }}
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Phone, WhatsApp or WeChat</label>
+                                    {{ form.supplier_contact }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sp-submit-bar" style="margin:0 -18px -18px;">
+                            <div class="sp-submit-note">
+                                Your submission goes to our team for review. Nothing is published until it is approved.
+                            </div>
+                            <button type="submit" class="btn-submit-product">Submit for review →</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SIDEBAR ══ -->
+        <div>
+            <!-- MY SUBMISSIONS -->
+            <div class="side-card">
+                <div class="side-head">📋 MY SUBMISSIONS</div>
+                <div class="side-body">
+                    {% for item in my_submissions %}
+                        <div class="sub-item">
+                            <div class="sub-thumb">
+                                {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.product_name }}">{% else %}📦{% endif %}
+                            </div>
+                            <div class="sub-body">
+                                <div class="sub-name">{{ item.product_name }}</div>
+                                <div class="sub-meta">
+                                    {% with status=item.review_status %}
+                                        <span class="sub-badge {{ status }}">
+                                            {% if status == 'pending' %}Under review{% elif status == 'approved' %}Approved{% else %}Not approved{% endif %}
+                                        </span>
+                                    {% endwith %}
+                                    <span class="sub-date">{{ item.created_at|date:"j M" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="sub-empty">
+                            Nothing submitted yet.<br>Your products will appear here.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- TIPS -->
+            <div class="side-card">
+                <div class="side-head">💡 GET APPROVED FASTER</div>
+                <div class="side-body">
+                    <div class="tip">
+                        <span class="tip-icon">📷</span>
+                        <div class="tip-text">
+                            <h5>Real photos win</h5>
+                            <p>Photograph the actual item on a plain background. Avoid blurry screenshots.</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <span class="tip-icon">✍️</span>
+                        <div class="tip-text">
+                            <h5>Full product names</h5>
+                            <p>Include brand, model, size and colour so buyers know exactly what they get.</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <span class="tip-icon">💰</span>
+                        <div class="tip-text">
+                            <h5>Give your real price</h5>
+                            <p>Quote your supply price, not the shelf price. We add the marketplace margin.</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <span class="tip-icon">📦</span>
+                        <div class="tip-text">
+                            <h5>Only list what you can supply</h5>
+                            <p>Keep stock numbers honest so buyers are never disappointed.</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-<!-- PRODUCT INFO -->
-<div class="form-section">
-    <div class="form-section-title">Product Details</div>
-
-    <div class="form-row">
-
-        <div class="form-group">
-            <label class="form-label">
-                Product Type <span class="req">*</span>
-            </label>
-
-            <select name="product_type" class="form-input" required>
-                <option value="preorder">Pre-order from China</option>
-                <option value="local">Available in Zambia</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">
-                Category
-            </label>
-
-            {{ form.category }}
-        </div>
-
-    </div>
-
-    <div class="form-row">
-
-        <div class="form-group">
-            <label class="form-label">
-                Stock Quantity
-            </label>
-
-            <input type="number"
-                   name="stock_quantity"
-                   class="form-input"
-                   placeholder="Available quantity"
-                   min="0">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">
-                Product Name <span class="req">*</span>
-            </label>
-
-            <input type="text"
-                   name="product_name"
-                   class="form-input"
-                   placeholder="e.g. Smart Watch Ultra Pro"
-                   required>
-        </div>
-
-    </div>
-
-    <div class="form-group">
-        <label class="form-label">
-            Description
-        </label>
-
-        <textarea name="description"
-                  class="form-textarea"
-                  placeholder="Describe the product — features, sizes, colors, materials…"></textarea>
-    </div>
-
-    <div class="form-row">
-
-        <div class="form-group">
-            <label class="form-label">
-                China Price (RMB ¥)
-            </label>
-
-            <input type="number"
-                   step="0.01"
-                   name="rmb_price"
-                   class="form-input"
-                   placeholder="For China pre-orders">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">
-                Local Price (ZMW K)
-            </label>
-
-            <input type="number"
-                   step="0.01"
-                   name="local_price"
-                   class="form-input"
-                   placeholder="For Zambia local stock">
-        </div>
-
-    </div>
-</div>
-
-<!-- IMAGES -->
-<div class="form-section">
-    <div class="form-section-title">Product Images</div>
-
-    <div class="file-drop">
-        <input type="file"
-               id="images"
-               name="images"
-               multiple
-               accept="image/*"
-               onchange="showSelectedImages(this)">
-
-        <div class="file-drop-icon">📷</div>
-        <div class="file-drop-text">Click or drag images here</div>
-        <div class="file-drop-hint">Upload 3–6 images · JPG, PNG, WEBP · Max 5MB each</div>
-    </div>
-
-    <div id="image-preview-list"
-         style="margin-top:10px;font-size:12px;color:#555;"></div>
-</div>
-
-                <button type="submit" class="btn-submit">
-                    Submit Product for Review →
-                </button>
-            </form>
-
-            <a href="{% url 'home' %}" class="back-link">← Back to Marketplace</a>
-
-        </div>
-    </div>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-
-        <!-- HOW IT WORKS -->
-        <div class="info-card">
-            <div class="info-card-header">HOW IT WORKS</div>
-            <div class="info-card-body">
-                <div class="info-step">
-                    <div class="info-step-num">1</div>
-                    <div class="info-step-text">
-                        <h4>Submit Your Product</h4>
-                        <p>Fill in details, price in RMB, and upload clear photos.</p>
-                    </div>
-                </div>
-                <div class="info-step">
-                    <div class="info-step-num">2</div>
-                    <div class="info-step-text">
-                        <h4>We Review &amp; List</h4>
-                        <p>Our team checks and publishes your product on the marketplace.</p>
-                    </div>
-                </div>
-                <div class="info-step">
-                    <div class="info-step-num">3</div>
-                    <div class="info-step-text">
-                        <h4>Buyers Place Orders</h4>
-                        <p>Zambian buyers pay a 35% deposit to confirm orders.</p>
-                    </div>
-                </div>
-                <div class="info-step">
-                    <div class="info-step-num">4</div>
-                    <div class="info-step-text">
-                        <h4>You Get Paid</h4>
-                        <p>We coordinate shipping and settle with you on arrival.</p>
+            <!-- HELP -->
+            <div class="side-card">
+                <div class="side-head">💬 NEED HELP?</div>
+                <div class="side-body">
+                    <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+                        Questions about listing or pricing? Talk to the ChinaZed team.
+                    </p>
+                    <div style="margin-top:10px;font-size:12px;line-height:1.9;">
+                        <div>📞 +260 969 274 458</div>
+                        <div>✉️ chinatozambia.zm@gmail.com</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- CONTACT -->
-        <div class="info-card">
-            <div class="info-card-header">NEED HELP?</div>
-            <div class="info-card-body">
-                <div class="contact-row">
-                    <span class="contact-row-icon">💬</span>
-                    <div>Need help?<br><a href="{% url 'assistant' %}">Ask the AI assistant</a></div>
-                </div>
-                <div class="contact-row">
-                    <span class="contact-row-icon">✉️</span>
-                    <div><a href="mailto:chinatozambia.zm@gmail.com">chinatozambia.zm@gmail.com</a></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TIPS -->
-        <div class="info-card">
-            <div class="info-card-header">LISTING TIPS</div>
-            <div class="info-card-body">
-                <ul class="tip-list">
-                    <li>Use clear, well-lit photos on a white background</li>
-                    <li>Include all available colors and sizes</li>
-                    <li>Price in RMB — we handle ZMW conversion</li>
-                    <li>Mention delivery timeframe if you know it</li>
-                    <li>Upload at least 3 images for faster approval</li>
-                </ul>
-            </div>
-        </div>
-
     </div>
-
 </div>
+{% endblock %}
 
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="footer-bottom">
-        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
-    </div>
-</footer>
+{% block extra_js %}
 <script>
-    function showSelectedImages(input) {
-        const previewList = document.getElementById("image-preview-list");
-        previewList.innerHTML = "";
+(function () {
+    var form = document.getElementById('supplierForm');
+    if (!form) return;
 
-        if (!input.files || input.files.length === 0) {
-            previewList.innerHTML = "No images selected.";
-            return;
-        }
+    // ── Product type cards ──
+    var cards = form.querySelectorAll('.type-card');
 
-        previewList.innerHTML = `<strong>${input.files.length} image(s) selected:</strong><br>`;
-
-        Array.from(input.files).forEach(function(file) {
-            previewList.innerHTML += `✓ ${file.name}<br>`;
+    function syncCards() {
+        cards.forEach(function (card) {
+            var input = card.querySelector('input');
+            var on = input && input.checked;
+            card.classList.toggle('selected', !!on);
+            if (on) form.setAttribute('data-type', input.value);
         });
     }
+
+    cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            var input = card.querySelector('input');
+            if (input) { input.checked = true; syncCards(); }
+        });
+    });
+
+    // Default to pre-order when nothing is chosen yet
+    var anyChecked = form.querySelector('.type-card input:checked');
+    if (!anyChecked) {
+        var fallback = form.querySelector('.type-card input[value="preorder"]');
+        if (fallback) fallback.checked = true;
+    }
+    syncCards();
+
+    // ── Photo previews ──
+    var zone = document.getElementById('dropZone');
+    var grid = document.getElementById('previewGrid');
+    var fileInput = zone ? zone.querySelector('input[type=file]') : null;
+
+    if (fileInput && grid) {
+        fileInput.addEventListener('change', function () {
+            grid.innerHTML = '';
+            Array.prototype.slice.call(fileInput.files, 0, 8).forEach(function (file) {
+                if (!file.type.startsWith('image/')) return;
+                var wrap = document.createElement('div');
+                wrap.className = 'preview-thumb';
+                var img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.onload = function () { URL.revokeObjectURL(img.src); };
+                wrap.appendChild(img);
+                grid.appendChild(wrap);
+            });
+        });
+    }
+})();
 </script>
-</body>
-</html>
+{% endblock %}
