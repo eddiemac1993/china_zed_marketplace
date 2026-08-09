@@ -235,16 +235,6 @@
         .testimonial-card strong { display: block; color: var(--ink); font-size: 12px; }
         .testimonial-card span { color: var(--muted); font-size: 11px; }
 
-        /* ── QUICK LINKS ── */
-        .quick-links-grid { background: var(--white); border-radius: var(--card-radius); padding: 14px 16px; border: 1px solid var(--border); margin-bottom: 14px; }
-        .quick-links-title { font-weight: 800; font-size: 13px; color: var(--red); margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
-        .quick-links-title::before { content: ''; display: block; width: 3px; height: 15px; background: var(--red); border-radius: 2px; flex-shrink: 0; }
-        .quick-icon-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
-        .quick-icon-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: transform .15s; text-decoration: none; }
-        .quick-icon-item:hover { transform: translateY(-4px); }
-        .quick-icon-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto; }
-        .quick-icon-label { font-size: 10px; font-weight: 700; color: var(--ink); }
-
         /* ════ RESPONSIVE (page content) ════ */
         @media (max-width: 1100px) {
             .product-grid-5, .product-grid-dense { grid-template-columns: repeat(4, 1fr); }
@@ -266,8 +256,6 @@
             .hero-badge { font-size: 17px; padding: 7px 11px; }
             .hero-chips { display: none; }
             .hero-banner::after { display: none; }
-            .quick-icon-circle { width: 42px; height: 42px; font-size: 19px; }
-            .quick-icon-label { font-size: 10px; }
             .product-grid-5, .product-grid-dense { grid-template-columns: repeat(2, 1fr); }
             .prod-card:nth-child(3n), .prod-card:nth-child(4n), .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
             .prod-card:nth-child(2n) { border-right: none; }
@@ -278,7 +266,6 @@
         }
         @media (max-width: 380px) {
             .product-grid-5, .product-grid-dense { grid-template-columns: repeat(2, 1fr); }
-            .quick-icon-circle { width: 38px; height: 38px; font-size: 17px; }
         }
 {% endblock %}
 
@@ -338,33 +325,6 @@
 
         <!-- MAIN COLUMN -->
         <div>
-            <!-- QUICK LINKS -->
-            <div class="quick-links-grid">
-                <div class="quick-links-title">Quick Shop</div>
-                <div class="quick-icon-grid">
-                    <a href="{% url 'home' %}" class="quick-icon-item">
-                        <div class="quick-icon-circle" style="background:#FFF0F0;">🔥</div>
-                        <span class="quick-icon-label">Hot</span>
-                    </a>
-                    <a href="?type=local#results" class="quick-icon-item">
-                        <div class="quick-icon-circle" style="background:#F0FFF4;">🇿🇲</div>
-                        <span class="quick-icon-label">Local</span>
-                    </a>
-                    <a href="?q=phones#results" class="quick-icon-item">
-                        <div class="quick-icon-circle" style="background:#EFF6FF;">📱</div>
-                        <span class="quick-icon-label">Phones</span>
-                    </a>
-                    <a href="?q=electronics#results" class="quick-icon-item">
-                        <div class="quick-icon-circle" style="background:#F5F0FF;">💻</div>
-                        <span class="quick-icon-label">Tech</span>
-                    </a>
-                    <a href="?type=preorder#results" class="quick-icon-item">
-                        <div class="quick-icon-circle" style="background:#FFF8E1;">🇨🇳</div>
-                        <span class="quick-icon-label">China</span>
-                    </a>
-                </div>
-            </div>
-
             <!-- HOT ITEMS -->
             {% if not category_id and not product_type and not query %}
             <div class="product-panel">
