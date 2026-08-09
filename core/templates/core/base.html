@@ -208,6 +208,45 @@
         }
         .btn-secondary:hover { border-color: var(--red); color: var(--red); }
 
+        /* ── DOCUMENT / INFO PAGES (about, faq, terms, privacy, policy) ── */
+        .doc-wrap { max-width: 900px; margin: 0 auto; }
+        .doc-hero {
+            background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #4A0B0D 100%);
+            border-radius: var(--card-radius); padding: 26px 24px; color: #fff; margin-bottom: 14px;
+        }
+        .doc-hero h1 {
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
+            font-size: 32px; line-height: 1.08; margin-bottom: 7px;
+        }
+        .doc-hero p { font-size: 13px; color: rgba(255,255,255,.75); line-height: 1.7; max-width: 640px; }
+        .doc-updated { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 9px; }
+
+        .doc-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--card-radius); padding: 24px; margin-bottom: 14px;
+        }
+        .doc-card h2 {
+            font-size: 17px; color: var(--red); margin: 26px 0 8px; font-weight: 800;
+        }
+        .doc-card h2:first-child { margin-top: 0; }
+        .doc-card p, .doc-card li { color: #555; font-size: 13px; line-height: 1.8; }
+        .doc-card ul { padding-left: 20px; margin: 8px 0; }
+        .doc-card li { margin-bottom: 5px; }
+
+        /* accordion-style Q&A list */
+        .doc-list { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
+        .doc-item { padding: 18px 20px; border-bottom: 1px solid #F0F0F0; }
+        .doc-item:last-child { border-bottom: none; }
+        .doc-item h2 { font-size: 15px; color: var(--red); margin-bottom: 6px; font-weight: 800; }
+        .doc-item p { color: #555; font-size: 13px; line-height: 1.8; }
+
+        @media (max-width: 640px) {
+            .doc-hero { padding: 20px 18px; }
+            .doc-hero h1 { font-size: 25px; }
+            .doc-card { padding: 18px 16px; }
+            .doc-item { padding: 15px 16px; }
+        }
+
         /* ── FOOTER ── */
         .site-footer { background: #111; margin-top: 24px; }
         .footer-top { padding: 28px 20px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 36px; max-width: 1300px; margin: 0 auto; }

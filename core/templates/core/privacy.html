@@ -1,33 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy · ChinaZed</title>
-    <style>
-        body { margin: 0; background: #f2f2f2; color: #1a1a1a; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.7; }
-        .header { background: #E5141A; color: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-        .brand { font-weight: 900; font-size: 24px; text-decoration: none; color: #fff; }
-        .header a.btn { color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 5px; padding: 8px 12px; text-decoration: none; font-weight: 700; font-size: 12px; }
-        .page { max-width: 880px; margin: 18px auto 40px; padding: 0 16px; }
-        .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; }
-        h1 { margin: 0 0 8px; font-size: 30px; }
-        h2 { margin: 22px 0 8px; font-size: 18px; color: #E5141A; }
-        p, li { color: #555; }
-        ul { padding-left: 20px; }
-        .muted { color: #888; font-size: 12px; margin-bottom: 18px; }
-    </style>
-</head>
-<body>
-    <header class="header">
-        <a href="{% url 'home' %}" class="brand">CHINAZED</a>
-        <a href="{% url 'register' %}" class="btn">Back to Register</a>
-    </header>
-    <main class="page">
-        <section class="card">
-            <h1>Privacy Policy</h1>
-            <p class="muted">Last updated: 2026</p>
+{% extends "core/base.html" %}
 
+{% block title %}Privacy Policy · ChinaZed 中赞商城{% endblock %}
+
+{% block content %}
+<div class="page-body">
+    <div class="doc-wrap">
+
+        <div class="doc-hero">
+            <h1>Privacy Policy</h1>
+            <p>What information ChinaZed collects, how it is used, and the choices you have.</p>
+            <div class="doc-updated">Last updated: 2026</div>
+        </div>
+
+        <div class="doc-card">
             <h2>1. Information We Collect</h2>
             <p>When you use ChinaZed, we may collect account details, contact details, order information, payment proof uploads, product requests, messages, and basic website usage information.</p>
 
@@ -58,8 +43,9 @@
             <p>We may update this Privacy Policy from time to time. Continued use of ChinaZed after updates means you accept the updated policy.</p>
 
             <h2>9. Contact</h2>
-            <p>For privacy questions, contact ChinaZed using the contact details shown on the website.</p>
-        </section>
-    </main>
-</body>
-</html>
+            <p>For privacy questions, contact ChinaZed on <strong>+260 969 274 458</strong> or <strong>chinatozambia.zm@gmail.com</strong>.</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

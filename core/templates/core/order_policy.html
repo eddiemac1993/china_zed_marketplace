@@ -1,253 +1,136 @@
-﻿{% load static %}
+{% extends "core/base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Policy · ChinaZed 中赞商城</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+{% block title %}Order Policy · ChinaZed 中赞商城{% endblock %}
 
-    <style>
-        :root {
-            --red: #E5141A;
-            --red-dark: #B50F14;
-            --orange: #FF6600;
-            --bg: #F2F2F2;
-            --white: #FFFFFF;
-            --ink: #1A1A1A;
-            --muted: #888;
-            --border: #E0E0E0;
-            --r: 8px;
+{% block extra_style %}
+        .policy-intro {
+            background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF;
+            border-radius: var(--card-radius); padding: 14px 16px;
+            font-size: 13px; line-height: 1.7; margin-bottom: 14px;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 13px;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { text-decoration: none; color: inherit; }
-
-        /* HEADER */
-        .main-header {
-            background: var(--red);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 12px rgba(0,0,0,.25);
-        }
-        .logo-main {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 26px;
-            color: #fff;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-        .logo-sub { font-size: 9px; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: uppercase; }
-        .hdr-btn {
-            background: var(--orange);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 12px;
-            transition: background .15s;
-        }
-        .hdr-btn:hover { background: #d95500; }
-
-        /* BODY */
-        .page-body {
-            max-width: 820px;
-            margin: 16px auto;
-            padding: 0 16px 40px;
-        }
-
-        /* INTRO BOX */
-        .intro-box {
-            background: #FFF8EE;
-            border: 1px solid #FFE0B0;
-            border-radius: 4px;
-            padding: 12px 16px;
-            margin-bottom: 14px;
-            font-size: 13px;
-            color: #7C4A00;
-            line-height: 1.6;
-        }
-
-        /* POLICY CARDS */
         .policy-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            overflow: hidden;
-            margin-bottom: 10px;
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--card-radius); overflow: hidden; margin-bottom: 12px;
         }
         .policy-head {
-            background: var(--red);
-            padding: 10px 16px;
+            padding: 12px 18px; border-bottom: 1px solid #F0F0F0;
+            background: linear-gradient(to right, #FFFAF9, #fff);
+            display: flex; align-items: center; gap: 10px;
         }
-        .policy-head-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 15px;
-            color: #fff;
-            letter-spacing: .3px;
+        .policy-num {
+            width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: #fff;
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .policy-body {
-            padding: 14px 16px;
-            font-size: 13px;
-            color: #444;
-            line-height: 1.75;
-        }
-        .policy-body p + p { margin-top: 8px; }
-        .policy-body ul {
-            margin-top: 8px;
-            padding-left: 18px;
-        }
-        .policy-body li { margin-bottom: 5px; }
-        .policy-body strong { font-weight: 700; color: var(--ink); }
+        .policy-title { font-size: 14px; font-weight: 900; color: var(--ink); }
+        .policy-body { padding: 16px 18px; }
+        .policy-body p { font-size: 13px; color: #555; line-height: 1.8; margin-bottom: 9px; }
+        .policy-body p:last-child { margin-bottom: 0; }
+        .policy-body ul { padding-left: 20px; margin: 6px 0 0; }
+        .policy-body li { font-size: 13px; color: #555; line-height: 1.8; margin-bottom: 4px; }
 
-        /* CTA */
-        .cta-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 14px;
+        .status-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+        .status-chip {
+            background: #F7F7F7; border: 1px solid var(--border); border-radius: 999px;
+            padding: 6px 12px; font-size: 11px; font-weight: 700; color: #555;
         }
-        .btn {
-            display: inline-block;
-            padding: 10px 22px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 13px;
-            font-family: inherit;
-            text-align: center;
-            transition: background .15s;
+
+        .policy-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+        .policy-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 7px; padding: 13px 22px; font-size: 13px; font-weight: 900; transition: all .15s;
         }
-        .btn-home  { background: var(--red);    color: #fff; }
-        .btn-home:hover  { background: var(--red-dark); }
-        .btn-wa    { background: #25D366; color: #fff; }
-        .btn-wa:hover    { background: #1DA851; }
+        .policy-btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .policy-btn.ghost:hover { border-color: var(--red); color: var(--red); }
+        .policy-btn.ai { background: linear-gradient(135deg, var(--red), var(--orange)); color: #fff; }
+        .policy-btn.ai:hover { filter: brightness(1.06); }
 
-        /* FOOTER */
-        .site-footer {
-            background: #1A1A1A;
-            padding: 16px;
-            text-align: center;
-            font-size: 11px;
-            color: #555;
-            margin-top: 24px;
+        @media (max-width: 640px) {
+            .policy-btn { width: 100%; }
         }
-        .site-footer a { color: #666; transition: color .15s; }
-        .site-footer a:hover { color: var(--red); }
+{% endblock %}
 
-        @media (max-width: 480px) {
-            .cta-row { flex-direction: column; }
-            .btn { text-align: center; }
-        }
-    </style>
-</head>
-<body>
-
-<!-- HEADER -->
-<div class="main-header">
-    <a href="{% url 'home' %}" style="text-decoration:none;">
-        <div class="logo-main">CHINAZED</div>
-        <div class="logo-sub">中赞商城 · Order Policy</div>
-    </a>
-    <a href="{% url 'home' %}" class="hdr-btn">← Back to Home</a>
-</div>
-
-<!-- PAGE BODY -->
+{% block content %}
 <div class="page-body">
+    <div class="doc-wrap">
 
-    <div class="intro-box">
-        📋 Please read and understand how our China-to-Zambia ordering system works before placing an order.
-    </div>
-
-    <div class="policy-card">
-        <div class="policy-head"><div class="policy-head-title">1. Order Confirmation</div></div>
-        <div class="policy-body">
-            <p>After placing an order on the website, ChinaZed staff reviews the order details before processing to ensure accuracy and availability.</p>
+        <div class="doc-hero">
+            <h1>Order Policy</h1>
+            <p>How our China-to-Zambia ordering system works — deposits, refunds, delivery times, and tracking.</p>
         </div>
-    </div>
 
-    <div class="policy-card">
-        <div class="policy-head"><div class="policy-head-title">2. Deposit Requirement</div></div>
-        <div class="policy-body">
-            <p>A <strong>35% deposit</strong> is required to process any order. This confirms commitment and allows us to secure the item from China.</p>
-            <p>The remaining <strong>80% balance</strong> is paid after the goods arrive in Zambia.</p>
+        <div class="policy-intro">
+            📋 Please read and understand how ordering works before placing an order.
         </div>
-    </div>
 
-    <div class="policy-card">
-        <div class="policy-head"><div class="policy-head-title">3. Refund Policy</div></div>
-        <div class="policy-body">
-            <ul>
-                <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
-                <li>Refund applies if the supplier fails to fulfill the order.</li>
-                <li>Refund applies if the product becomes unavailable before purchase.</li>
-            </ul>
+        <div class="policy-card">
+            <div class="policy-head"><span class="policy-num">1</span><span class="policy-title">Order Confirmation</span></div>
+            <div class="policy-body">
+                <p>After placing an order on the website, ChinaZed staff reviews the order details before processing to ensure accuracy and availability.</p>
+            </div>
         </div>
-    </div>
 
-    <div class="policy-card">
-        <div class="policy-head"><div class="policy-head-title">4. Delivery Timeline</div></div>
-        <div class="policy-body">
-            <p>Each product has an estimated delivery range displayed on the website. Delivery times may vary due to:</p>
-            <ul>
-                <li>Shipping delays</li>
-                <li>Customs clearance</li>
-                <li>Supplier processing time</li>
-                <li>Logistics and transport conditions</li>
-            </ul>
+        <div class="policy-card">
+            <div class="policy-head"><span class="policy-num">2</span><span class="policy-title">Deposit Requirement</span></div>
+            <div class="policy-body">
+                <p>A <strong>35% deposit</strong> is required to process any order. This confirms commitment and allows us to secure the item from China.</p>
+                <p>The remaining <strong>65% balance</strong> is paid after the goods arrive in Zambia.</p>
+            </div>
         </div>
-    </div>
 
-    <div class="policy-card">
-        <div class="policy-head"><div class="policy-head-title">5. Order Tracking</div></div>
-        <div class="policy-body">
-            <p>Customers can log in to their profile to track order progress, including:</p>
-            <ul>
-                <li>Confirmed</li>
-                <li>Purchased</li>
-                <li>Shipped</li>
-                <li>In Transit</li>
-                <li>Arrived in Zambia</li>
-                <li>Ready for Collection</li>
-                <li>Successful / Completed</li>
-                <li>Delayed</li>
-            </ul>
+        <div class="policy-card">
+            <div class="policy-head"><span class="policy-num">3</span><span class="policy-title">Refund Policy</span></div>
+            <div class="policy-body">
+                <ul>
+                    <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
+                    <li>Refund applies if the supplier fails to fulfill the order.</li>
+                    <li>Refund applies if the product becomes unavailable before purchase.</li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    <div class="policy-card">
-        <div class="policy-head"><div class="policy-head-title">6. Receipts</div></div>
-        <div class="policy-body">
-            <p>Customers can generate a receipt once the goods have arrived in Zambia or when the order is ready for collection or delivery.</p>
+        <div class="policy-card">
+            <div class="policy-head"><span class="policy-num">4</span><span class="policy-title">Delivery Timeline</span></div>
+            <div class="policy-body">
+                <p>Each product has an estimated delivery range displayed on the website. Delivery times may vary due to:</p>
+                <ul>
+                    <li>Shipping delays</li>
+                    <li>Customs clearance</li>
+                    <li>Supplier processing time</li>
+                    <li>Logistics and transport conditions</li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    <div class="cta-row">
-        <a href="{% url 'home' %}" class="btn btn-home">← Back to Home</a>
-        <a href="{% url 'assistant' %}" class="btn btn-wa">AI Ask Assistant</a>
-    </div>
+        <div class="policy-card">
+            <div class="policy-head"><span class="policy-num">5</span><span class="policy-title">Order Tracking</span></div>
+            <div class="policy-body">
+                <p>Log in to your profile to track order progress through these stages:</p>
+                <div class="status-chips">
+                    <span class="status-chip">Confirmed</span>
+                    <span class="status-chip">Purchased</span>
+                    <span class="status-chip">Shipped</span>
+                    <span class="status-chip">In Transit</span>
+                    <span class="status-chip">Arrived in Zambia</span>
+                    <span class="status-chip">Ready for Collection</span>
+                    <span class="status-chip">Successful</span>
+                    <span class="status-chip">Delayed</span>
+                </div>
+            </div>
+        </div>
 
+        <div class="policy-card">
+            <div class="policy-head"><span class="policy-num">6</span><span class="policy-title">Receipts</span></div>
+            <div class="policy-body">
+                <p>You can generate a receipt once the goods have arrived in Zambia, or when the order is ready for collection or delivery.</p>
+            </div>
+        </div>
+
+        <div class="policy-cta">
+            <a href="{% url 'home' %}" class="policy-btn ghost">← Back to Home</a>
+            <a href="{% url 'assistant' %}" class="policy-btn ai">💬 Ask the AI Assistant</a>
+        </div>
+
+    </div>
 </div>
-
-<!-- FOOTER -->
-<footer class="site-footer">
-    © 2026 ChinaZed · China to Zambia Marketplace &nbsp;|&nbsp;
-    <a href="mailto:chinatozambia.zm@gmail.com">chinatozambia.zm@gmail.com</a>
-    &nbsp;|&nbsp; 中赞商城版权所有
-</footer>
-
-</body>
-</html>
+{% endblock %}
