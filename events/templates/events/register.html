@@ -1,0 +1,77 @@
+{% extends "events/base.html" %}
+
+{% block title %}Register · {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="ev-card">
+    <div class="ev-eyebrow">Registration</div>
+    <h1 class="ev-title gold-text">{{ event.title }}</h1>
+    {% if event.subtitle %}
+        <p class="ev-sub">{{ event.subtitle }}</p>
+    {% endif %}
+    {% if event.event_date %}
+        <p class="ev-sub" style="margin-top:8px;color:var(--ev-gold);font-weight:600;">
+            {{ event.event_date|date:"l, j F Y" }}
+        </p>
+    {% endif %}
+
+    <div class="ev-rule"></div>
+
+    {% if form.errors %}
+        <div class="ev-alert">
+            <strong>Please check the details below:</strong>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <div class="ev-group">
+            <label class="ev-label" for="{{ form.full_name.id_for_label }}">Full name *</label>
+            {{ form.full_name }}
+        </div>
+
+        <div class="ev-group">
+            <label class="ev-label" for="{{ form.phone.id_for_label }}">Phone number *</label>
+            {{ form.phone }}
+            <div class="ev-hint">We use this to confirm your seat.</div>
+        </div>
+
+        <div class="ev-group">
+            <label class="ev-label" for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+            <div class="ev-hint">Optional.</div>
+        </div>
+
+        <div class="ev-group">
+            <label class="ev-label" for="{{ form.church_name.id_for_label }}">Church / organisation</label>
+            {{ form.church_name }}
+        </div>
+
+        <div class="ev-group">
+            <label class="ev-label" for="{{ form.location.id_for_label }}">Town or city</label>
+            {{ form.location }}
+        </div>
+
+        <div class="ev-group">
+            <label class="ev-label" for="{{ form.notes.id_for_label }}">Anything we should know?</label>
+            {{ form.notes }}
+            <div class="ev-hint">Travel needs, number of people coming, dietary needs.</div>
+        </div>
+
+        <button type="submit" class="ev-btn">Confirm my registration</button>
+    </form>
+
+    <a href="{% url 'events_home' %}" class="ev-back">← Back to the event</a>
+</div>
+{% endblock %}

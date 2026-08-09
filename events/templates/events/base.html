@@ -1,0 +1,120 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Church Events{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ev-bg: #090d16;
+            --ev-panel: #111726;
+            --ev-line: rgba(234,179,8,.20);
+            --ev-gold: #facc15;
+            --ev-gold-soft: #fef08a;
+            --ev-text: #E8EAF0;
+            --ev-muted: #8C93A6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif; background: var(--ev-bg);
+            color: var(--ev-text); min-height: 100vh; font-size: 14px; line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 24px 16px 48px;
+        }
+        a { color: inherit; text-decoration: none; }
+        .ev-wrap { width: 100%; max-width: 560px; margin: 0 auto; }
+        .ev-wrap.wide { max-width: 920px; }
+
+        .ev-cinzel { font-family: 'Cinzel', serif; }
+        .gold-text {
+            background: linear-gradient(135deg, #fef08a 0%, #facc15 60%, #a16207 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+        }
+
+        .ev-card {
+            background: var(--ev-panel); border: 1px solid var(--ev-line);
+            border-radius: 20px; padding: 30px 26px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,.5);
+        }
+        .ev-eyebrow {
+            font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+            color: var(--ev-gold); font-weight: 700; margin-bottom: 12px; text-align: center;
+        }
+        .ev-title {
+            font-family: 'Cinzel', serif; font-weight: 900; font-size: 28px;
+            line-height: 1.18; text-align: center; margin-bottom: 10px;
+        }
+        .ev-sub { color: var(--ev-muted); font-size: 13px; text-align: center; line-height: 1.75; }
+        .ev-rule {
+            height: 1px; background: linear-gradient(to right, transparent, var(--ev-line), transparent);
+            margin: 24px 0;
+        }
+
+        /* FORM */
+        .ev-group { margin-bottom: 16px; }
+        .ev-label {
+            display: block; font-size: 11px; font-weight: 700; letter-spacing: .09em;
+            text-transform: uppercase; color: var(--ev-gold); margin-bottom: 7px;
+        }
+        .ev-input {
+            display: block; width: 100%; font-family: inherit; font-size: 14px;
+            color: var(--ev-text); background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
+            padding: 12px 14px; transition: border-color .15s, box-shadow .15s;
+        }
+        .ev-input:focus {
+            outline: none; border-color: var(--ev-gold);
+            box-shadow: 0 0 0 3px rgba(250,204,21,.14);
+        }
+        .ev-input::placeholder { color: #5A6070; }
+        textarea.ev-input { resize: vertical; min-height: 92px; }
+        .ev-hint { font-size: 11px; color: var(--ev-muted); margin-top: 6px; }
+        .ev-error { font-size: 11px; color: #FCA5A5; margin-top: 6px; font-weight: 600; }
+
+        .ev-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; border: none; cursor: pointer; font-family: inherit;
+            background: linear-gradient(135deg, #fef08a 0%, #facc15 60%, #d19b06 100%);
+            color: #3B2A00; border-radius: 11px; padding: 15px 20px;
+            font-size: 14px; font-weight: 700; letter-spacing: .03em;
+            transition: filter .15s, transform .1s;
+        }
+        .ev-btn:hover { filter: brightness(1.07); }
+        .ev-btn:active { transform: scale(.99); }
+        .ev-btn.ghost {
+            background: transparent; color: var(--ev-text);
+            border: 1px solid rgba(255,255,255,.18);
+        }
+        .ev-btn.ghost:hover { border-color: var(--ev-gold); color: var(--ev-gold); filter: none; }
+
+        .ev-alert {
+            border-radius: 11px; padding: 13px 15px; font-size: 13px;
+            line-height: 1.65; margin-bottom: 18px;
+            background: rgba(252,165,165,.09); border: 1px solid rgba(252,165,165,.3); color: #FCA5A5;
+        }
+        .ev-alert ul { margin: 7px 0 0 18px; }
+
+        .ev-back {
+            display: block; text-align: center; margin-top: 18px;
+            font-size: 12px; color: var(--ev-muted); transition: color .15s;
+        }
+        .ev-back:hover { color: var(--ev-gold); }
+
+        @media (max-width: 560px) {
+            body { padding: 16px 12px 40px; }
+            .ev-card { padding: 24px 18px; border-radius: 16px; }
+            .ev-title { font-size: 23px; }
+        }
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="ev-wrap{% block wrap_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

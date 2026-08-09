@@ -1,0 +1,84 @@
+{% extends "events/base.html" %}
+
+{% block title %}Registrations · {{ event.title }}{% endblock %}
+
+{% block wrap_class %} wide{% endblock %}
+
+{% block extra_style %}
+        .sub-head {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 14px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .sub-count {
+            background: rgba(250,204,21,.12); border: 1px solid var(--ev-line);
+            color: var(--ev-gold); border-radius: 999px; padding: 8px 16px;
+            font-size: 12px; font-weight: 700; white-space: nowrap;
+        }
+        .sub-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,.09); }
+        table { width: 100%; border-collapse: collapse; min-width: 720px; }
+        thead th {
+            background: rgba(255,255,255,.05); color: var(--ev-gold);
+            font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+            text-align: left; padding: 12px 14px; font-weight: 700; white-space: nowrap;
+        }
+        tbody td {
+            padding: 13px 14px; border-top: 1px solid rgba(255,255,255,.07);
+            font-size: 13px; color: var(--ev-text); vertical-align: top;
+        }
+        tbody tr:hover { background: rgba(255,255,255,.03); }
+        .cell-muted { color: var(--ev-muted); }
+        .cell-name { font-weight: 600; white-space: nowrap; }
+        .cell-notes { color: var(--ev-muted); font-size: 12px; max-width: 260px; }
+        .sub-empty { text-align: center; padding: 44px 20px; color: var(--ev-muted); font-size: 13px; }
+        .sub-empty::before { content: '📋'; display: block; font-size: 30px; margin-bottom: 10px; }
+{% endblock %}
+
+{% block content %}
+<div class="ev-card">
+    <div class="sub-head">
+        <div>
+            <div class="ev-eyebrow" style="text-align:left;">Event registrations</div>
+            <h1 class="ev-title gold-text" style="text-align:left;font-size:24px;margin-bottom:4px;">{{ event.title }}</h1>
+            {% if event.event_date %}
+                <p class="ev-sub" style="text-align:left;">{{ event.event_date|date:"l, j F Y" }}</p>
+            {% endif %}
+        </div>
+        <span class="sub-count">{{ submissions|length }} registered</span>
+    </div>
+
+    {% if submissions %}
+        <div class="sub-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Church</th>
+                        <th>Location</th>
+                        <th>Notes</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in submissions %}
+                        <tr>
+                            <td class="cell-name">{{ r.full_name }}</td>
+                            <td>{{ r.phone }}</td>
+                            <td class="cell-muted">{{ r.email|default:"—" }}</td>
+                            <td class="cell-muted">{{ r.church_name|default:"—" }}</td>
+                            <td class="cell-muted">{{ r.location|default:"—" }}</td>
+                            <td class="cell-notes">{{ r.notes|default:"—" }}</td>
+                            <td class="cell-muted" style="white-space:nowrap;">{{ r.submitted_at|date:"j M Y, H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="sub-empty">No registrations yet.<br>They will appear here as people sign up.</div>
+    {% endif %}
+
+    <a href="{% url 'events_home' %}" class="ev-back">← Back to the event</a>
+</div>
+{% endblock %}

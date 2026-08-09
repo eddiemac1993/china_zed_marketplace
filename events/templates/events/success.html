@@ -1,0 +1,43 @@
+{% extends "events/base.html" %}
+
+{% block title %}Registration received · Church Events{% endblock %}
+
+{% block extra_style %}
+        .ev-tick {
+            width: 74px; height: 74px; margin: 0 auto 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 34px;
+            background: rgba(250,204,21,.12); border: 1px solid var(--ev-line); color: var(--ev-gold);
+        }
+        .ev-next {
+            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09);
+            border-radius: 12px; padding: 16px 18px; margin-top: 22px; text-align: left;
+        }
+        .ev-next h3 {
+            font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+            color: var(--ev-gold); font-weight: 700; margin-bottom: 10px;
+        }
+        .ev-next li { color: var(--ev-muted); font-size: 13px; line-height: 1.85; margin-left: 17px; }
+{% endblock %}
+
+{% block content %}
+<div class="ev-card" style="text-align:center;">
+    <div class="ev-tick">✓</div>
+
+    <div class="ev-eyebrow">You're registered</div>
+    <h1 class="ev-title gold-text">Thank you — we have your details.</h1>
+    <p class="ev-sub">Your registration has been received. We look forward to seeing you there.</p>
+
+    <div class="ev-next">
+        <h3>What happens next</h3>
+        <ul>
+            <li>Our team confirms your registration.</li>
+            <li>We contact you on the phone number you gave us.</li>
+            <li>You will receive the venue and timing details before the day.</li>
+        </ul>
+    </div>
+
+    <div class="ev-rule"></div>
+
+    <a href="{% url 'events_home' %}" class="ev-btn ghost">← Back to the event</a>
+</div>
+{% endblock %}
