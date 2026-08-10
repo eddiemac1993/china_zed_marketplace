@@ -43,7 +43,7 @@ from django.conf import settings
 import os
 import textwrap
 
-WHATSAPP_NUMBER = "260969274458"
+WHATSAPP_NUMBER = "260766491002"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
 
 
