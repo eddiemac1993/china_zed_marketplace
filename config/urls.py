@@ -9,6 +9,7 @@ urlpatterns = [
     path("", include("core.urls")),
     path("events/", include("events.urls")),
     path("price-list/", include("pricelist.urls")),
+    path("communinity/", include("communinity.urls")),
 
     path(
         "password-reset/",
