@@ -89,7 +89,11 @@ def send(request, code):
     Room.objects.filter(pk=room_obj.pk).update(last_activity=timezone.now())
     human_count = room_obj.messages.filter(is_ai=False, message_type="chat").count()
     maybe_add_ai_message(room_obj, human_count)
-    return JsonResponse({"ok": True, "id": msg.pk})
+    return JsonResponse({"ok": True, "message": {
+        "id": msg.pk, "name": msg.anonymous_name, "text": msg.message,
+        "type": msg.message_type, "mine": True,
+        "time": msg.created_at.strftime("%H:%M"),
+    }})
 
 
 @require_POST
