@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "events",
     'django.contrib.humanize',
     "pricelist",
+    "communinity",
 ]
 
 MIDDLEWARE = [
@@ -157,6 +158,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
+COMMUNINITY_AI_ENABLED = os.getenv("COMMUNINITY_AI_ENABLED", "True").lower() in {"1", "true", "yes", "on"}
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
