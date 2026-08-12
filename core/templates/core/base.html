@@ -137,12 +137,23 @@
 
         /* MOBILE MENU BTN */
         .mobile-menu-btn {
-                    display: none; flex-direction: column; justify-content: center;
-                    gap: 5px; width: 36px; height: 36px; cursor: pointer;
-                    padding: 4px; flex-shrink: 0;
-                    background: transparent; border: none;
-                }
-        .mobile-menu-btn span { display: block; height: 2px; background: #fff; border-radius: 2px; }
+            display: none;
+            width: 40px; height: 40px; padding: 0;
+            border: none; background: transparent; cursor: pointer;
+            position: relative; flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-menu-btn span {
+            position: absolute; left: 8px; width: 24px; height: 2.5px;
+            background: #fff; border-radius: 2px;
+            transition: transform .25s ease, opacity .2s ease, top .25s ease;
+        }
+        .mobile-menu-btn span:nth-child(1) { top: 12px; }
+        .mobile-menu-btn span:nth-child(2) { top: 19px; }
+        .mobile-menu-btn span:nth-child(3) { top: 26px; }
+        .mobile-menu-btn.active span:nth-child(1) { top: 19px; transform: rotate(45deg); }
+        .mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
+        .mobile-menu-btn.active span:nth-child(3) { top: 19px; transform: rotate(-45deg); }
 
         /* MOBILE DRAWER */
         .mobile-drawer {
@@ -441,7 +452,7 @@
 <!-- MAIN HEADER -->
 <div class="main-header">
     <div class="header-top">
-        <button class="mobile-menu-btn" onclick="openDrawer()" aria-label="Menu">
+        <button class="mobile-menu-btn" id="menuToggle" onclick="openDrawer()" aria-label="Open menu" aria-expanded="false">
             <span></span><span></span><span></span>
         </button>
         <a href="{% url 'home' %}" class="site-logo" aria-label="ChinaZed home"><svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg></a>
@@ -618,11 +629,15 @@
     function openDrawer() {
         document.getElementById('mobileDrawer').classList.add('open');
         document.getElementById('drawerOverlay').classList.add('open');
+        var btn = document.getElementById('menuToggle');
+        if (btn) { btn.classList.add('active'); btn.setAttribute('aria-expanded', 'true'); }
         document.body.style.overflow = 'hidden';
     }
     function closeDrawer() {
         document.getElementById('mobileDrawer').classList.remove('open');
         document.getElementById('drawerOverlay').classList.remove('open');
+        var btn = document.getElementById('menuToggle');
+        if (btn) { btn.classList.remove('active'); btn.setAttribute('aria-expanded', 'false'); }
         document.body.style.overflow = '';
     }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
