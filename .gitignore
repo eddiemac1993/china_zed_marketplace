@@ -27,3 +27,7 @@ runserver.*.log
 # OS
 .DS_Store
 Thumbs.db
+
+private_key.pem
+public_key.pem
+db.sqlite3.bak-*
