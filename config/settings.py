@@ -163,3 +163,14 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
+# Background Web Push notifications
+if "webpush" not in INSTALLED_APPS:
+    INSTALLED_APPS.append("webpush")
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BKFYzdDgvFtvVAGCdDfu4knCS9uaSCtjWroW8KYvnwKzTJ2u_DBb_xdrPjXdY2PCoFipUEBJpZo0p7tcR6vnz0U",
+    "VAPID_PRIVATE_KEY": str(BASE_DIR / "private_key.pem"),
+    "VAPID_ADMIN_EMAIL": "chinatozambia.zm@gmail.com",
+}

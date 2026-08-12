@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.html import format_html
+from webpush import send_user_notification
 
 from .models import (
     ExchangeRate,
@@ -18,6 +19,7 @@ from .models import (
     Advertisement,
     StockMovement,
     ProductReview,
+    BroadcastNotification,
 )
 
 
@@ -1018,6 +1020,49 @@ class AdvertisementAdmin(admin.ModelAdmin):
         return "No"
 
     currently_active_display.short_description = "Currently Active"
+
+
+
+
+@admin.register(BroadcastNotification)
+class BroadcastNotificationAdmin(admin.ModelAdmin):
+    list_display = ("title", "created_by", "created_at", "sent_at", "delivery_status")
+    readonly_fields = ("created_by", "created_at", "sent_at")
+    fields = ("title", "message", "url", "created_by", "created_at", "sent_at")
+    actions = ("send_again",)
+
+    @admin.display(description="Status")
+    def delivery_status(self, obj):
+        return "Sent" if obj.sent_at else "Draft"
+
+    def save_model(self, request, obj, form, change):
+        should_send = not obj.sent_at
+        if not obj.created_by_id:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+        if should_send:
+            self._broadcast(request, obj)
+
+    @admin.action(description="Send selected notifications again")
+    def send_again(self, request, queryset):
+        for notification in queryset:
+            self._broadcast(request, notification)
+
+    def _broadcast(self, request, obj):
+        users = User.objects.filter(is_active=True, webpush_info__isnull=False).distinct()
+        sent = 0
+        failed = 0
+        payload = {"head": obj.title, "body": obj.message, "url": obj.url or "/", "icon": "/static/core/images/market-icon-192.png"}
+        for user in users:
+            try:
+                send_user_notification(user=user, payload=payload, ttl=86400)
+                sent += 1
+            except Exception:
+                failed += 1
+        obj.sent_at = timezone.now()
+        obj.save(update_fields=["sent_at"])
+        level = messages.SUCCESS if failed == 0 else messages.WARNING
+        self.message_user(request, f"Notification sent to {sent} subscribed user(s); {failed} failed.", level=level)
 
 
 admin.site.index_template = "admin/core_index.html"

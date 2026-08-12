@@ -741,3 +741,20 @@ class Advertisement(TimeStampedModel):
     def __str__(self):
         slot = f"Slot {self.hour_slot:02d}h" if self.hour_slot is not None else "Flexible Slot"
         return f"[{slot}] {self.advertiser_name} — {self.headline}"
+
+class BroadcastNotification(models.Model):
+    title = models.CharField(max_length=120)
+    message = models.TextField()
+    url = models.CharField(max_length=500, blank=True, default="/", help_text="Page to open when a user taps the notification.")
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="broadcast_notifications")
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "broadcast notification"
+        verbose_name_plural = "broadcast notifications"
+
+    def __str__(self):
+        return self.title
+
