@@ -8,7 +8,7 @@
         /* ── HERO BANNER ── */
         .hero-banner {
             background:
-                linear-gradient(90deg, rgba(181,15,20,.82) 0%, rgba(229,20,26,.58) 38%, rgba(229,20,26,.20) 62%, rgba(255,255,255,.04) 100%),
+                linear-gradient(90deg, rgba(150,10,14,.90) 0%, rgba(200,16,22,.72) 42%, rgba(229,20,26,.34) 68%, rgba(229,20,26,.10) 100%),
                 url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") center right / cover no-repeat;
             border-radius: var(--card-radius); padding: 28px;
             min-height: 220px;
@@ -20,9 +20,10 @@
             width: 500px; height: 500px; background: rgba(255,255,255,.04);
             border-radius: 50%; top: -280px; right: 80px; pointer-events: none;
         }
+        /* legibility scrim — keeps the headline readable over the product photo */
         .hero-banner::after {
             content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.10));
+            background: linear-gradient(90deg, rgba(0,0,0,.30) 0%, rgba(0,0,0,.14) 45%, rgba(0,0,0,.04) 75%, rgba(0,0,0,0) 100%);
             pointer-events: none;
         }
         .hero-left { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
@@ -37,8 +38,16 @@
         .hero-text h2 {
             font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
             font-size: 26px; color: #fff; letter-spacing: -.3px; line-height: 1.15;
+            text-shadow: 0 2px 10px rgba(0,0,0,.45);
         }
-        .hero-text p { font-size: 12px; color: rgba(255,255,255,.82); margin-top: 5px; line-height: 1.6; }
+        .hero-points {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; list-style: none;
+        }
+        .hero-points li {
+            font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap;
+            background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.22);
+            border-radius: 999px; padding: 4px 10px; backdrop-filter: blur(2px);
+        }
         .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 1; }
         .hero-chip {
             background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.32);
@@ -210,10 +219,27 @@
 
         /* ── EMPTY STATE ── */
         .empty-row {
-            grid-column: 1 / -1; text-align: center;
-            padding: 56px 20px; color: var(--muted); font-size: 14px;
+            grid-column: 1 / -1;
+            display: flex; align-items: center; gap: 12px;
+            padding: 18px 20px; margin: 12px; border-radius: 8px;
+            background: #FAFAFA; border: 1px dashed var(--border);
         }
-        .empty-row::before { content: '🔍'; display: block; font-size: 40px; margin-bottom: 12px; }
+        .empty-row::before {
+            content: '📦'; font-size: 20px; line-height: 1; flex-shrink: 0;
+        }
+        .empty-row-body { flex: 1; min-width: 0; }
+        .empty-row-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+        .empty-row-note { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+        .empty-row-cta {
+            flex-shrink: 0; background: var(--red); color: #fff;
+            border-radius: 6px; padding: 8px 14px; font-size: 12px; font-weight: 800;
+            white-space: nowrap;
+        }
+        .empty-row-cta:hover { background: var(--red-dark); }
+        @media (max-width: 640px) {
+            .empty-row { flex-wrap: wrap; padding: 14px; margin: 10px; gap: 10px; }
+            .empty-row-cta { width: 100%; text-align: center; }
+        }
 
         /* ── HOW IT WORKS ── */
         .how-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; margin-bottom: 14px; }
@@ -251,11 +277,23 @@
             .prod-card:nth-child(3n) { border-right: none; }
         }
         @media (max-width: 640px) {
-            .hero-banner { padding: 14px 16px; }
-            .hero-text h2 { font-size: 17px; }
+            .hero-banner {
+                padding: 16px; min-height: 0;
+                background:
+                    linear-gradient(180deg, rgba(140,9,13,.86) 0%, rgba(170,12,17,.80) 100%),
+                    url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") center center / cover no-repeat;
+            }
+            /* photo detail is unreadable at this width — flatten it behind a solid scrim */
+            .hero-banner::after {
+                background: linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.44));
+            }
+            .hero-banner::before { display: none; }
+            .hero-left { align-items: flex-start; gap: 12px; }
+            .hero-text h2 { font-size: 19px; line-height: 1.2; }
             .hero-badge { font-size: 17px; padding: 7px 11px; }
+            .hero-points { gap: 5px; margin-top: 8px; }
+            .hero-points li { font-size: 10px; padding: 4px 8px; }
             .hero-chips { display: none; }
-            .hero-banner::after { display: none; }
             .product-grid-5, .product-grid-dense { grid-template-columns: repeat(2, 1fr); }
             .prod-card:nth-child(3n), .prod-card:nth-child(4n), .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
             .prod-card:nth-child(2n) { border-right: none; }
@@ -279,7 +317,12 @@
             <div class="hero-badge">🔥 HOT<small>DEALS</small></div>
             <div class="hero-text">
                 <h2>Buy Direct from China · Delivered to Zambia</h2>
-                <p>Pay only 35% deposit · Balance due on arrival · AI assistant support · 14–30 day shipping</p>
+                <ul class="hero-points">
+                    <li>35% deposit</li>
+                    <li>Balance on arrival</li>
+                    <li>14–30 day shipping</li>
+                    <li>AI support</li>
+                </ul>
             </div>
         </div>
         <div class="hero-chips">
@@ -367,7 +410,13 @@
                             </div>
                         </div>
                     {% empty %}
-                        <div class="empty-row">No hot items yet.</div>
+                        <div class="empty-row">
+                            <div class="empty-row-body">
+                                <div class="empty-row-title">No hot deals running right now</div>
+                                <div class="empty-row-note">New arrivals are added weekly — browse everything in stock meanwhile.</div>
+                            </div>
+                            <a href="?type=local#results" class="empty-row-cta">Browse Zambia stock</a>
+                        </div>
                     {% endfor %}
                 </div>
             </div>
@@ -410,7 +459,13 @@
                     </div>
                 </div>
             {% empty %}
-                <div class="empty-row">No local stock available yet.</div>
+                <div class="empty-row">
+                    <div class="empty-row-body">
+                        <div class="empty-row-title">No Zambia stock listed yet</div>
+                        <div class="empty-row-note">You can still pre-order from China, or tell us what you need and we will source it.</div>
+                    </div>
+                    <a href="{% url 'request_product' %}" class="empty-row-cta">Request a product</a>
+                </div>
             {% endfor %}
         </div>
     </div>
@@ -451,7 +506,13 @@
                     </div>
                 </div>
             {% empty %}
-                <div class="empty-row">No pre-order products available yet.</div>
+                <div class="empty-row">
+                    <div class="empty-row-body">
+                        <div class="empty-row-title">No pre-order items listed yet</div>
+                        <div class="empty-row-note">Tell us the product you want from China and we will quote you a price.</div>
+                    </div>
+                    <a href="{% url 'request_product' %}" class="empty-row-cta">Request a product</a>
+                </div>
             {% endfor %}
         </div>
     </div>
@@ -525,8 +586,16 @@
                     </div>
                 {% empty %}
                     <div class="empty-row">
-                        {% if query %}No products found for "<strong>{{ query }}</strong>". Try different keywords.
-                        {% else %}No products found.{% endif %}
+                        <div class="empty-row-body">
+                            {% if query %}
+                                <div class="empty-row-title">No results for “{{ query }}”</div>
+                                <div class="empty-row-note">Try fewer or different keywords — or ask us to source it for you.</div>
+                            {% else %}
+                                <div class="empty-row-title">Nothing matches this filter</div>
+                                <div class="empty-row-note">Clear the filter to see everything, or ask us to source a specific product.</div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'request_product' %}" class="empty-row-cta">Request a product</a>
                     </div>
                 {% endfor %}
             </div>
