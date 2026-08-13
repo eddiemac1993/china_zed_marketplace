@@ -99,6 +99,27 @@ DATABASES = {
 }
 
 
+# Cache
+# The default per-process LocMemCache is not shared between web workers, which
+# breaks anything that has to agree across requests: Communinity presence counts
+# and every rate limit built on cache.get/cache.set. A database cache is shared
+# by all workers on any host, including PythonAnywhere.
+# Requires: python manage.py createcachetable
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+        "TIMEOUT": 300,
+        "OPTIONS": {
+            # presence and rate-limit keys are short-lived and churn quickly
+            "MAX_ENTRIES": 5000,
+            "CULL_FREQUENCY": 3,
+        },
+    }
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
