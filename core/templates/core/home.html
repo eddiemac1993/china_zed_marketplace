@@ -10,6 +10,13 @@
             background:
                 linear-gradient(90deg, rgba(150,10,14,.90) 0%, rgba(200,16,22,.72) 42%, rgba(229,20,26,.34) 68%, rgba(229,20,26,.10) 100%),
                 url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") center right / cover no-repeat;
+            /* webp is 61% smaller; browsers without image-set() keep the jpeg above */
+            background:
+                linear-gradient(90deg, rgba(150,10,14,.90) 0%, rgba(200,16,22,.72) 42%, rgba(229,20,26,.34) 68%, rgba(229,20,26,.10) 100%),
+                image-set(
+                    url("{% static 'core/images/china-zed-homepage-hero.webp' %}") type("image/webp"),
+                    url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") type("image/jpeg")
+                ) center right / cover no-repeat;
             border-radius: var(--card-radius); padding: 28px;
             min-height: 220px;
             display: flex; align-items: center; justify-content: space-between;
@@ -282,6 +289,13 @@
                 background:
                     linear-gradient(180deg, rgba(140,9,13,.86) 0%, rgba(170,12,17,.80) 100%),
                     url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") center center / cover no-repeat;
+                /* phones never need the 1600px file — the 800px webp is 32 KB against 219 KB */
+                background:
+                    linear-gradient(180deg, rgba(140,9,13,.86) 0%, rgba(170,12,17,.80) 100%),
+                    image-set(
+                        url("{% static 'core/images/china-zed-homepage-hero-800.webp' %}") type("image/webp"),
+                        url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") type("image/jpeg")
+                    ) center center / cover no-repeat;
             }
             /* photo detail is unreadable at this width — flatten it behind a solid scrim */
             .hero-banner::after {

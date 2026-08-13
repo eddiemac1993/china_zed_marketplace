@@ -225,7 +225,7 @@
         <div class="image-panel">
             <div class="main-image-box{% if not product.display_image_url %} is-empty{% endif %}" onclick="openImageZoom()">
                 {% if product.display_image_url %}
-                    <img id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}">
+                    <img id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}" fetchpriority="high">
                     <span class="zoom-hint">Tap to zoom</span>
                 {% else %}
                     <div class="main-no-img">No Image Available</div>
@@ -246,7 +246,7 @@
             <div class="thumb-row">
                 {% for image_url in product.display_gallery_urls %}
                     <div class="thumb {% if forloop.first %}active{% endif %}" onclick="setMainImage(event, this, '{{ image_url }}')">
-                        <img src="{{ image_url }}" alt="{{ product.name }}">
+                        <img src="{{ image_url }}" alt="{{ product.name }}" loading="lazy">
                     </div>
                 {% endfor %}
             </div>

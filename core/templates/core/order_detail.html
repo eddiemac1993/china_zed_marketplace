@@ -388,7 +388,7 @@
                 <div class="order-item">
                     <div class="item-img">
                         {% if item.product.display_image_url %}
-                            <img src="{{ item.product.display_image_url }}" alt="{{ item.product_name }}">
+                            <img src="{{ item.product.display_image_url }}" alt="{{ item.product_name }}" loading="lazy">
                         {% else %}
                             <div class="item-no-img">📦</div>
                         {% endif %}
