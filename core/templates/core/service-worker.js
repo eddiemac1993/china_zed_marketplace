@@ -1,4 +1,4 @@
-const CACHE_NAME = "chinazed-app-v1";
+const CACHE_NAME = "chinazed-app-v2";
 const APP_SHELL = [
     "/",
     "/login/",
@@ -55,6 +55,13 @@ self.addEventListener("fetch", function (event) {
                     });
                 })
         );
+        return;
+    }
+
+    // Only static assets are safe to serve cache-first. Live endpoints — chat
+    // polling, search, anything returning JSON — would otherwise be frozen at
+    // their first response, because nothing here ever revalidates.
+    if (!new URL(request.url).pathname.startsWith("/static/")) {
         return;
     }
 

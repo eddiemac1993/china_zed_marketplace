@@ -5,6 +5,10 @@ import requests
 from django.conf import settings
 from django.core.cache import cache
 
+# deliberately outside the human name pool in views.py, so an automated
+# participant can never appear under the same name as a real one
+AI_NAMES = ["Chatty Robot", "Curious Android", "Witty Circuit"]
+
 FALLBACKS = [
     "This room got quiet 👀", "Random question: what's everyone doing right now?",
     "😂", "Someone say something controversial.",
@@ -45,10 +49,23 @@ def generate_reply(room):
         return fallback
 
 
+def _write_reply(room_pk):
+    from django.db import connection
+    from communinity.models import Message, Room
+    try:
+        room = Room.objects.filter(pk=room_pk).first()
+        if room is not None:
+            Message.objects.create(room=room, anonymous_name=random.choice(AI_NAMES),
+                                   message=generate_reply(room), is_ai=True)
+    finally:
+        connection.close()
+
+
 def maybe_add_ai_message(room, human_count):
     if not should_reply(room, human_count):
         return None
     cache.set(f"communinity-ai:{room.pk}", True, 120)
-    from communinity.models import Message
-    return Message.objects.create(room=room, anonymous_name=random.choice(["Sleepy Penguin", "Purple Monkey", "Quiet Panda"]), message=generate_reply(room), is_ai=True)
+    # generating a reply can take seconds; the sender must never wait on it
+    threading.Thread(target=_write_reply, args=(room.pk,), daemon=True).start()
+    return None
 

@@ -13,6 +13,14 @@ ADJECTIVES = ["Quiet", "Blue", "Crazy", "Sleepy", "Happy", "Lost", "Purple", "Si
 NOUNS = ["Panda", "Ghost", "Mango", "Lion", "Potato", "Penguin", "Monkey", "Goat", "Banana", "Otter"]
 
 
+def _session_token(request):
+    # first-time visitors have no session_key yet, so rate-limit keys built from
+    # it would collapse into one shared bucket for every new visitor
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
+
+
 def _identity(request, room, change=False):
     if not request.session.session_key:
         request.session.create()
@@ -28,7 +36,7 @@ def home(request):
 
 @require_POST
 def create_room(request):
-    token = request.session.session_key or "new"
+    token = _session_token(request)
     limit = f"communinity-create:{token}"
     if cache.get(limit):
         return render(request, "communinity/home.html", {"error": "Please wait a moment before creating another room."}, status=429)
@@ -70,7 +78,7 @@ def messages(request, code):
     users = {k:v for k,v in cache.get(presence, {}).items() if time.time()-v < 45}
     users[session_id] = time.time(); cache.set(presence, users, 90)
     rows = room_obj.messages.filter(pk__gt=after).order_by("id")[:100]
-    return JsonResponse({"online": len(users), "messages": [{"id":m.id,"name":m.anonymous_name,"text":m.message,"type":m.message_type,"mine":m.session_id==session_id,"time":m.created_at.strftime("%H:%M")} for m in rows]})
+    return JsonResponse({"online": len(users), "messages": [{"id":m.id,"name":m.anonymous_name,"text":m.message,"type":m.message_type,"mine":m.session_id==session_id,"ai":m.is_ai,"time":m.created_at.strftime("%H:%M")} for m in rows]})
 
 
 @require_POST
@@ -91,7 +99,7 @@ def send(request, code):
     maybe_add_ai_message(room_obj, human_count)
     return JsonResponse({"ok": True, "message": {
         "id": msg.pk, "name": msg.anonymous_name, "text": msg.message,
-        "type": msg.message_type, "mine": True,
+        "type": msg.message_type, "mine": True, "ai": False,
         "time": msg.created_at.strftime("%H:%M"),
     }})
 
@@ -99,7 +107,7 @@ def send(request, code):
 @require_POST
 def change_name(request, code):
     room_obj = get_object_or_404(Room, code=code.upper(), is_active=True)
-    key = f"communinity-name-change:{request.session.session_key}"
+    key = f"communinity-name-change:{_session_token(request)}"
     if cache.get(key): return JsonResponse({"error": "You can change your name again later."}, status=429)
     name, _ = _identity(request, room_obj, change=True); cache.set(key, True, 60)
     return JsonResponse({"name": name})
