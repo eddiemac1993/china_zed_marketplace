@@ -1,30 +1,30 @@
-{% extends "core/base.html" %}
+﻿{% extends "core/base.html" %}
 {% load static %}
 {% load humanize %}
 
-{% block title %}{{ product.name }} · ChinaZed 中赞商城{% endblock %}
+{% block title %}{{ product.name }} Â· ChinaZed ä¸­èµžå•†åŸŽ{% endblock %}
 
 {% block extra_style %}
-        /* ── BREADCRUMB ── */
+        /* â”€â”€ BREADCRUMB â”€â”€ */
         .pd-breadcrumb {
             display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
             font-size: 12px; color: var(--muted); margin-bottom: 12px;
         }
         .pd-breadcrumb a { color: var(--muted); transition: color .15s; }
         .pd-breadcrumb a:hover { color: var(--red); }
-        .pd-breadcrumb .sep { color: #CCC; }
+        .pd-breadcrumb .sep { color: #707070; }
         .pd-breadcrumb .current { color: var(--ink); font-weight: 700; }
 
-        /* ── PRODUCT LAYOUT ── */
+        /* â”€â”€ PRODUCT LAYOUT â”€â”€ */
         .product-layout { display: grid; grid-template-columns: 1fr 380px; gap: 12px; align-items: start; }
 
-        /* ── IMAGE PANEL ── */
+        /* â”€â”€ IMAGE PANEL â”€â”€ */
         .image-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
         .main-image-box { position: relative; background: #F8F8F8; overflow: hidden; aspect-ratio: 1; cursor: zoom-in; }
         .main-image-box img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; display: block; }
         .main-image-box:hover img { transform: scale(1.04); }
-        .main-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #CCC; }
-        /* a full square of "No Image Available" pushes the price off-screen — keep it short */
+        .main-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #707070; }
+        /* a full square of "No Image Available" pushes the price off-screen â€” keep it short */
         .main-image-box.is-empty {
             aspect-ratio: auto; min-height: 150px; cursor: default;
             display: flex; align-items: center; justify-content: center;
@@ -56,7 +56,7 @@
         .zoom-modal img { max-width: min(96vw, 980px); max-height: 92vh; object-fit: contain; border-radius: 8px; background: #fff; }
         .zoom-close { position: absolute; top: 14px; right: 16px; border: 0; border-radius: 999px; width: 42px; height: 42px; background: #fff; color: #111; font-size: 24px; cursor: pointer; }
 
-        /* ── INFO PANEL ── */
+        /* â”€â”€ INFO PANEL â”€â”€ */
         .info-panel { display: flex; flex-direction: column; gap: 10px; }
 
         .title-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 16px 18px; }
@@ -134,7 +134,7 @@
         .trust-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F0F0; }
         .trust-pill { display: inline-flex; align-items: center; gap: 4px; background: #F8F8F8; border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; font-size: 10px; font-weight: 700; color: var(--muted); }
 
-        /* ── RELATED PRODUCTS ── */
+        /* â”€â”€ RELATED PRODUCTS â”€â”€ */
         .related-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; margin-top: 12px; }
         .section-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid #F0F0F0; }
         .section-head-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 17px; color: var(--red); letter-spacing: .5px; }
@@ -148,7 +148,7 @@
         .prod-card:nth-child(5n) { border-right: none; }
         .prod-img-box { position: relative; overflow: hidden; aspect-ratio: 1; background: #F8F8F8; }
         .prod-card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; display: block; }
-        .prod-no-img-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #CCC; font-size: 11px; }
+        .prod-no-img-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #707070; font-size: 11px; }
         .badge { position: absolute; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; z-index: 2; }
         .b-tl { top: 6px; left: 6px; }
         .b-china { background: #1677FF; color: #fff; }
@@ -164,7 +164,7 @@
         .related-grid .btn-login { display: block; width: 100%; background: var(--orange); color: #fff; border: none; padding: 7px 0; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; font-family: inherit; text-align: center; transition: background .15s; }
 
         /* MOBILE STICKY BUY BAR */
-        /* sits above the bottom nav (81px tall + 10px inset) — must clear it, not tuck under */
+        /* sits above the bottom nav (81px tall + 10px inset) â€” must clear it, not tuck under */
         .mobile-buy-bar {
             display: none; position: fixed; bottom: calc(99px + env(safe-area-inset-bottom));
             left: 10px; right: 10px; background: #fff;
@@ -180,7 +180,7 @@
         }
         .mbb-btn:hover { background: var(--red-dark); }
 
-        /* ── RESPONSIVE ── */
+        /* â”€â”€ RESPONSIVE â”€â”€ */
         @media (max-width: 1100px) {
             .related-grid { grid-template-columns: repeat(4, 1fr); }
             .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
@@ -211,10 +211,10 @@
 
     <div class="pd-breadcrumb">
         <a href="{% url 'home' %}">Home</a>
-        <span class="sep">›</span>
+        <span class="sep">â€º</span>
         {% if product.category %}
             <a href="{% url 'home' %}?category={{ product.category.id }}">{{ product.category.name }}</a>
-            <span class="sep">›</span>
+            <span class="sep">â€º</span>
         {% endif %}
         <span class="current">{{ product.name|truncatechars:40 }}</span>
     </div>
@@ -232,12 +232,12 @@
                 {% endif %}
 
                 {% if product.product_type == "local" %}
-                    <span class="img-type-stamp stamp-local">🇿🇲 ZM STOCK</span>
+                    <span class="img-type-stamp stamp-local">ðŸ‡¿ðŸ‡² ZM STOCK</span>
                 {% else %}
-                    <span class="img-type-stamp stamp-china">🇨🇳 CHINA</span>
+                    <span class="img-type-stamp stamp-china">ðŸ‡¨ðŸ‡³ CHINA</span>
                 {% endif %}
                 {% if product.is_featured %}
-                    <span class="stamp-hot">🔥 HOT</span>
+                    <span class="stamp-hot">ðŸ”¥ HOT</span>
                 {% endif %}
             </div>
 
@@ -264,13 +264,13 @@
                     {% endif %}
                     {% if product.product_type == "local" %}
                         {% if product.stock_quantity > 0 %}
-                            <span class="tag tag-local">🇿🇲 In Zambia</span>
+                            <span class="tag tag-local">ðŸ‡¿ðŸ‡² In Zambia</span>
                             <span class="tag tag-stock">Stock: {{ product.stock_quantity }}</span>
                         {% else %}
                             <span class="tag tag-out">Out of Stock</span>
                         {% endif %}
                     {% else %}
-                        <span class="tag tag-china">🇨🇳 Pre-order</span>
+                        <span class="tag tag-china">ðŸ‡¨ðŸ‡³ Pre-order</span>
                     {% endif %}
                 </div>
 
@@ -298,21 +298,21 @@
 
                     <div class="price-split">
                         <div class="price-split-box psb-deposit">
-                            <div class="psb-label">💰 Deposit Now</div>
+                            <div class="psb-label">ðŸ’° Deposit Now</div>
                             <div class="psb-amount">K{{ product.deposit_amount|floatformat:0|intcomma }}</div>
                         </div>
                         <div class="price-split-box">
-                            <div class="psb-label">📦 Balance on Arrival</div>
+                            <div class="psb-label">ðŸ“¦ Balance on Arrival</div>
                             <div class="psb-amount">K{{ product.balance_amount|floatformat:0|intcomma }}</div>
                         </div>
                     </div>
 
                     {% if product.delivery_range %}
                     <div class="delivery-box">
-                        <span class="delivery-icon">✈️</span>
+                        <span class="delivery-icon">âœˆï¸</span>
                         <div class="delivery-text">
                             <h4>Delivery: {{ product.delivery_range }}</h4>
-                            <p>Ships from China · Track in your profile</p>
+                            <p>Ships from China Â· Track in your profile</p>
                         </div>
                     </div>
                     {% endif %}
@@ -329,11 +329,11 @@
                             </div>
 
                             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                                <button disabled class="btn-add-cart" style="background:#DDD; color:#999; cursor:not-allowed;">
+                                <button disabled class="btn-add-cart" style="background:#DDD; color:#595959; cursor:not-allowed;">
                                     Out of Stock
                                 </button>
                             {% else %}
-                                <button type="submit" class="btn-add-cart">🛒 Add to Cart</button>
+                                <button type="submit" class="btn-add-cart">ðŸ›’ Add to Cart</button>
                             {% endif %}
                         </form>
 
@@ -344,27 +344,27 @@
                             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                                 <button disabled class="btn-buy-now" style="opacity:.5; cursor:not-allowed;">Buy Now</button>
                             {% else %}
-                                <a href="{% url 'place_order' product.slug %}" class="btn-buy-now">⚡ Buy Now</a>
+                                <a href="{% url 'place_order' product.slug %}" class="btn-buy-now">âš¡ Buy Now</a>
                             {% endif %}
                         </div>
                         <a href="{% url 'save_product_image' product.slug %}"
                            class="btn-save-poster">
-                            📥 Save Product Poster
+                            ðŸ“¥ Save Product Poster
                         </a>
 
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn-login-cta">🔑 Login to Add to Cart</a>
+                        <a href="{% url 'login' %}" class="btn-login-cta">ðŸ”‘ Login to Add to Cart</a>
                         <div class="btn-row" style="margin-top:8px;">
                             <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
                                class="btn-ai-assistant">AI Ask Assistant</a>
-                            <a href="{% url 'register' %}" class="btn-buy-now">📝 Register Free</a>
+                            <a href="{% url 'register' %}" class="btn-buy-now">ðŸ“ Register Free</a>
                         </div>
                     {% endif %}
 
                     <div class="trust-pills">
-                        <span class="trust-pill">✅ 35% Deposit Only</span>
-                        <span class="trust-pill">💬 AI Assistant</span>
-                        <span class="trust-pill">📦 Real-time Tracking</span>
+                        <span class="trust-pill">âœ… 35% Deposit Only</span>
+                        <span class="trust-pill">ðŸ’¬ AI Assistant</span>
+                        <span class="trust-pill">ðŸ“¦ Real-time Tracking</span>
                     </div>
 
                 </div>
@@ -373,7 +373,7 @@
             <div class="product-options">
                 <div class="option-row">
                     <span class="option-label">Availability</span>
-                    <div class="availability-box">✓ {{ product.availability_label }}</div>
+                    <div class="availability-box">âœ“ {{ product.availability_label }}</div>
                 </div>
                 {% if product.size_option_list %}
                 <div class="option-row">
@@ -404,11 +404,11 @@
     {% if related_products %}
     <div class="related-panel">
         <div class="section-head">
-            <span class="section-head-title">🛍️ YOU MAY ALSO LIKE</span>
+            <span class="section-head-title">ðŸ›ï¸ YOU MAY ALSO LIKE</span>
             {% if product.category %}
-                <a href="{% url 'home' %}?category={{ product.category.id }}" class="section-head-more">View All ›</a>
+                <a href="{% url 'home' %}?category={{ product.category.id }}" class="section-head-more">View All â€º</a>
             {% else %}
-                <a href="{% url 'home' %}" class="section-head-more">View All ›</a>
+                <a href="{% url 'home' %}" class="section-head-more">View All â€º</a>
             {% endif %}
         </div>
         <div class="related-grid">
@@ -461,9 +461,9 @@
         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
             {% csrf_token %}
             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                <button disabled class="mbb-btn" style="background:#DDD; color:#999;">Out of Stock</button>
+                <button disabled class="mbb-btn" style="background:#DDD; color:#595959;">Out of Stock</button>
             {% else %}
-                <button type="submit" class="mbb-btn">🛒 Add to Cart</button>
+                <button type="submit" class="mbb-btn">ðŸ›’ Add to Cart</button>
             {% endif %}
         </form>
     {% else %}
@@ -473,7 +473,7 @@
 
 {% if product.display_image_url %}
 <div class="zoom-modal" id="imageZoomModal" onclick="closeImageZoom()">
-    <button type="button" class="zoom-close" aria-label="Close image zoom">×</button>
+    <button type="button" class="zoom-close" aria-label="Close image zoom">Ã—</button>
     <img id="zoomImage" src="{{ product.display_image_url }}" alt="{{ product.name }}">
 </div>
 {% endif %}

@@ -21,7 +21,7 @@
             --bg: #F0F0F0;
             --white: #FFFFFF;
             --ink: #1A1A1A;
-            --muted: #888;
+            --muted: #6B6B6B;   /* 5.3:1 on white; #888 was 3.5:1 and failed AA */
             --border: #E0E0E0;
             --card-radius: 10px;
             --header-h: 130px;
@@ -94,8 +94,9 @@
 .search-bar:focus-within { border-color:#ffd2c0; box-shadow:0 10px 28px rgba(87,0,0,.22); transform:translateY(-1px); }
 .search-select { border:0; outline:0; padding:0 34px 0 13px; width:150px; font-size:12px; font-family:inherit; height:38px; background:#f5f5f5; color:#383030; font-weight:700; border-radius:10px; cursor:pointer; flex-shrink:0; }
 .search-input { flex:1; min-width:0; border:0; outline:0; padding:0 16px; font-size:14px; font-family:inherit; height:40px; color:var(--ink); background:transparent; }
-.search-input::placeholder { color:#aaa; }
-.search-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; background:linear-gradient(135deg,#ff7a00,#f25500); color:#fff; border:0; padding:0 19px; height:38px; font-size:12px; font-weight:900; cursor:pointer; border-radius:10px; font-family:inherit; white-space:nowrap; flex-shrink:0; letter-spacing:.04em; box-shadow:0 5px 12px rgba(242,85,0,.25); }
+.search-input::placeholder { color:#767676; }
+/* icon-only: square button so the glyph sits centred, not in a text-width pill */
+.search-btn { display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#ff7a00,#f25500); color:#fff; border:0; padding:0; width:38px; height:38px; font-size:15px; line-height:1; cursor:pointer; border-radius:10px; font-family:inherit; flex-shrink:0; box-shadow:0 5px 12px rgba(242,85,0,.25); }
 .search-btn:hover { transform:translateY(-1px); box-shadow:0 7px 16px rgba(242,85,0,.34); }
 /* HEADER ACTIONS */
         .header-actions { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
@@ -185,7 +186,7 @@
             outline: none; border-color: var(--red);
             box-shadow: 0 0 0 3px rgba(229,20,26,.12);
         }
-        .form-control::placeholder { color: #aaa; }
+        .form-control::placeholder { color: #767676; }
         select.form-control { cursor: pointer; }
         textarea.form-control { resize: vertical; min-height: 90px; }
         .form-group { margin-bottom: 16px; }
@@ -250,23 +251,24 @@
         .site-footer { background: #111; margin-top: 24px; }
         .footer-top { padding: 28px 20px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 36px; max-width: 1300px; margin: 0 auto; }
         .footer-logo-text { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; color: var(--red); }
-        .footer-tagline { font-size: 10px; color: #444; margin-top: 2px; letter-spacing: .1em; text-transform: uppercase; }
-        .footer-desc { font-size: 12px; color: #555; margin-top: 10px; line-height: 1.8; }
+        /* the footer sits on #111, so these greys have to run light, not dark */
+        .footer-tagline { font-size: 10px; color: #9A9A9A; margin-top: 2px; letter-spacing: .1em; text-transform: uppercase; }
+        .footer-desc { font-size: 12px; color: #B0B0B0; margin-top: 10px; line-height: 1.8; }
         .footer-contact { margin-top: 14px; }
-        .footer-contact div { font-size: 12px; color: #666; margin-bottom: 6px; }
-        .footer-col h4 { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .1em; padding-bottom: 8px; border-bottom: 1px solid #222; }
-        .footer-col a { display: block; font-size: 12px; color: #555; margin-bottom: 8px; transition: color .15s; }
+        .footer-contact div { font-size: 12px; color: #B0B0B0; margin-bottom: 6px; }
+        .footer-col h4 { font-size: 11px; font-weight: 700; color: #A6A6A6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .1em; padding-bottom: 8px; border-bottom: 1px solid #222; }
+        .footer-col a { display: block; font-size: 12px; color: #C4C4C4; margin-bottom: 8px; transition: color .15s; }
         .footer-col a:hover { color: var(--red); }
         .partner-callout { border-top: 1px solid #1E1E1E; padding: 24px 20px; max-width: 1300px; margin: 0 auto; }
         .partner-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px; border: 1px solid #202020; border-radius: 10px; background: linear-gradient(135deg, #171717, #101010); }
-        .partner-kicker { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: #777; text-transform: uppercase; margin-bottom: 8px; }
+        .partner-kicker { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: #A6A6A6; text-transform:uppercase; margin-bottom: 8px; }
         .partner-card h3 { color: #fff; font-size: 22px; line-height: 1.15; margin-bottom: 8px; }
-        .partner-card p { color: #777; font-size: 13px; line-height: 1.7; max-width: 620px; }
+        .partner-card p { color: #B0B0B0; font-size: 13px; line-height: 1.7; max-width: 620px; }
         .partner-points { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
         .partner-points span { color: #ddd; background: #1d1d1d; border: 1px solid #292929; border-radius: 999px; padding: 7px 10px; font-size: 11px; font-weight: 700; }
         .partner-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 190px; }
         .partner-button { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px 14px; border-radius: 8px; background: var(--red); color: #fff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
-        .partner-note { color: #555; font-size: 11px; text-align: right; line-height: 1.5; }
+        .partner-note { color: #9A9A9A; font-size: 11px; text-align: right; line-height: 1.5; }
         .footer-bottom { border-top: 1px solid #1E1E1E; padding: 14px 20px; text-align: center; font-size: 11px; color: #333; max-width: 1300px; margin: 0 auto; }
 
         /* ── FLOATING ── */
@@ -315,7 +317,7 @@
         .mbn-item {
             width: 100%; min-width: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 4px; padding: 8px 0;
-            text-align: center; color: #777; text-decoration: none; border-radius: 16px;
+            text-align: center; color: #6B6B6B; text-decoration: none; border-radius: 16px;
             font-size: 10px; font-weight: 700;
         }
         .mbn-icon {
@@ -357,8 +359,7 @@
             .logo-sub { display: none; }
             .search-select { display: none; }
             .search-input { font-size: 13px; height: 38px; padding: 0 10px; border-radius: 4px 0 0 4px; }
-            .search-btn { padding: 0 12px; height: 38px; font-size: 12px; }
-            .search-btn-text { display: none; }
+            .search-btn { width: 36px; height: 36px; font-size: 14px; }
             .header-actions { display: none; }
             /* fade the right edge so it reads as scrollable instead of cut off */
             .cat-nav-inner {
@@ -484,8 +485,8 @@
                    placeholder="Search phones, electronics, fashion…"
                    value="{{ query|default:'' }}">
             {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
-            <button type="submit" class="search-btn">
-                🔍 <span class="search-btn-text">SEARCH</span>
+            <button type="submit" class="search-btn" aria-label="Search">
+                <span aria-hidden="true">🔍</span>
             </button>
         </form>
 

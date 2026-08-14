@@ -6,4 +6,8 @@ document.querySelector('#share').onclick=async()=>{await navigator.clipboard.wri
 document.querySelector('#change-name').onclick=async()=>{const r=await fetch('change-name/',{method:'POST',headers:{'X-CSRFToken':csrf}}),d=await r.json();if(r.ok)document.querySelector('#my-name').textContent=d.name;else alert(d.error)};
 document.querySelector('.leave').addEventListener('click',()=>navigator.sendBeacon('leave/',new Blob([`csrfmiddlewaretoken=${encodeURIComponent(csrf)}`],{type:'application/x-www-form-urlencoded'})));
 document.body.classList.add('communinity-room-page');
+// the header height changes with viewport width (the category row wraps), so the
+// css calc() can only ever approximate it — measure the card's real top instead
+function sizeCard(){const top=card.getBoundingClientRect().top+window.scrollY;card.style.height=Math.max(360,window.innerHeight-top-18)+'px'}
+sizeCard();window.addEventListener('load',sizeCard);window.addEventListener('resize',sizeCard);window.addEventListener('orientationchange',sizeCard);
 poll()})();
