@@ -171,7 +171,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #CCC;
+            color: #707070;
             font-size: 10px;
         }
         .item-details { flex: 1; min-width: 0; }
@@ -428,7 +428,7 @@
                         <div class="cart-item">
                             <div class="item-img">
                                 {% if item.product.display_image_url %}
-                                    <img src="{{ item.product.display_image_url }}" alt="{{ item.product.name }}">
+                                    <img src="{{ item.product.display_image_url }}" alt="{{ item.product.name }}" loading="lazy">
                                 {% else %}
                                     <div class="item-no-img">No Image</div>
                                 {% endif %}

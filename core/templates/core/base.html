@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ChinaZed · 中赞商城{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
@@ -19,7 +21,7 @@
             --bg: #F0F0F0;
             --white: #FFFFFF;
             --ink: #1A1A1A;
-            --muted: #888;
+            --muted: #6B6B6B;   /* 5.3:1 on white; #888 was 3.5:1 and failed AA */
             --border: #E0E0E0;
             --card-radius: 10px;
             --header-h: 130px;
@@ -88,29 +90,15 @@
         .logo-sub { font-size: 9px; color: rgba(255,255,255,.55); letter-spacing: .12em; font-weight: 600; text-transform: uppercase; }
 
         /* SEARCH */
-        .search-bar { flex: 1; display: flex; min-width: 0; max-width: 640px; }
-        .search-select {
-            border: none; outline: none; padding: 0 12px;
-            font-size: 12px; font-family: inherit; height: 42px;
-            background: #f7f7f7; color: #555; font-weight: 600;
-            border-radius: 4px 0 0 4px; border-right: 1px solid #ddd;
-            cursor: pointer; flex-shrink: 0;
-        }
-        .search-input {
-            flex: 1; min-width: 0; border: none; outline: none;
-            padding: 0 14px; font-size: 13px; font-family: inherit;
-            height: 42px; color: var(--ink); background: #fff;
-        }
-        .search-btn {
-            background: var(--orange); color: #fff; border: none;
-            padding: 0 20px; height: 42px; font-size: 13px; font-weight: 800;
-            cursor: pointer; border-radius: 0 4px 4px 0; font-family: inherit;
-            transition: background .15s; white-space: nowrap; flex-shrink: 0;
-            letter-spacing: .03em;
-        }
-        .search-btn:hover { background: #d95500; }
-
-        /* HEADER ACTIONS */
+.search-bar { flex:1; display:flex; align-items:center; min-width:0; max-width:720px; height:48px; padding:4px; background:#fff; border:2px solid transparent; border-radius:14px; box-shadow:0 8px 24px rgba(87,0,0,.16); transition:border-color .2s,box-shadow .2s,transform .2s; overflow:hidden; }
+.search-bar:focus-within { border-color:#ffd2c0; box-shadow:0 10px 28px rgba(87,0,0,.22); transform:translateY(-1px); }
+.search-select { border:0; outline:0; padding:0 34px 0 13px; width:150px; font-size:12px; font-family:inherit; height:38px; background:#f5f5f5; color:#383030; font-weight:700; border-radius:10px; cursor:pointer; flex-shrink:0; }
+.search-input { flex:1; min-width:0; border:0; outline:0; padding:0 16px; font-size:14px; font-family:inherit; height:40px; color:var(--ink); background:transparent; }
+.search-input::placeholder { color:#767676; }
+/* icon-only: square button so the glyph sits centred, not in a text-width pill */
+.search-btn { display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#ff7a00,#f25500); color:#fff; border:0; padding:0; width:38px; height:38px; font-size:15px; line-height:1; cursor:pointer; border-radius:10px; font-family:inherit; flex-shrink:0; box-shadow:0 5px 12px rgba(242,85,0,.25); }
+.search-btn:hover { transform:translateY(-1px); box-shadow:0 7px 16px rgba(242,85,0,.34); }
+/* HEADER ACTIONS */
         .header-actions { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
         .hdr-link {
             display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -198,7 +186,7 @@
             outline: none; border-color: var(--red);
             box-shadow: 0 0 0 3px rgba(229,20,26,.12);
         }
-        .form-control::placeholder { color: #aaa; }
+        .form-control::placeholder { color: #767676; }
         select.form-control { cursor: pointer; }
         textarea.form-control { resize: vertical; min-height: 90px; }
         .form-group { margin-bottom: 16px; }
@@ -263,29 +251,35 @@
         .site-footer { background: #111; margin-top: 24px; }
         .footer-top { padding: 28px 20px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 36px; max-width: 1300px; margin: 0 auto; }
         .footer-logo-text { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; color: var(--red); }
-        .footer-tagline { font-size: 10px; color: #444; margin-top: 2px; letter-spacing: .1em; text-transform: uppercase; }
-        .footer-desc { font-size: 12px; color: #555; margin-top: 10px; line-height: 1.8; }
+        /* the footer sits on #111, so these greys have to run light, not dark */
+        .footer-tagline { font-size: 10px; color: #9A9A9A; margin-top: 2px; letter-spacing: .1em; text-transform: uppercase; }
+        .footer-desc { font-size: 12px; color: #B0B0B0; margin-top: 10px; line-height: 1.8; }
         .footer-contact { margin-top: 14px; }
-        .footer-contact div { font-size: 12px; color: #666; margin-bottom: 6px; }
-        .footer-col h4 { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .1em; padding-bottom: 8px; border-bottom: 1px solid #222; }
-        .footer-col a { display: block; font-size: 12px; color: #555; margin-bottom: 8px; transition: color .15s; }
+        .footer-contact div { font-size: 12px; color: #B0B0B0; margin-bottom: 6px; }
+        .footer-col h4 { font-size: 11px; font-weight: 700; color: #A6A6A6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .1em; padding-bottom: 8px; border-bottom: 1px solid #222; }
+        .footer-col a { display: block; font-size: 12px; color: #C4C4C4; margin-bottom: 8px; transition: color .15s; }
         .footer-col a:hover { color: var(--red); }
         .partner-callout { border-top: 1px solid #1E1E1E; padding: 24px 20px; max-width: 1300px; margin: 0 auto; }
         .partner-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px; border: 1px solid #202020; border-radius: 10px; background: linear-gradient(135deg, #171717, #101010); }
-        .partner-kicker { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: #777; text-transform: uppercase; margin-bottom: 8px; }
+        .partner-kicker { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: #A6A6A6; text-transform:uppercase; margin-bottom: 8px; }
         .partner-card h3 { color: #fff; font-size: 22px; line-height: 1.15; margin-bottom: 8px; }
-        .partner-card p { color: #777; font-size: 13px; line-height: 1.7; max-width: 620px; }
+        .partner-card p { color: #B0B0B0; font-size: 13px; line-height: 1.7; max-width: 620px; }
         .partner-points { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
         .partner-points span { color: #ddd; background: #1d1d1d; border: 1px solid #292929; border-radius: 999px; padding: 7px 10px; font-size: 11px; font-weight: 700; }
         .partner-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 190px; }
         .partner-button { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px 14px; border-radius: 8px; background: var(--red); color: #fff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
-        .partner-note { color: #555; font-size: 11px; text-align: right; line-height: 1.5; }
+        .partner-note { color: #9A9A9A; font-size: 11px; text-align: right; line-height: 1.5; }
         .footer-bottom { border-top: 1px solid #1E1E1E; padding: 14px 20px; text-align: center; font-size: 11px; color: #333; max-width: 1300px; margin: 0 auto; }
 
         /* ── FLOATING ── */
         .floating-actions {
             position: fixed; right: 18px; bottom: 76px; z-index: 300;
             display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+            transition: transform .25s ease, opacity .25s ease;
+        }
+        /* slides away while scrolling down so it stops sitting on top of page content */
+        .floating-actions.is-tucked {
+            transform: translateY(140px); opacity: 0; pointer-events: none;
         }
         .float-btn {
             border: none; text-decoration: none; cursor: pointer; font-family: inherit;
@@ -323,7 +317,7 @@
         .mbn-item {
             width: 100%; min-width: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 4px; padding: 8px 0;
-            text-align: center; color: #777; text-decoration: none; border-radius: 16px;
+            text-align: center; color: #6B6B6B; text-decoration: none; border-radius: 16px;
             font-size: 10px; font-weight: 700;
         }
         .mbn-icon {
@@ -365,9 +359,16 @@
             .logo-sub { display: none; }
             .search-select { display: none; }
             .search-input { font-size: 13px; height: 38px; padding: 0 10px; border-radius: 4px 0 0 4px; }
-            .search-btn { padding: 0 12px; height: 38px; font-size: 12px; }
-            .search-btn-text { display: none; }
+            .search-btn { width: 36px; height: 36px; font-size: 14px; }
             .header-actions { display: none; }
+            /* fade the right edge so it reads as scrollable instead of cut off */
+            .cat-nav-inner {
+                padding: 0 12px;
+                -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
+                mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
+            }
+            .cat-nav-inner.at-end { -webkit-mask-image: none; mask-image: none; }
+            .cat-nav a { padding: 11px 13px; }
             .mobile-menu-btn { display: flex; }
             .mobile-drawer { display: block; }
             .page-body { padding: 10px 12px 92px; }
@@ -381,16 +382,28 @@
             .partner-points span { font-size: 10px; padding: 7px 9px; }
             .partner-actions { align-items: stretch; min-width: 0; margin-top: 16px; }
             .partner-note { text-align: center; }
-            .mobile-bottom-nav { display: block; }
-            .floating-actions { right: 12px; bottom: 102px; gap: 8px; }
-            .wa-btn { height: 48px; min-width: 54px; padding: 0 13px; font-size: 12px; }
+            .mobile-bottom-nav { display: block; bottom: calc(10px + env(safe-area-inset-bottom)); }
+            .floating-actions { right: 12px; bottom: calc(96px + env(safe-area-inset-bottom)); gap: 8px; }
+            /* icon-only on mobile — the labelled pill covered too much of the page */
+            .wa-btn { height: 46px; width: 46px; min-width: 0; padding: 0; font-size: 12px; border-radius: 50%; }
+            .wa-label { display: none; }
             .install-btn { min-height: 40px; padding: 0 12px; font-size: 11px; }
             .back-top { display: none; }
             body { padding-bottom: 92px; }
         }
 
         {% block extra_style %}{% endblock %}
-    </style>
+        /* Unified ChinaZed application icon */
+    .brand-app-icon { width:58px;height:58px;display:block;object-fit:contain;border-radius:14px; }
+    .drawer-logo img { width:46px;height:46px;display:block;object-fit:contain;border-radius:12px; }
+    .footer-app-icon { width:70px;height:70px;display:block;object-fit:contain;border-radius:16px;margin-bottom:10px; }
+    @media (max-width:768px) { .brand-app-icon { width:46px;height:46px;border-radius:11px; } }
+
+    .cz-market-icon { width:58px;height:58px;display:block;flex:none;filter:drop-shadow(0 2px 5px rgba(0,0,0,.16)); }
+    .drawer-logo .cz-market-icon { width:46px;height:46px; }
+    .site-footer .cz-market-icon { width:70px;height:70px;margin-bottom:10px; }
+    @media(max-width:768px){.site-logo .cz-market-icon{width:46px;height:46px;}}
+</style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -400,7 +413,7 @@
 <!-- MOBILE DRAWER -->
 <div class="mobile-drawer" id="mobileDrawer">
     <div class="drawer-header">
-        <span class="drawer-logo">CHINAZED</span>
+        <span class="drawer-logo"><svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg></span>
         <span class="drawer-close" onclick="closeDrawer()">✕</span>
     </div>
     {% if request.user.is_authenticated %}
@@ -408,6 +421,7 @@
         <div class="drawer-section-title">My Account</div>
         <a href="{% url 'profile' %}" class="drawer-link"><span class="di">👤</span> My Profile & Orders</a>
         <a href="{% url 'cart' %}" class="drawer-link"><span class="di">🛒</span> My Cart{% if nav_cart_count %} ({{ nav_cart_count }}){% endif %}</a>
+        <a href="{% url 'communinity:home' %}" class="drawer-link"><span class="di">💬</span> Communinity</a>
         <a href="{% url 'logout' %}" class="drawer-link"><span class="di">🚪</span> Logout</a>
     </div>
     {% else %}
@@ -430,7 +444,6 @@
         <div class="drawer-section-title">Help</div>
         <a href="{% url 'about' %}" class="drawer-link"><span class="di">ℹ</span> About ChinaZed</a>
         <a href="{% url 'order_policy' %}" class="drawer-link"><span class="di">📋</span> Order Policy</a>
-        <a href="{% url 'supplier_submit_product' %}" class="drawer-link" style="color:var(--orange);font-weight:700;"><span class="di">🏪</span> Sell on ChinaZed</a>
     </div>
 </div>
 
@@ -447,7 +460,6 @@
                 <a href="{% url 'login' %}">Sign In</a>
                 <a href="{% url 'register' %}" class="highlight">Register Free</a>
             {% endif %}
-            <a href="{% url 'supplier_submit_product' %}" style="color:#FFA500;">Sell on ChinaZed</a>
             <a href="{% url 'about' %}">About</a>
             <a href="{% url 'order_policy' %}">Policy</a>
         </div>
@@ -460,10 +472,7 @@
         <button class="mobile-menu-btn" id="menuToggle" onclick="openDrawer()" aria-label="Open menu" aria-expanded="false">
             <span></span><span></span><span></span>
         </button>
-        <a href="{% url 'home' %}" class="site-logo">
-            <div class="logo-main">CHINAZED</div>
-            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
-        </a>
+        <a href="{% url 'home' %}" class="site-logo" aria-label="ChinaZed home"><svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg></a>
 
         <form method="GET" action="{% url 'home' %}" class="search-bar" id="searchForm">
             <select class="search-select" name="category" id="searchCatSelect">
@@ -476,8 +485,8 @@
                    placeholder="Search phones, electronics, fashion…"
                    value="{{ query|default:'' }}">
             {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
-            <button type="submit" class="search-btn">
-                🔍 <span class="search-btn-text">SEARCH</span>
+            <button type="submit" class="search-btn" aria-label="Search">
+                <span aria-hidden="true">🔍</span>
             </button>
         </form>
 
@@ -510,10 +519,10 @@
             <a href="{% url 'request_product' %}">🔎 Request Product</a>
             <a href="{% url 'about' %}">ℹ About</a>
             <a href="{% url 'faq' %}">❓ FAQ</a>
+            <a href="{% url 'communinity:home' %}">💬 Communinity</a>
             {% for category in nav_categories %}
                 <a href="{% url 'home' %}?category={{ category.id }}#results" class="{% if category_id == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a>
             {% endfor %}
-            <a href="{% url 'supplier_submit_product' %}" class="sell-link">+ Sell Here</a>
         </div>
     </div>
 </div>
@@ -532,7 +541,7 @@
 <footer class="site-footer">
     <div class="footer-top">
         <div>
-            <div class="footer-logo-text">CHINAZED</div>
+            <svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
             <div class="footer-tagline">中赞商城 · Marketplace</div>
             <div class="footer-desc">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</div>
             <div class="footer-contact">
@@ -547,6 +556,7 @@
             <a href="{% url 'home' %}?type=preorder#results">Pre-order China</a>
             <a href="{% url 'about' %}">About ChinaZed</a>
             <a href="{% url 'faq' %}">FAQ</a>
+            <a href="{% url 'communinity:home' %}">Communinity 💬</a>
             <a href="{% url 'order_policy' %}">Order Policy</a>
             {% if request.user.is_authenticated %}
                 <a href="{% url 'profile' %}">Track Orders</a>
@@ -594,7 +604,7 @@
 <!-- FLOATING -->
 <div class="floating-actions" aria-label="Quick actions">
     <a href="{% url 'assistant' %}" class="float-btn wa-btn" title="AI Assistant" aria-label="AI Assistant">
-        <span>AI</span><span>Help</span>
+        <span>AI</span><span class="wa-label">Help</span>
     </a>
     <button type="button" class="float-btn install-btn" id="installAppBtn" aria-label="Install ChinaZed app">
         <span class="install-icon">↓</span><span>Install</span>
@@ -651,11 +661,44 @@
     }
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
 
-    // ── BACK TO TOP ──
-    window.addEventListener('scroll', function () {
-        var btn = document.getElementById('backTop');
-        if (btn) btn.style.opacity = window.scrollY > 400 ? '1' : '0';
-    });
+    // ── BACK TO TOP + TUCK-AWAY FLOATING ACTIONS ──
+    (function () {
+        var lastY = window.scrollY;
+        var actions = document.querySelector('.floating-actions');
+
+        window.addEventListener('scroll', function () {
+            var y = window.scrollY;
+            var btn = document.getElementById('backTop');
+            if (btn) btn.style.opacity = y > 400 ? '1' : '0';
+
+            // scrolling down past the fold hides the buttons; scrolling up brings them back
+            if (actions && Math.abs(y - lastY) > 6) {
+                actions.classList.toggle('is-tucked', y > lastY && y > 220);
+                lastY = y;
+            }
+        }, { passive: true });
+    })();
+
+    // ── MOBILE CHROME TWEAKS ──
+    (function () {
+        // the full placeholder never fits the narrow search field
+        if (window.innerWidth <= 640) {
+            var input = document.querySelector('.search-input');
+            if (input) input.placeholder = 'Search products…';
+        }
+
+        // drop the edge fade once the category row is scrolled to the end
+        var nav = document.querySelector('.cat-nav-inner');
+        if (nav) {
+            var sync = function () {
+                var atEnd = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 2;
+                nav.classList.toggle('at-end', atEnd);
+            };
+            nav.addEventListener('scroll', sync, { passive: true });
+            window.addEventListener('resize', sync);
+            sync();
+        }
+    })();
 
     // ── INSTALL APP ──
     (function () {

@@ -1,11 +1,11 @@
-const CACHE_NAME = "chinazed-app-v1";
+const CACHE_NAME = "chinazed-app-v2";
 const APP_SHELL = [
     "/",
     "/login/",
     "/register/",
     "/static/core/manifest.webmanifest",
-    "/static/core/images/chinazed-icon-192.png",
-    "/static/core/images/chinazed-icon-512.png"
+    "/static/core/images/market-icon-192.png",
+    "/static/core/images/market-icon-512.png"
 ];
 
 self.addEventListener("install", function (event) {
@@ -58,6 +58,13 @@ self.addEventListener("fetch", function (event) {
         return;
     }
 
+    // Only static assets are safe to serve cache-first. Live endpoints — chat
+    // polling, search, anything returning JSON — would otherwise be frozen at
+    // their first response, because nothing here ever revalidates.
+    if (!new URL(request.url).pathname.startsWith("/static/")) {
+        return;
+    }
+
     event.respondWith(
         caches.match(request).then(function (cached) {
             return cached || fetch(request).then(function (response) {
@@ -69,6 +76,26 @@ self.addEventListener("fetch", function (event) {
                 }
                 return response;
             });
+        })
+    );
+});
+
+
+self.addEventListener('notificationclick', function (event) {
+    event.notification.close();
+    var targetUrl = event.notification.data && event.notification.data.url
+        ? event.notification.data.url
+        : '/';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if ('focus' in client) {
+                    client.navigate(targetUrl);
+                    return client.focus();
+                }
+            }
+            return clients.openWindow(targetUrl);
         })
     );
 });

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "events",
     'django.contrib.humanize',
     "pricelist",
+    "communinity",
 ]
 
 MIDDLEWARE = [
@@ -94,6 +95,27 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
+# Cache
+# The default per-process LocMemCache is not shared between web workers, which
+# breaks anything that has to agree across requests: Communinity presence counts
+# and every rate limit built on cache.get/cache.set. A database cache is shared
+# by all workers on any host, including PythonAnywhere.
+# Requires: python manage.py createcachetable
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+        "TIMEOUT": 300,
+        "OPTIONS": {
+            # presence and rate-limit keys are short-lived and churn quickly
+            "MAX_ENTRIES": 5000,
+            "CULL_FREQUENCY": 3,
+        },
     }
 }
 
@@ -157,9 +179,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
+COMMUNINITY_AI_ENABLED = os.getenv("COMMUNINITY_AI_ENABLED", "True").lower() in {"1", "true", "yes", "on"}
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
+# Background Web Push notifications
+if "webpush" not in INSTALLED_APPS:
+    INSTALLED_APPS.append("webpush")
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BKFYzdDgvFtvVAGCdDfu4knCS9uaSCtjWroW8KYvnwKzTJ2u_DBb_xdrPjXdY2PCoFipUEBJpZo0p7tcR6vnz0U",
+    "VAPID_PRIVATE_KEY": str(BASE_DIR / "private_key.pem"),
+    "VAPID_ADMIN_EMAIL": "chinatozambia.zm@gmail.com",
+}

@@ -403,7 +403,7 @@
                     {% for item in my_submissions %}
                         <div class="sub-item">
                             <div class="sub-thumb">
-                                {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.product_name }}">{% else %}📦{% endif %}
+                                {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.product_name }}" loading="lazy">{% else %}📦{% endif %}
                             </div>
                             <div class="sub-body">
                                 <div class="sub-name">{{ item.product_name }}</div>

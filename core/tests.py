@@ -66,12 +66,19 @@ class MarketplaceFlowTests(TestCase):
         self.assertContains(response, "serviceWorker")
 
     def test_service_worker_is_served_from_site_root(self):
-        response = self.client.get(reverse("service_worker"))
+        response = self.client.get(reverse("chinazed_service_worker"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/javascript")
         self.assertEqual(response["Service-Worker-Allowed"], "/")
-        self.assertContains(response, "chinazed-app-v1")
+        self.assertContains(response, "chinazed-app-v2")
+
+    def test_service_worker_does_not_cache_live_endpoints(self):
+        response = self.client.get(reverse("chinazed_service_worker"))
+
+        # only /static/ may be served cache-first; chat polling and other live
+        # GETs must fall through to the network
+        self.assertContains(response, 'startsWith("/static/")')
 
     @patch.dict("os.environ", {"OPENAI_API_KEY": ""})
     def test_assistant_chat_returns_fallback_reply_without_api_key(self):
