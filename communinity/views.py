@@ -77,8 +77,22 @@ def messages(request, code):
     presence = f"communinity-presence:{room_obj.code}"
     users = {k:v for k,v in cache.get(presence, {}).items() if time.time()-v < 45}
     users[session_id] = time.time(); cache.set(presence, users, 90)
+    typing_key = f"communinity-typing:{room_obj.code}"
+    typers = cache.get(typing_key, {})
+    typing_names = [n for sid, (n, ts) in typers.items() if sid != session_id and time.time() - ts < 3]
     rows = room_obj.messages.filter(pk__gt=after).order_by("id")[:100]
-    return JsonResponse({"online": len(users), "messages": [{"id":m.id,"name":m.anonymous_name,"text":m.message,"type":m.message_type,"mine":m.session_id==session_id,"ai":m.is_ai,"time":m.created_at.strftime("%H:%M")} for m in rows]})
+    return JsonResponse({"online": len(users), "typing": typing_names, "messages": [{"id":m.id,"name":m.anonymous_name,"text":m.message,"type":m.message_type,"mine":m.session_id==session_id,"ai":m.is_ai,"time":m.created_at.strftime("%H:%M")} for m in rows]})
+
+
+@require_POST
+def typing(request, code):
+    room_obj = get_object_or_404(Room, code=code.upper(), is_active=True)
+    name, session_id = _identity(request, room_obj)
+    key = f"communinity-typing:{room_obj.code}"
+    typers = cache.get(key, {})
+    typers[session_id] = (name, time.time())
+    cache.set(key, typers, 10)
+    return JsonResponse({"ok": True})
 
 
 @require_POST
