@@ -81,6 +81,27 @@ self.addEventListener("fetch", function (event) {
 });
 
 
+self.addEventListener("push", function (event) {
+    if (!event.data) {
+        return;
+    }
+
+    let data;
+    try {
+        data = JSON.parse(event.data.text());
+    } catch (e) {
+        data = { head: "ChinaZed", body: event.data.text() };
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(data.head || "ChinaZed", {
+            body: data.body || "",
+            icon: data.icon || "/static/core/images/chinazed-icon-192.png",
+            data: { url: data.url || "/" }
+        })
+    );
+});
+
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
     var targetUrl = event.notification.data && event.notification.data.url

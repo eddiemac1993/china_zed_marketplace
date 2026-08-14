@@ -1,5 +1,6 @@
 ﻿import json
 import requests
+from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
@@ -500,6 +501,7 @@ def profile_view(request):
         "active_orders_count": active_orders_count,
         "product_requests": product_requests,
         "cart_count": cart_count,
+        "vapid_public_key": settings.WEBPUSH_SETTINGS["VAPID_PUBLIC_KEY"],
     })
 
 

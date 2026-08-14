@@ -146,6 +146,30 @@
             .supplier-banner-cta { width: 100%; text-align: center; }
         }
 
+        /* NOTIFICATIONS BANNER */
+        .notif-banner {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 10px; padding: 15px 18px; margin-bottom: 14px;
+            box-shadow: 0 8px 22px rgba(0,0,0,.04);
+        }
+        .notif-banner-icon { font-size: 26px; flex-shrink: 0; }
+        .notif-banner-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .notif-banner-text strong { font-size: 14px; font-weight: 900; }
+        .notif-banner-text span { font-size: 11px; color: var(--muted); line-height: 1.5; }
+        .notif-banner-cta {
+            flex-shrink: 0; background: var(--orange); color: #fff; border: none;
+            border-radius: 7px; padding: 10px 15px; font-size: 12px; font-weight: 900;
+            white-space: nowrap; cursor: pointer; font-family: inherit; transition: background .15s;
+        }
+        .notif-banner-cta:hover { background: #d95500; }
+        .notif-banner-cta:disabled { opacity: .6; cursor: default; }
+        .notif-banner-cta.is-on { background: var(--ink); }
+        @media (max-width: 600px) {
+            .notif-banner { flex-wrap: wrap; gap: 10px; }
+            .notif-banner-cta { width: 100%; text-align: center; }
+        }
+
         /* STATS */
         .stats-grid {
             display: grid;
@@ -471,6 +495,16 @@
         <div class="hero-desc">View your order status, ask the AI assistant for help, and generate receipts once goods arrive.</div>
     </div>
 
+    <!-- NOTIFICATIONS -->
+    <div class="notif-banner" id="notifBanner" data-vapid-key="{{ vapid_public_key }}">
+        <span class="notif-banner-icon">🔔</span>
+        <span class="notif-banner-text">
+            <strong>Get notified about new products</strong>
+            <span id="notifStatus">Turn on browser notifications so you never miss new arrivals.</span>
+        </span>
+        <button type="button" class="notif-banner-cta" id="notifBtn">Enable Notifications</button>
+    </div>
+
     {% if is_approved_supplier %}
     <!-- SUPPLIER PORTAL (approved suppliers only) -->
     <a href="{% url 'supplier_submit_product' %}" class="supplier-banner">
@@ -701,5 +735,103 @@
 
 </div>
 
+
+<script>
+(function () {
+    var banner = document.getElementById('notifBanner');
+    var btn = document.getElementById('notifBtn');
+    var statusEl = document.getElementById('notifStatus');
+    if (!banner || !btn) return;
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        statusEl.textContent = 'Push notifications are not supported in this browser.';
+        btn.disabled = true;
+        return;
+    }
+
+    function urlB64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var rawData = window.atob(base64);
+        var out = new Uint8Array(rawData.length);
+        for (var i = 0; i < rawData.length; i++) out[i] = rawData.charCodeAt(i);
+        return out;
+    }
+
+    function postSubscription(statusType, subscription) {
+        var browser = (navigator.userAgent.match(/(firefox|edg|chrome|safari|trident)/i) || ['browser'])[0].toLowerCase();
+        return fetch('/webpush/save_information', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status_type: statusType,
+                subscription: subscription.toJSON(),
+                browser: browser,
+                user_agent: navigator.userAgent,
+                group: ''
+            })
+        });
+    }
+
+    function setOn() {
+        btn.textContent = 'Notifications On';
+        btn.classList.add('is-on');
+        statusEl.textContent = "You'll be notified about new products.";
+    }
+
+    function setOff() {
+        btn.textContent = 'Enable Notifications';
+        btn.classList.remove('is-on');
+        statusEl.textContent = "Turn on browser notifications so you never miss new arrivals.";
+    }
+
+    function refreshState() {
+        navigator.serviceWorker.ready.then(function (reg) {
+            reg.pushManager.getSubscription().then(function (sub) {
+                btn.disabled = false;
+                if (sub) setOn(); else setOff();
+            });
+        });
+    }
+
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        navigator.serviceWorker.ready.then(function (reg) {
+            reg.pushManager.getSubscription().then(function (existing) {
+                if (existing) {
+                    postSubscription('unsubscribe', existing).finally(function () {
+                        existing.unsubscribe().finally(function () {
+                            setOff();
+                            btn.disabled = false;
+                        });
+                    });
+                    return;
+                }
+
+                if (Notification.permission === 'denied') {
+                    statusEl.textContent = 'Notifications are blocked. Enable them in your browser site settings.';
+                    btn.disabled = false;
+                    return;
+                }
+
+                reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlB64ToUint8Array(banner.dataset.vapidKey)
+                }).then(function (sub) {
+                    return postSubscription('subscribe', sub).then(function (r) {
+                        if (r.ok) { setOn(); } else { statusEl.textContent = 'Could not save subscription. Please try again.'; }
+                        btn.disabled = false;
+                    });
+                }).catch(function () {
+                    statusEl.textContent = 'Could not enable notifications. Please try again.';
+                    btn.disabled = false;
+                });
+            });
+        });
+    });
+
+    refreshState();
+})();
+</script>
 </body>
 </html>
