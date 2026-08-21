@@ -152,6 +152,15 @@
         .t-icon { width: 28px; height: 28px; border-radius: 50%; background: #EFF6FF; color: #1677FF; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; }
         .t-step.active .t-icon { background: var(--orange); color: #fff; }
         .t-label { font-size: 9px; color: var(--ink); font-weight: 700; line-height: 1.2; }
+        .rmb-badge {
+            display: inline-flex; align-items: center; gap: 7px; margin-top: 10px;
+            background: #FFF7ED; border: 1px solid #FFD9A8; border-radius: 8px;
+            padding: 7px 11px; font-size: 12px; font-weight: 700; color: #9A3412;
+        }
+        .rmb-badge .rmb-from { color: #C2410C; font-weight: 900; }
+        .rmb-badge .rmb-arrow { color: #F97316; font-weight: 900; }
+        .rmb-badge .rmb-to { color: var(--orange); font-weight: 900; }
+        .rmb-badge .rmb-rate { font-size: 10px; color: var(--muted); font-weight: 600; margin-left: 2px; }
 
         .trust-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F0F0; }
         .trust-pill { display: inline-flex; align-items: center; gap: 4px; background: #F8F8F8; border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; font-size: 10px; font-weight: 700; color: var(--muted); }
@@ -317,6 +326,15 @@
                         <span class="final-curr">K</span>
                         <span class="final-amount">{{ product.selling_price|floatformat:0|intcomma }}</span>
                     </div>
+                    {% if product.rmb_display %}
+                    <div class="rmb-badge">
+                        <span>💱</span>
+                        <span class="rmb-from">¥{{ product.rmb_display }}</span>
+                        <span class="rmb-arrow">→</span>
+                        <span class="rmb-to">K{{ product.selling_price|floatformat:0|intcomma }}</span>
+                        <span class="rmb-rate">@ K{{ product.current_rmb_rate|floatformat:2 }}/¥</span>
+                    </div>
+                    {% endif %}
 
                     <div class="price-split">
                         <div class="price-split-box psb-deposit">
@@ -558,5 +576,25 @@ function closeImageZoom() {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') closeImageZoom();
 });
+
+// ── Recently Viewed: record this product ──
+(function () {
+    try {
+        var item = {
+            slug: "{{ product.slug }}",
+            name: "{{ product.name|escapejs }}",
+            url: "{% url 'product_detail' product.slug %}",
+            img: "{{ product.display_image_url|default:'' }}",
+            price: "K{{ product.selling_price|floatformat:0|intcomma }}"
+        };
+        if (!item.slug) return;
+        var key = 'czRecentlyViewed';
+        var list = JSON.parse(localStorage.getItem(key) || '[]');
+        list = list.filter(function (p) { return p && p.slug !== item.slug; });
+        list.unshift(item);
+        if (list.length > 12) list = list.slice(0, 12);
+        localStorage.setItem(key, JSON.stringify(list));
+    } catch (e) {}
+})();
 </script>
 {% endblock %}

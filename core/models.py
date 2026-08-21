@@ -204,6 +204,16 @@ class Product(TimeStampedModel):
         percentage = rate.deposit_percentage if rate else DEFAULT_DEPOSIT_PERCENTAGE
         return money(self.selling_price() * (percentage / Decimal("100")))
 
+    def rmb_display(self):
+        try:
+            return int(round(float(self.rmb_price)))
+        except (TypeError, ValueError):
+            return None
+
+    def current_rmb_rate(self):
+        rate = self.active_exchange_rate()
+        return rate.rmb_to_zmw if rate else Decimal("3.20")
+
     def balance_amount(self):
         return money(self.selling_price() - self.deposit_amount())
 

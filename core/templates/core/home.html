@@ -104,6 +104,20 @@
             border-left: 4px solid var(--orange); padding-left: 10px;
         }
         .section-head-sub { font-size: 11px; color: var(--muted); }
+        /* Recently Viewed strip */
+        #recentlyViewed { display: none; margin-bottom: 18px; }
+        .rv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .rv-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 20px; color: var(--ink); letter-spacing: .5px; border-left: 4px solid var(--orange); padding-left: 10px; }
+        .rv-clear { font-size: 11px; color: var(--muted); cursor: pointer; background: none; border: none; font-weight: 700; }
+        .rv-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+        .rv-scroll::-webkit-scrollbar { height: 0; }
+        .rv-card { flex: 0 0 118px; width: 118px; background: #fff; border: 1px solid #EAEAEA; border-radius: 10px; overflow: hidden; text-decoration: none; transition: box-shadow .15s, transform .15s; }
+        .rv-card:hover { box-shadow: 0 6px 18px rgba(255,80,0,.15); transform: translateY(-2px); }
+        .rv-img { width: 100%; height: 118px; object-fit: cover; background: #F5F5F5; display: block; }
+        .rv-noimg { width: 100%; height: 118px; display: flex; align-items: center; justify-content: center; font-size: 26px; background: #F5F5F5; }
+        .rv-info { padding: 7px 8px 9px; }
+        .rv-name { font-size: 11px; color: var(--ink); line-height: 1.35; height: 30px; overflow: hidden; margin-bottom: 4px; }
+        .rv-price { font-size: 14px; font-weight: 900; color: var(--orange); font-family: 'Barlow Condensed', sans-serif; }
         .section-head-more {
             font-size: 12px; color: var(--muted); display: flex; align-items: center;
             gap: 4px; border: 1px solid var(--border); padding: 5px 13px;
@@ -546,6 +560,15 @@
     </div>
     {% endif %}
 
+    <!-- Recently Viewed (client-side, localStorage) -->
+    <section id="recentlyViewed">
+        <div class="rv-head">
+            <span class="rv-title">Recently Viewed</span>
+            <button class="rv-clear" onclick="czClearRecentlyViewed()">Clear</button>
+        </div>
+        <div class="rv-scroll" id="rvScroll"></div>
+    </section>
+
     <!-- ══ RESULTS PANEL (always shown, anchor target) ══ -->
     <div id="results">
 
@@ -687,6 +710,32 @@
 
 {% block extra_js %}
 <script>
+    // ── Recently Viewed render ──
+    function czRenderRecentlyViewed() {
+        try {
+            var list = JSON.parse(localStorage.getItem('czRecentlyViewed') || '[]');
+            var wrap = document.getElementById('recentlyViewed');
+            var scroll = document.getElementById('rvScroll');
+            if (!wrap || !scroll || !list.length) return;
+            scroll.innerHTML = list.map(function (p) {
+                var media = p.img
+                    ? '<img class="rv-img" loading="lazy" src="' + p.img + '" alt="">'
+                    : '<div class="rv-noimg">📦</div>';
+                var name = (p.name || '').replace(/</g, '&lt;');
+                return '<a class="rv-card" href="' + p.url + '">' + media +
+                       '<div class="rv-info"><div class="rv-name">' + name + '</div>' +
+                       '<div class="rv-price">' + (p.price || '') + '</div></div></a>';
+            }).join('');
+            wrap.style.display = 'block';
+        } catch (e) {}
+    }
+    function czClearRecentlyViewed() {
+        try { localStorage.removeItem('czRecentlyViewed'); } catch (e) {}
+        var wrap = document.getElementById('recentlyViewed');
+        if (wrap) wrap.style.display = 'none';
+    }
+    czRenderRecentlyViewed();
+
     // ── SCROLL TO RESULTS ──
     function scrollToResults(delay) {
         var el = document.getElementById('results');
