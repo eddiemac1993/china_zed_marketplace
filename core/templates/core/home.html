@@ -347,6 +347,47 @@
             }
             .section-head-more { padding: 8px 10px; }
         }
+
+        /* ── FLASH SALE TIMER ── */
+        .flash-sale-banner {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--red) 100%);
+            border-radius: var(--card-radius); padding: 20px;
+            margin-bottom: 14px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            box-shadow: 0 4px 12px rgba(255,80,0,.25);
+        }
+        .flash-sale-left { display: flex; align-items: center; gap: 14px; }
+        .flash-sale-icon { font-size: 36px; line-height: 1; animation: flash-pulse 1.5s ease-in-out infinite; }
+        @keyframes flash-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.85} }
+        .flash-sale-text h3 {
+            color: #fff; font-family: 'Barlow Condensed', sans-serif;
+            font-size: 24px; font-weight: 900; margin: 0 0 4px 0;
+            text-transform: uppercase; letter-spacing: .03em;
+        }
+        .flash-sale-text p { color: rgba(255,255,255,.9); font-size: 13px; margin: 0; font-weight: 600; }
+        .flash-sale-timer { display: flex; gap: 10px; }
+        .timer-block {
+            background: rgba(255,255,255,.95); border-radius: 8px;
+            padding: 10px 14px; text-align: center; min-width: 60px;
+        }
+        .timer-value {
+            display: block; font-family: 'Barlow Condensed', sans-serif;
+            font-size: 28px; font-weight: 900; color: var(--red-dark); line-height: 1; margin-bottom: 2px;
+        }
+        .timer-label {
+            display: block; font-size: 10px; color: var(--muted); font-weight: 700;
+            text-transform: uppercase; letter-spacing: .05em;
+        }
+        @media (max-width: 768px) {
+            .flash-sale-banner { flex-direction: column; align-items: flex-start; padding: 16px; }
+            .flash-sale-icon { font-size: 28px; }
+            .flash-sale-text h3 { font-size: 20px; }
+            .flash-sale-text p { font-size: 12px; }
+            .timer-block { min-width: 50px; padding: 8px 10px; }
+            .timer-value { font-size: 24px; }
+            .timer-label { font-size: 9px; }
+        }
+
 {% endblock %}
 
 {% block content %}
@@ -378,7 +419,24 @@
 
 {% include "core/includes/_ad_carousel.html" %}
 
-    <!-- TWO-COL -->
+    
+    <!-- FLASH SALE TIMER -->
+    <div class="flash-sale-banner" id="flashSaleBanner">
+        <div class="flash-sale-left">
+            <span class="flash-sale-icon">⚡</span>
+            <div class="flash-sale-text">
+                <h3>Flash Sale Ends Soon</h3>
+                <p>Grab deals before time runs out!</p>
+            </div>
+        </div>
+        <div class="flash-sale-timer" id="flashTimer">
+            <div class="timer-block"><span class="timer-value" id="fsHours">00</span><span class="timer-label">Hours</span></div>
+            <div class="timer-block"><span class="timer-value" id="fsMins">00</span><span class="timer-label">Mins</span></div>
+            <div class="timer-block"><span class="timer-value" id="fsSecs">00</span><span class="timer-label">Secs</span></div>
+        </div>
+    </div>
+
+<!-- TWO-COL -->
     <div class="two-col">
 
         <!-- SIDEBAR -->
@@ -775,6 +833,34 @@
             sessionStorage.removeItem('czScrollResults');
             scrollToResults(300);
         }
+
+    // ── FLASH SALE COUNTDOWN ──
+    (function () {
+        var STORAGE_KEY = 'czFlashEnd';
+        var DURATION_HOURS = 24;
+        var now = Date.now();
+        var endTime = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+        if (!endTime || endTime <= now) {
+            endTime = now + DURATION_HOURS * 60 * 60 * 1000;
+            localStorage.setItem(STORAGE_KEY, String(endTime));
+        }
+        function updateTimer() {
+            var diff = Math.max(0, endTime - Date.now());
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            var el;
+            el = document.getElementById('fsHours'); if (el) el.textContent = String(h).padStart(2, '0');
+            el = document.getElementById('fsMins'); if (el) el.textContent = String(m).padStart(2, '0');
+            el = document.getElementById('fsSecs'); if (el) el.textContent = String(s).padStart(2, '0');
+            if (diff <= 0) {
+                endTime = Date.now() + DURATION_HOURS * 60 * 60 * 1000;
+                localStorage.setItem(STORAGE_KEY, String(endTime));
+            }
+            requestAnimationFrame(function () { setTimeout(updateTimer, 250); });
+        }
+        updateTimer();
+    })();
     });
 </script>
 {% endblock %}

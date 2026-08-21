@@ -326,15 +326,6 @@
                         <span class="final-curr">K</span>
                         <span class="final-amount">{{ product.selling_price|floatformat:0|intcomma }}</span>
                     </div>
-                    {% if product.rmb_display %}
-                    <div class="rmb-badge">
-                        <span>💱</span>
-                        <span class="rmb-from">¥{{ product.rmb_display }}</span>
-                        <span class="rmb-arrow">→</span>
-                        <span class="rmb-to">K{{ product.selling_price|floatformat:0|intcomma }}</span>
-                        <span class="rmb-rate">@ K{{ product.current_rmb_rate|floatformat:2 }}/¥</span>
-                    </div>
-                    {% endif %}
 
                     <div class="price-split">
                         <div class="price-split-box psb-deposit">
