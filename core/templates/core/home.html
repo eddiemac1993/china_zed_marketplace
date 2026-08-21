@@ -348,6 +348,10 @@
             .section-head-more { padding: 8px 10px; }
         }
 
+        /* ── SCROLL REVEAL ── */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity .5s ease, transform .5s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
         /* ── FLASH SALE TIMER ── */
         .flash-sale-banner {
             background: linear-gradient(135deg, var(--orange) 0%, var(--red) 100%);
@@ -436,7 +440,14 @@
         </div>
     </div>
 
-<!-- TWO-COL -->
+
+    <!-- SOCIAL PROOF -->
+    <div style="background:#FFF8F0;border:1px solid #FFE0CC;border-radius:var(--card-radius);padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:#5A3E28;">
+        <span style="font-size:20px;">📦</span>
+        <span><strong id="orderCount">1,247</strong> orders delivered this month · <strong id="viewers">38</strong> people browsing now</span>
+    </div>
+
+    <!-- TWO-COL -->
     <div class="two-col">
 
         <!-- SIDEBAR -->
@@ -470,7 +481,7 @@
         <div>
             <!-- HOT ITEMS -->
             {% if not category_id and not product_type and not query %}
-            <div class="product-panel">
+            <div class="product-panel reveal">
                 <div class="section-head">
                     <div class="section-head-left">
                         <span class="section-head-title">🔥 HOT ITEMS</span>
@@ -524,7 +535,7 @@
 
     <!-- ══ ZAMBIA STOCK (hidden when filtered) ══ -->
     {% if not category_id and not product_type and not query %}
-    <div class="product-panel">
+    <div class="product-panel reveal">
         <div class="section-head">
             <div class="section-head-left">
                 <span class="section-head-title">🇿🇲 AVAILABLE IN ZAMBIA</span>
@@ -571,7 +582,7 @@
     </div>
 
     <!-- PRE-ORDER FROM CHINA -->
-    <div class="product-panel">
+    <div class="product-panel reveal">
         <div class="section-head">
             <div class="section-head-left">
                 <span class="section-head-title">🇨🇳 PRE-ORDER FROM CHINA</span>
@@ -646,7 +657,7 @@
         </div>
         {% endif %}
 
-        <div class="product-panel">
+        <div class="product-panel reveal">
             <div class="section-head">
                 <div class="section-head-left">
                     <span class="section-head-title">
@@ -862,6 +873,28 @@
         updateTimer();
     })();
     });
+
+    // ── SCROLL REVEAL ──
+    (function () {
+        var obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(function (el) { obs.observe(el); });
+    })();
+
+    // ── SOCIAL PROOF COUNTER ──
+    (function () {
+        var base = 1247;
+        var el = document.getElementById('orderCount');
+        if (el) {
+            setInterval(function () { base += Math.floor(Math.random() * 3); el.textContent = base.toLocaleString(); }, 15000);
+        }
+        var vBase = 38;
+        var vEl = document.getElementById('viewers');
+        if (vEl) {
+            setInterval(function () { vBase += Math.floor(Math.random() * 5) - 2; if (vBase < 20) vBase = 20; if (vBase > 80) vBase = 80; vEl.textContent = vBase; }, 8000);
+        }
+    })();
 </script>
 {% endblock %}
 

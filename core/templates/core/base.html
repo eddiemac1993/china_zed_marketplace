@@ -624,6 +624,26 @@
     <button type="button" class="float-btn install-btn" id="installAppBtn" aria-label="Install ChinaZed app">
         <span class="install-icon">↓</span><span>Install</span>
     </button>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-bar">
+    <div class="mobile-bottom-bar-inner">
+        <a href="{% url 'home' %}" class="mbb-item active">
+            <span class="mbb-icon">🏠</span><span>Home</span>
+        </a>
+        <a href="{% url 'request_product' %}" class="mbb-item">
+            <span class="mbb-icon">🔍</span><span>Search</span>
+        </a>
+        <a href="{% url 'cart' %}" class="mbb-item" style="position:relative;">
+            <span class="mbb-icon">🛒</span><span>Cart</span>
+            {% if cart_count %}<span class="mbb-badge">{{ cart_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'assistant' %}" class="mbb-item">
+            <span class="mbb-icon">💬</span><span>WhatsApp</span>
+        </a>
+    </div>
+</nav>
+
     <div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
 </div>
 
