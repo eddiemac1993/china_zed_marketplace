@@ -311,95 +311,8 @@
         }
         .back-top:hover { background: var(--red); }
 
-        /* ── MOBILE BOTTOM NAV ── */
-        .mobile-bottom-nav {
-            display: none; position: fixed; left: 10px; right: 10px; bottom: 10px;
-            z-index: 500; background: #fff; border-radius: 22px;
-            box-shadow: 0 10px 35px rgba(0,0,0,.15); padding: 6px;
-        }
-        .mobile-bottom-nav-inner { width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; }
-        .mbn-item {
-            width: 100%; min-width: 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 4px; padding: 8px 0;
-            text-align: center; color: #6B6B6B; text-decoration: none; border-radius: 16px;
-            font-size: 10px; font-weight: 700;
-        }
-        .mbn-icon {
-            width: 34px; height: 34px; display: flex; align-items: center;
-            justify-content: center; margin: 0 auto; border-radius: 12px;
-            background: #f4f4f4; font-size: 17px; line-height: 1;
-        }
-        .mbn-item span:last-child { width: 100%; display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mbn-item.active { color: var(--red); }
-        .mbn-item.active .mbn-icon { background: linear-gradient(135deg, var(--red), #ff5b5b); color: #fff; box-shadow: 0 5px 14px rgba(229,20,26,.28); }
-        .mbn-cart-badge { position: relative; }
-        .mbn-badge { position: absolute; top: -4px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--red); color: #fff; font-size: 8px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+        
 
-        /* ── AD CAROUSEL (shared include) ── */
-        .ad-carousel-wrap{width:100%;background:#fff;border:1px solid var(--border);border-radius:var(--card-radius);overflow:hidden;position:relative;height:90px;cursor:pointer}
-        .ad-slide{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:12px 16px;opacity:0;transition:opacity .5s ease;pointer-events:none}
-        .ad-slide.active{opacity:1;pointer-events:auto}
-        .ad-img{width:66px;height:66px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--border)}
-        .ad-img-placeholder{width:66px;height:66px;border-radius:6px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;background:#f8f8f8}
-        .ad-body{flex:1;min-width:0}
-        .ad-label{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
-        .ad-headline{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .ad-sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-        .ad-cta{flex-shrink:0;background:var(--red);color:#fff;border:none;border-radius:5px;padding:8px 16px;font-size:12px;font-weight:700;white-space:nowrap;text-decoration:none}
-        .ad-dots{position:absolute;bottom:7px;right:12px;display:flex;gap:5px}
-        .ad-dot{width:5px;height:5px;border-radius:50%;background:#ddd;transition:background .3s}
-        .ad-dot.active{background:var(--muted)}
-
-        /* ════ RESPONSIVE (shared chrome) ════ */
-        @media (max-width: 900px) {
-            .utility-bar-brand { display: none; }
-            .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; }
-            .footer-top > div:first-child { grid-column: 1 / -1; }
-        }
-        @media (max-width: 640px) {
-            .utility-bar { display: none; }
-            .header-top { gap: 8px; padding: 9px 12px; }
-            .logo-main { font-size: 24px; }
-            .logo-sub { display: none; }
-            .search-select { display: none; }
-            .search-input { font-size: 13px; height: 38px; padding: 0 10px; border-radius: 4px 0 0 4px; }
-            .search-btn { width: 36px; height: 36px; font-size: 14px; }
-            .header-actions { display: none; }
-            /* fade the right edge so it reads as scrollable instead of cut off */
-            .cat-nav-inner {
-                padding: 0 12px;
-                -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
-                mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
-            }
-            .cat-nav-inner.at-end { -webkit-mask-image: none; mask-image: none; }
-            .cat-nav a { padding: 11px 13px; }
-            .mobile-menu-btn { display: flex; }
-            .mobile-drawer { display: block; }
-            .page-body { padding: 10px 12px 92px; }
-            .footer-top { grid-template-columns: 1fr; gap: 20px; }
-            .footer-top > div:first-child { grid-column: auto; }
-            .partner-callout { padding: 18px 14px; }
-            .partner-card { display: block; padding: 18px; border-radius: 8px; }
-            .partner-card h3 { font-size: 19px; }
-            .partner-card p { font-size: 12px; }
-            .partner-points { gap: 7px; }
-            .partner-points span { font-size: 10px; padding: 7px 9px; }
-            .partner-actions { align-items: stretch; min-width: 0; margin-top: 16px; }
-            .partner-note { text-align: center; }
-            .mobile-bottom-nav { display: block; bottom: calc(10px + env(safe-area-inset-bottom)); }
-            .floating-actions { right: 12px; bottom: calc(96px + env(safe-area-inset-bottom)); gap: 8px; }
-            /* icon-only on mobile — the labelled pill covered too much of the page */
-            .wa-btn { height: 46px; width: 46px; min-width: 0; padding: 0; font-size: 12px; border-radius: 50%; }
-            .wa-label { display: none; }
-            .install-btn { min-height: 40px; padding: 0 12px; font-size: 11px; }
-            .back-top { display: none; }
-            body { padding-bottom: 92px; }
-        }
-
-        {% block extra_style %}{% endblock %}
-        /* Unified ChinaZed application icon */
-    .brand-app-icon { width:58px;height:58px;display:block;object-fit:contain;border-radius:14px; }
-    .drawer-logo img { width:46px;height:46px;display:block;object-fit:contain;border-radius:12px; }
     .footer-app-icon { width:70px;height:70px;display:block;object-fit:contain;border-radius:16px;margin-bottom:10px; }
     @media (max-width:768px) { .brand-app-icon { width:46px;height:46px;border-radius:11px; } }
 
@@ -625,24 +538,7 @@
         <span class="install-icon">↓</span><span>Install</span>
     </button>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-bottom-bar">
-    <div class="mobile-bottom-bar-inner">
-        <a href="{% url 'home' %}" class="mbb-item active">
-            <span class="mbb-icon">🏠</span><span>Home</span>
-        </a>
-        <a href="{% url 'request_product' %}" class="mbb-item">
-            <span class="mbb-icon">🔍</span><span>Search</span>
-        </a>
-        <a href="{% url 'cart' %}" class="mbb-item" style="position:relative;">
-            <span class="mbb-icon">🛒</span><span>Cart</span>
-            {% if cart_count %}<span class="mbb-badge">{{ cart_count }}</span>{% endif %}
-        </a>
-        <a href="{% url 'assistant' %}" class="mbb-item">
-            <span class="mbb-icon">💬</span><span>WhatsApp</span>
-        </a>
-    </div>
-</nav>
+
 
     <div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
 </div>

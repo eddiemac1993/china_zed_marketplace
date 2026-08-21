@@ -2,10 +2,10 @@
 {% load static %}
 {% load humanize %}
 
-{% block title %}My Cart | ChinaZed Â· ä¸­èµžå•†åŸŽ{% endblock %}
+{% block title %}My Cart | ChinaZed · 中赞商城{% endblock %}
 
 {% block extra_style %}
-        /* â”€â”€ PAGE HEADER STRIP â”€â”€ */
+        /* ── PAGE HEADER STRIP ── */
         .page-header-strip {
             background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius);
             padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
@@ -21,17 +21,17 @@
         }
         .continue-shopping:hover { border-color: var(--red); color: var(--red); }
 
-        /* â”€â”€ TWO-COL LAYOUT â”€â”€ */
+        /* ── TWO-COL LAYOUT ── */
         .cart-layout { display: grid; grid-template-columns: 1fr 300px; gap: 12px; align-items: start; }
 
-        /* â”€â”€ CART ITEMS PANEL â”€â”€ */
+        /* ── CART ITEMS PANEL ── */
         .cart-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
         .section-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid #F0F0F0; }
         .section-head-left { display: flex; align-items: center; gap: 10px; }
         .section-head-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 17px; color: var(--red); letter-spacing: .5px; }
         .section-head-sub { font-size: 11px; color: var(--muted); }
 
-        /* â”€â”€ CART ITEM ROW â”€â”€ */
+        /* ── CART ITEM ROW ── */
         .cart-item { display: flex; gap: 14px; padding: 16px; border-bottom: 1px solid #F5F5F5; transition: background .15s; }
         .cart-item:last-child { border-bottom: none; }
         .cart-item:hover { background: #FAFAFA; }
@@ -99,7 +99,7 @@
         .btn-clear:hover { border-color: #C00; color: #C00; background: #FFF0F0; }
         .cart-item-count-note { font-size: 11px; color: var(--muted); }
 
-        /* â”€â”€ SUMMARY SIDEBAR â”€â”€ */
+        /* ── SUMMARY SIDEBAR ── */
         .summary-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; position: sticky; top: 150px; }
         .summary-head { background: var(--red); color: #fff; padding: 12px 16px; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: .5px; }
         .summary-body { padding: 16px; }
@@ -136,7 +136,7 @@
 
         .summary-note { margin-top: 12px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 4px; padding: 10px 12px; font-size: 11px; color: #1E40AF; line-height: 1.5; }
 
-        /* â”€â”€ HOW IT WORKS STRIP â”€â”€ */
+        /* ── HOW IT WORKS STRIP ── */
         .how-strip { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 12px; overflow: hidden; }
         .how-item { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-right: 1px solid var(--border); }
         .how-item:last-child { border-right: none; }
@@ -144,7 +144,7 @@
         .how-text h4 { font-size: 12px; font-weight: 700; color: var(--ink); }
         .how-text p { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-        /* â”€â”€ EMPTY STATE â”€â”€ */
+        /* ── EMPTY STATE ── */
         .empty-cart { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); text-align: center; padding: 60px 20px; }
         .empty-cart-icon { font-size: 56px; margin-bottom: 16px; }
         .empty-cart h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 24px; color: var(--ink); margin-bottom: 8px; }
@@ -152,7 +152,7 @@
         .btn-start-shopping { display: inline-block; background: var(--red); color: #fff; padding: 12px 28px; border-radius: 4px; font-size: 13px; font-weight: 700; transition: background .15s; }
         .btn-start-shopping:hover { background: var(--red-dark); }
 
-        /* â”€â”€ RESPONSIVE â”€â”€ */
+        /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
             .cart-layout { grid-template-columns: 1fr; }
             .summary-panel { position: static; }
@@ -177,12 +177,12 @@
     <div class="page-header-strip">
         <div class="page-header-left">
             <div>
-                <div class="page-header-title">ðŸ›’ MY CART</div>
-                <div class="page-header-sub">Review your items Â· Checkout once Â· One combined order</div>
+                <div class="page-header-title">🛒 MY CART</div>
+                <div class="page-header-sub">Review your items · Checkout once · One combined order</div>
             </div>
             <span class="cart-count-badge">{{ cart.total_items }} item{% if cart.total_items != 1 %}s{% endif %}</span>
         </div>
-        <a href="{% url 'home' %}" class="continue-shopping">â† Continue Shopping</a>
+        <a href="{% url 'home' %}" class="continue-shopping">← Continue Shopping</a>
     </div>
 
     {% if cart_items %}
@@ -222,12 +222,12 @@
 
                         <div class="item-meta">
                             {% if item.product.product_type == "local" %}
-                                <span class="meta-pill pill-local">ðŸ‡¿ðŸ‡² Available in Zambia</span>
+                                <span class="meta-pill pill-local">🇿🇲 Available in Zambia</span>
                                 <span class="meta-pill pill-stock">Stock: {{ item.product.stock_quantity }}</span>
                             {% else %}
-                                <span class="meta-pill pill-china">ðŸ‡¨ðŸ‡³ Pre-order from China</span>
+                                <span class="meta-pill pill-china">🇨🇳 Pre-order from China</span>
                                 {% if item.product.delivery_range %}
-                                    <span class="meta-pill" style="background:#EFF6FF; color:#1677FF;">âœˆ {{ item.product.delivery_range }}</span>
+                                    <span class="meta-pill" style="background:#EFF6FF; color:#1677FF;">✈ {{ item.product.delivery_range }}</span>
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -252,7 +252,7 @@
                                     <form method="POST" action="{% url 'update_cart_item' item.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="decrease">
-                                        <button type="submit" class="qty-btn">âˆ’</button>
+                                        <button type="submit" class="qty-btn">−</button>
                                     </form>
                                     <div class="qty-display">{{ item.quantity }}</div>
                                     <form method="POST" action="{% url 'update_cart_item' item.id %}">
@@ -264,7 +264,7 @@
 
                                 <form method="POST" action="{% url 'remove_cart_item' item.id %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn-remove">âœ• Remove</button>
+                                    <button type="submit" class="btn-remove">✕ Remove</button>
                                 </form>
                             </div>
 
@@ -277,9 +277,9 @@
                 <div class="cart-footer-row">
                     <form method="POST" action="{% url 'clear_cart' %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn-clear">ðŸ—‘ Clear Cart</button>
+                        <button type="submit" class="btn-clear">🗑 Clear Cart</button>
                     </form>
-                    <span class="cart-item-count-note">{{ cart.total_items }} item{% if cart.total_items != 1 %}s{% endif %} Â· Total K{{ cart.total_price|floatformat:0|intcomma }}</span>
+                    <span class="cart-item-count-note">{{ cart.total_items }} item{% if cart.total_items != 1 %}s{% endif %} · Total K{{ cart.total_price|floatformat:0|intcomma }}</span>
                 </div>
             </div>
         </div>
@@ -302,9 +302,9 @@
                     <hr class="summary-divider">
 
                     <div class="deposit-highlight">
-                        <div class="dh-label">ðŸ’° Deposit Required Now</div>
+                        <div class="dh-label">💰 Deposit Required Now</div>
                         <div class="dh-amount">K{{ cart.deposit_amount|floatformat:0|intcomma }}</div>
-                        <div class="dh-note">35% of total Â· Secures your order</div>
+                        <div class="dh-note">35% of total · Secures your order</div>
                     </div>
 
                     <div class="balance-row">
@@ -313,12 +313,12 @@
                     </div>
 
                     <a href="{% url 'checkout_cart' %}" class="btn-checkout">
-                        Proceed to Checkout â†’
+                        Proceed to Checkout →
                     </a>
                     <a href="{% url 'home' %}" class="btn-shop-more">+ Add More Products</a>
 
                     <div class="summary-note">
-                        ðŸ’¡ One checkout creates one combined order for all products in your cart.
+                        💡 One checkout creates one combined order for all products in your cart.
                     </div>
                 </div>
             </div>
@@ -346,14 +346,14 @@
             <div class="how-num">3</div>
             <div class="how-text">
                 <h4>We Ship It</h4>
-                <p>China orders dispatched in 1â€“3 days</p>
+                <p>China orders dispatched in 1–3 days</p>
             </div>
         </div>
         <div class="how-item">
             <div class="how-num">4</div>
             <div class="how-text">
                 <h4>Pay Balance & Collect</h4>
-                <p>14â€“30 days Â· Pay rest on arrival</p>
+                <p>14–30 days · Pay rest on arrival</p>
             </div>
         </div>
     </div>
@@ -362,7 +362,7 @@
 
     <!-- EMPTY CART -->
     <div class="empty-cart">
-        <div class="empty-cart-icon">ðŸ›’</div>
+        <div class="empty-cart-icon">🛒</div>
         <h2>Your Cart is Empty</h2>
         <p>Browse our products and add items to your cart to place a combined order.</p>
         <a href="{% url 'home' %}" class="btn-start-shopping">Start Shopping</a>
