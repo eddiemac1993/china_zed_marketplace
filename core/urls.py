@@ -58,6 +58,7 @@ urlpatterns = [
     # =========================
 
     path("order/<int:order_id>/", views.order_detail_view, name="order_detail"),
+    path("order/<int:order_id>/cancel-availability/", views.cancel_after_availability_view, name="cancel_after_availability"),
     path("order/<int:order_id>/receipt/", views.receipt_view, name="receipt"),
     path("order/<int:order_id>/receipt/pdf/", views.receipt_pdf_view, name="receipt_pdf"),
 
@@ -66,6 +67,8 @@ urlpatterns = [
     # =========================
 
     path("supplier/submit-product/", views.supplier_submit_product, name="supplier_submit_product"),
+    path("supplier/import-product/", views.marketplace_import_preview_view, name="marketplace_import_preview"),
+    path("supplier/import-taobao/", views.taobao_import_preview_view, name="taobao_import_preview"),
 
     # =========================
     # POLICY

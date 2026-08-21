@@ -83,6 +83,14 @@ class Product(TimeStampedModel):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
 
     description = models.TextField()
+    original_product_name = models.TextField(blank=True)
+    original_description = models.TextField(blank=True)
+    source_product_id = models.CharField(max_length=120, blank=True)
+    source_currency = models.CharField(max_length=12, blank=True)
+    displayed_price_min = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    displayed_price_max = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    original_displayed_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    variant_data = models.JSONField(default=dict, blank=True)
     rmb_price = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -124,6 +132,7 @@ class Product(TimeStampedModel):
 
     source_platform = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="other")
     source_link = models.URLField(blank=True)
+    imported_from_link = models.BooleanField(default=False, help_text="Imported from an external marketplace link.")
 
     supplier_name = models.CharField(max_length=150, blank=True)
     supplier_contact = models.CharField(max_length=100, blank=True)
@@ -158,6 +167,10 @@ class Product(TimeStampedModel):
 
         if self.product_type == "local" and self.stock_quantity <= 0:
             self.status = "out_of_stock"
+
+        if self.imported_from_link and self.product_type == "preorder":
+            self.delivery_min_days = 14
+            self.delivery_max_days = 60
 
         super().save(*args, **kwargs)
 
@@ -194,10 +207,25 @@ class Product(TimeStampedModel):
     def balance_amount(self):
         return money(self.selling_price() - self.deposit_amount())
 
+    def full_resolution_external_image_url(self, url):
+        """Remove AliExpress thumbnail transforms while preserving other hosts."""
+        url = (url or "").strip()
+        if self.source_platform != "aliexpress":
+            return url
+
+        for extension in (".jpg", ".jpeg", ".png", ".webp"):
+            marker = f"{extension}_"
+            if marker in url:
+                return url.split(marker, 1)[0] + extension
+        return url
+
     def display_image_url(self):
+        # Prefer a verified high-resolution source when one is available.
+        if self.external_image_url:
+            return self.full_resolution_external_image_url(self.external_image_url)
         if self.image:
             return self.image.url
-        return self.external_image_url
+        return ""
 
     def display_gallery_urls(self):
         urls = []
@@ -206,7 +234,7 @@ class Product(TimeStampedModel):
             urls.append(main_url)
         urls.extend(img.image.url for img in self.gallery_images.all())
         urls.extend(
-            line.strip()
+            self.full_resolution_external_image_url(line)
             for line in self.external_gallery_urls.splitlines()
             if line.strip()
         )
@@ -298,11 +326,15 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    requested_size = models.CharField(max_length=80, blank=True)
+    requested_color = models.CharField(max_length=120, blank=True)
 
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("cart", "product")
+        constraints = [
+            models.UniqueConstraint(fields=["cart", "product", "requested_size", "requested_color"], name="unique_cart_product_variant")
+        ]
         ordering = ["-added_at"]
 
     def line_total(self):
@@ -337,6 +369,21 @@ class SupplierProductRequest(TimeStampedModel):
 
     product_name = models.CharField(max_length=200)
     description = models.TextField()
+    original_product_name = models.TextField(blank=True)
+    original_description = models.TextField(blank=True)
+    source_product_id = models.CharField(max_length=120, blank=True)
+    source_currency = models.CharField(max_length=12, blank=True)
+    displayed_price_min = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    displayed_price_max = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    original_displayed_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    imported_store_name = models.CharField(max_length=200, blank=True)
+    imported_variant_data = models.JSONField(default=dict, blank=True)
+    selected_color = models.CharField(max_length=120, blank=True)
+    selected_size = models.CharField(max_length=120, blank=True)
+    selected_other_variants = models.TextField(blank=True)
+    price_confirmed = models.BooleanField(default=False)
+    import_status = models.CharField(max_length=20, choices=[("manual", "Manual"), ("partial", "Partial import"), ("complete", "Complete import")], default="manual")
+    imported_image_paths = models.JSONField(default=list, blank=True)
 
     product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default="preorder")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
@@ -350,6 +397,8 @@ class SupplierProductRequest(TimeStampedModel):
     local_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
 
     image = models.ImageField(upload_to="supplier_requests/", blank=True, null=True)
+    external_image_url = models.URLField(blank=True)
+    external_gallery_urls = models.TextField(blank=True, help_text="Imported image URLs, one per line.")
 
     is_reviewed = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
@@ -486,6 +535,27 @@ class Order(TimeStampedModel):
     deposit_confirmed = models.BooleanField(default=False)
     balance_paid = models.BooleanField(default=False)
     payment_note = models.TextField(blank=True)
+
+    AVAILABILITY_CHOICES = [
+        ("not_required", "Not required"),
+        ("awaiting_deposit", "Awaiting deposit"),
+        ("checking", "Checking with supplier"),
+        ("options_sent", "Available options sent to customer"),
+        ("accepted", "Customer accepted"),
+        ("cancelled", "Customer cancelled"),
+    ]
+    REFUND_CHOICES = [
+        ("not_required", "Not required"),
+        ("due", "Full deposit refund due"),
+        ("completed", "Full deposit refunded"),
+    ]
+    availability_status = models.CharField(max_length=24, choices=AVAILABILITY_CHOICES, default="not_required")
+    availability_due_at = models.DateTimeField(blank=True, null=True)
+    availability_message = models.TextField(blank=True)
+    availability_notified_at = models.DateTimeField(blank=True, null=True)
+    refund_status = models.CharField(max_length=20, choices=REFUND_CHOICES, default="not_required")
+    refund_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    refund_completed_at = models.DateTimeField(blank=True, null=True)
 
     order_date = models.DateTimeField(auto_now_add=True)
 
@@ -633,6 +703,20 @@ class OrderItem(models.Model):
     line_total = models.DecimalField(max_digits=12, decimal_places=2)
 
     product_type = models.CharField(max_length=20, default="preorder")
+    requested_size = models.CharField(max_length=80, blank=True)
+    requested_color = models.CharField(max_length=120, blank=True)
+    availability_status = models.CharField(max_length=20, choices=[
+        ("not_required", "Not required"),
+        ("pending", "Pending verification"),
+        ("available", "Available"),
+        ("alternative", "Alternative offered"),
+        ("unavailable", "Unavailable"),
+    ], default="not_required")
+    available_sizes = models.CharField(max_length=500, blank=True)
+    available_colors = models.CharField(max_length=500, blank=True)
+    available_quantity = models.PositiveIntegerField(blank=True, null=True)
+    availability_note = models.TextField(blank=True)
+    availability_checked_at = models.DateTimeField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

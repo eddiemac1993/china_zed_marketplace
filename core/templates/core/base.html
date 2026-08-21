@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Shop products from China and Zambia with ChinaZed. Browse local stock, pre-order from China, pay a 35% deposit, and track delivery online.{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
     <title>{% block title %}ChinaZed · 中赞商城{% endblock %}</title>
   <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
@@ -403,6 +405,15 @@
     .drawer-logo .cz-market-icon { width:46px;height:46px; }
     .site-footer .cz-market-icon { width:70px;height:70px;margin-bottom:10px; }
     @media(max-width:768px){.site-logo .cz-market-icon{width:46px;height:46px;}}
+
+    /* WCAG-sized touch targets for phones and tablets */
+    @media (max-width: 768px) {
+        .mobile-menu-btn { width: 44px; height: 44px; min-width: 44px; }
+        .search-input { min-height: 44px; }
+        .search-btn { width: 44px; min-width: 44px; height: 44px; }
+        .cat-nav a { min-height: 44px; display: flex; align-items: center; }
+        .drawer-close { min-width: 44px; min-height: 44px; display: grid; place-items: center; }
+    }
 </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -421,7 +432,7 @@
         <div class="drawer-section-title">My Account</div>
         <a href="{% url 'profile' %}" class="drawer-link"><span class="di">👤</span> My Profile & Orders</a>
         <a href="{% url 'cart' %}" class="drawer-link"><span class="di">🛒</span> My Cart{% if nav_cart_count %} ({{ nav_cart_count }}){% endif %}</a>
-        <a href="{% url 'communinity:home' %}" class="drawer-link"><span class="di">💬</span> Communinity</a>
+        <a href="{% url 'communinity:home' %}" class="drawer-link"><span class="di">💬</span> Community</a>
         <a href="{% url 'logout' %}" class="drawer-link"><span class="di">🚪</span> Logout</a>
     </div>
     {% else %}
@@ -467,7 +478,7 @@
 </div>
 
 <!-- MAIN HEADER -->
-<div class="main-header">
+<header class="main-header">
     <div class="header-top">
         <button class="mobile-menu-btn" id="menuToggle" onclick="openDrawer()" aria-label="Open menu" aria-expanded="false">
             <span></span><span></span><span></span>
@@ -475,13 +486,13 @@
         <a href="{% url 'home' %}" class="site-logo" aria-label="ChinaZed home"><svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg></a>
 
         <form method="GET" action="{% url 'home' %}" class="search-bar" id="searchForm">
-            <select class="search-select" name="category" id="searchCatSelect">
+            <select class="search-select" name="category" id="searchCatSelect" aria-label="Filter products by category">
                 <option value="">All Categories</option>
                 {% for category in nav_categories %}
                 <option value="{{ category.id }}" {% if category_id == category.id|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>
                 {% endfor %}
             </select>
-            <input type="text" class="search-input" name="q"
+            <input type="text" class="search-input" name="q" aria-label="Search products"
                    placeholder="Search phones, electronics, fashion…"
                    value="{{ query|default:'' }}">
             {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
@@ -519,13 +530,13 @@
             <a href="{% url 'request_product' %}">🔎 Request Product</a>
             <a href="{% url 'about' %}">ℹ About</a>
             <a href="{% url 'faq' %}">❓ FAQ</a>
-            <a href="{% url 'communinity:home' %}">💬 Communinity</a>
+            <a href="{% url 'communinity:home' %}">💬 Community</a>
             {% for category in nav_categories %}
                 <a href="{% url 'home' %}?category={{ category.id }}#results" class="{% if category_id == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a>
             {% endfor %}
         </div>
     </div>
-</div>
+</header>
 
 {% if messages %}
 <div style="max-width:1300px;margin:10px auto 0;padding:0 20px;">
@@ -535,7 +546,9 @@
 </div>
 {% endif %}
 
+<main id="main-content">
 {% block content %}{% endblock %}
+</main>
 
 <!-- FOOTER -->
 <footer class="site-footer">
@@ -556,7 +569,7 @@
             <a href="{% url 'home' %}?type=preorder#results">Pre-order China</a>
             <a href="{% url 'about' %}">About ChinaZed</a>
             <a href="{% url 'faq' %}">FAQ</a>
-            <a href="{% url 'communinity:home' %}">Communinity 💬</a>
+            <a href="{% url 'communinity:home' %}">Community 💬</a>
             <a href="{% url 'order_policy' %}">Order Policy</a>
             {% if request.user.is_authenticated %}
                 <a href="{% url 'profile' %}">Track Orders</a>

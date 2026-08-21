@@ -107,6 +107,7 @@ class MultipleFileField(forms.FileField):
 
 
 class SupplierProductRequestForm(forms.ModelForm):
+    marketplace_share_text = forms.CharField(required=False, widget=forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Paste an AliExpress or Taobao product link/share text"}), label="Marketplace product link")
     images = MultipleFileField(
         widget=MultipleFileInput(attrs={
             "multiple": True,
@@ -122,6 +123,25 @@ class SupplierProductRequestForm(forms.ModelForm):
             "supplier_name",
             "supplier_contact",
             "product_type",
+            "source_platform",
+            "source_link",
+            "external_image_url",
+            "external_gallery_urls",
+            "original_product_name",
+            "original_description",
+            "source_product_id",
+            "source_currency",
+            "displayed_price_min",
+            "displayed_price_max",
+            "original_displayed_price",
+            "imported_store_name",
+            "imported_variant_data",
+            "import_status",
+            "imported_image_paths",
+            "selected_color",
+            "selected_size",
+            "selected_other_variants",
+            "price_confirmed",
             "stock_quantity",
             "category",
             "product_name",
@@ -140,6 +160,25 @@ class SupplierProductRequestForm(forms.ModelForm):
                 "class": "form-control",
                 "placeholder": "Phone, WhatsApp or WeChat",
             }),
+            "source_platform": forms.HiddenInput(),
+            "source_link": forms.HiddenInput(),
+            "external_image_url": forms.HiddenInput(),
+            "external_gallery_urls": forms.HiddenInput(),
+            "original_product_name": forms.HiddenInput(),
+            "original_description": forms.HiddenInput(),
+            "source_product_id": forms.HiddenInput(),
+            "source_currency": forms.HiddenInput(),
+            "displayed_price_min": forms.HiddenInput(),
+            "displayed_price_max": forms.HiddenInput(),
+            "original_displayed_price": forms.HiddenInput(),
+            "imported_store_name": forms.HiddenInput(),
+            "imported_variant_data": forms.HiddenInput(),
+            "import_status": forms.HiddenInput(),
+            "imported_image_paths": forms.HiddenInput(),
+            "selected_color": forms.TextInput(attrs={"class": "form-control", "placeholder": "Confirm selected colour"}),
+            "selected_size": forms.TextInput(attrs={"class": "form-control", "placeholder": "Confirm selected size"}),
+            "selected_other_variants": forms.Textarea(attrs={"class": "form-control", "rows": 2, "placeholder": "Model, bundle or other selected options"}),
+            "price_confirmed": forms.CheckboxInput(attrs={"class": "terms-checkbox"}),
             "product_type": forms.RadioSelect(attrs={
                 "class": "type-radio",
             }),
@@ -176,6 +215,11 @@ class SupplierProductRequestForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["supplier_contact"].required = True
+
     def clean(self):
         cleaned_data = super().clean()
 
@@ -183,6 +227,14 @@ class SupplierProductRequestForm(forms.ModelForm):
         stock_quantity = cleaned_data.get("stock_quantity") or 0
         rmb_price = cleaned_data.get("rmb_price")
         local_price = cleaned_data.get("local_price")
+        imported_paths = cleaned_data.get("imported_image_paths") or []
+        allowed_prefix = f"supplier_imports/{self.user.pk}/" if self.user else ""
+        if not isinstance(imported_paths, list) or any(not isinstance(path, str) or not allowed_prefix or not path.startswith(allowed_prefix) for path in imported_paths):
+            self.add_error("imported_image_paths", "Imported image references are invalid. Import the product again.")
+            imported_paths = []
+        uploaded_images = self.files.getlist("images")
+        cover_image = self.files.get("image")
+        variant_data = cleaned_data.get("imported_variant_data") or {}
 
         if product_type == "local":
             if stock_quantity <= 0:
@@ -198,11 +250,23 @@ class SupplierProductRequestForm(forms.ModelForm):
                 )
 
         if product_type == "preorder":
+            if stock_quantity <= 0:
+                self.add_error("stock_quantity", "Please enter the quantity you can supply.")
             if not rmb_price:
                 self.add_error(
                     "rmb_price",
                     "Please enter RMB price for China pre-order products."
                 )
+            if not cleaned_data.get("price_confirmed"):
+                self.add_error("price_confirmed", "Confirm the supplier RMB price after selecting the exact variant.")
+
+        if not uploaded_images and not cover_image and not imported_paths:
+            self.add_error("images", "Add at least one valid product image before submission.")
+
+        if variant_data.get("colors") and not cleaned_data.get("selected_color"):
+            self.add_error("selected_color", "Select or enter the exact colour.")
+        if variant_data.get("sizes") and not cleaned_data.get("selected_size"):
+            self.add_error("selected_size", "Select or enter the exact size.")
 
         return cleaned_data
 

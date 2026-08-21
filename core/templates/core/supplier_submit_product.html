@@ -103,9 +103,13 @@
         .drop-zone-text { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
         .drop-zone-hint { font-size: 11px; color: var(--muted); }
         .drop-zone input[type=file] { display: none; }
-        .preview-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .preview-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px; margin-top: 14px; width: 100%;
+        }
+        .preview-grid:empty { display: none; }
         .preview-thumb {
-            width: 68px; height: 68px; border-radius: 6px; overflow: hidden;
+            width: 100%; aspect-ratio: 1 / 1; min-height: 180px; border-radius: 9px; overflow: hidden;
             border: 1px solid var(--border); position: relative; background: #F5F5F5;
         }
         .preview-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -239,7 +243,18 @@
                     <form method="POST" enctype="multipart/form-data" class="sp-form" id="supplierForm"
                           data-type="{{ form.product_type.value|default:'preorder' }}">
                         {% csrf_token %}
-
+                        {{ form.source_platform }}{{ form.source_link }}{{ form.external_image_url }}{{ form.external_gallery_urls }}{{ form.original_product_name }}{{ form.original_description }}{{ form.source_product_id }}{{ form.source_currency }}{{ form.displayed_price_min }}{{ form.displayed_price_max }}{{ form.original_displayed_price }}{{ form.imported_store_name }}{{ form.imported_variant_data }}{{ form.import_status }}{{ form.imported_image_paths }}
+                        <div class="sp-section" style="background:#f7fbff;border:1px solid #cfe5ff;border-radius:12px;padding:16px;">
+                            <div class="sp-section-head">
+                                <span class="sp-section-num">↗</span>
+                                <div><div class="sp-section-title">Import from Taobao or AliExpress</div><div class="sp-section-note">Paste a full product URL, mobile/share URL, or share text. We use public structured data and save validated images locally.</div></div>
+                            </div>
+                            <div class="form-group">{{ form.marketplace_share_text }}</div>
+                            <button type="button" id="marketplaceImportBtn" class="submit-btn" style="width:auto;padding:10px 18px;">Import product details</button>
+                            <div id="marketplaceImportStatus" class="form-hint" role="status" aria-live="polite" style="margin-top:8px;"></div>
+                            <div id="marketplacePriceNotice" class="form-hint" style="margin-top:6px;font-weight:700;"></div>
+                            <div id="marketplaceImagePreview" style="display:flex;gap:8px;overflow:auto;margin-top:10px;"></div>
+                        </div>
                         <!-- 1 · TYPE -->
                         <div class="sp-section">
                             <div class="sp-section-head">
@@ -327,11 +342,27 @@
 
                             <!-- China pre-order -->
                             <div class="when-preorder">
-                                <div class="form-group">
-                                    <label class="form-label">Your price in RMB (¥) *</label>
-                                    {{ form.rmb_price }}
-                                    <div class="form-hint">Supplier cost per unit in Chinese Yuan. We convert to Kwacha automatically.</div>
+                                <div class="sp-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Confirmed supplier price in RMB (¥) *</label>
+                                        {{ form.rmb_price }}
+                                        <div class="form-hint">Enter the exact supplier cost after selecting colour, size, quantity and checking shipping.</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Quantity you can supply *</label>
+                                        {{ form.stock_quantity }}
+                                        <div class="form-hint">Quantity is verified with colour and size after the deposit.</div>
+                                    </div>
                                 </div>
+                                <div id="importedPriceRange" class="form-hint" style="margin-bottom:12px;font-weight:700;"></div>
+                                <div id="variantConfirmation">
+                                    <div class="sp-row">
+                                        <div class="form-group"><label class="form-label">Selected colour</label>{{ form.selected_color }}</div>
+                                        <div class="form-group"><label class="form-label">Selected size</label>{{ form.selected_size }}</div>
+                                    </div>
+                                    <div class="form-group"><label class="form-label">Other selected variants</label>{{ form.selected_other_variants }}</div>
+                                </div>
+                                <label style="display:flex;gap:9px;align-items:flex-start;font-size:12px;font-weight:700;line-height:1.5;">{{ form.price_confirmed }} <span>I have selected the exact variant and confirmed the supplier price in RMB. *</span></label>
                             </div>
                         </div>
 
@@ -485,6 +516,47 @@
     var form = document.getElementById('supplierForm');
     if (!form) return;
 
+
+    // Taobao / AliExpress link import
+    var importBtn = document.getElementById("marketplaceImportBtn");
+    var importStatus = document.getElementById("marketplaceImportStatus");
+    var priceNotice = document.getElementById("marketplacePriceNotice");
+    function setValue(id, value) { var field=document.getElementById(id); if(field) field.value=value == null ? "" : value; }
+    if (importBtn) importBtn.addEventListener("click", function () {
+        var share = document.getElementById("id_marketplace_share_text");
+        if (!share || !share.value.trim()) { importStatus.textContent = "Paste an AliExpress or Taobao product link first."; return; }
+        importBtn.disabled = true; importStatus.textContent = "Fetching public product information and validating images…"; priceNotice.textContent = "";
+        var data = new FormData(); data.append("share_text", share.value); data.append("csrfmiddlewaretoken", form.querySelector("[name=csrfmiddlewaretoken]").value);
+        fetch("{% url 'marketplace_import_preview' %}", {method:"POST", body:data, credentials:"same-origin"})
+          .then(function (response) { return response.json().then(function (body) { if (!response.ok) throw new Error(body.error || "Import failed."); return body; }); })
+          .then(function (item) {
+              setValue("id_product_name", item.name); setValue("id_description", item.description);
+              setValue("id_source_platform", item.source_platform); setValue("id_source_link", item.source_link);
+              setValue("id_original_product_name", item.original_name); setValue("id_original_description", item.original_description);
+              setValue("id_source_product_id", item.product_id); setValue("id_source_currency", item.currency);
+              setValue("id_displayed_price_min", item.price_min); setValue("id_displayed_price_max", item.price_max);
+              setValue("id_original_displayed_price", item.original_price); setValue("id_imported_store_name", item.store_name);
+              setValue("id_imported_variant_data", JSON.stringify({colors:item.colors||[], sizes:item.sizes||[], variants:item.variants||[]}));
+              setValue("id_import_status", item.status); setValue("id_imported_image_paths", JSON.stringify(item.local_image_paths||[]));
+              setValue("id_external_image_url", ""); setValue("id_external_gallery_urls", "");
+              if ((item.currency || "").toUpperCase() === "CNY" || (item.currency || "").toUpperCase() === "RMB") { setValue("id_rmb_price", item.price_min); }
+              var range=document.getElementById("importedPriceRange"); if(range) range.textContent=item.price_display ? "Displayed price: " + item.price_display : "Displayed price unavailable.";
+              priceNotice.textContent = item.price_notice || "";
+              var preview=document.getElementById("previewGrid"); preview.innerHTML="";
+              (item.local_image_paths||[]).forEach(function(path){
+                  var clean=String(path||"").trim(); if(!clean) return;
+                  var src=clean.indexOf("/media/")===0 ? clean : "/media/"+clean.replace(/^\/+/, "");
+                  var wrap=document.createElement("div"); wrap.className="preview-thumb";
+                  var img=document.createElement("img"); img.src=src; img.alt="Locally saved imported product image";
+                  img.addEventListener("error", function(){ wrap.remove(); });
+                  wrap.appendChild(img); preview.appendChild(wrap);
+              });
+              var details=[]; if(item.colors&&item.colors.length) details.push("Colours: "+item.colors.join(", ")); if(item.sizes&&item.sizes.length) details.push("Sizes: "+item.sizes.join(", "));
+              importStatus.textContent = item.status_message + (details.length ? " " + details.join(" · ") : "") + (item.warnings&&item.warnings.length ? " " + item.warnings.join(" ") : "");
+          })
+          .catch(function (error) { importStatus.textContent = error.message; })
+          .finally(function () { importBtn.disabled = false; });
+    });
     // ── Product type cards ──
     var cards = form.querySelectorAll('.type-card');
 

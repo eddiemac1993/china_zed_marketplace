@@ -1,75 +1,32 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found</title>
-
-    <style>
-        body{
-            margin:0;
-            font-family:Arial,sans-serif;
-            background:#f5f5f5;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            min-height:100vh;
-            padding:20px;
-        }
-
-        .box{
-            background:#fff;
-            padding:40px;
-            border-radius:12px;
-            text-align:center;
-            max-width:500px;
-            width:100%;
-            box-shadow:0 10px 30px rgba(0,0,0,.08);
-        }
-
-        h1{
-            font-size:70px;
-            margin:0;
-            color:#e5141a;
-        }
-
-        h2{
-            margin:10px 0;
-            font-size:28px;
-        }
-
-        p{
-            color:#666;
-            line-height:1.7;
-        }
-
-        a{
-            display:inline-block;
-            margin-top:20px;
-            background:#e5141a;
-            color:#fff;
-            text-decoration:none;
-            padding:12px 24px;
-            border-radius:6px;
-            font-weight:bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Page Not Found | ChinaZed</title>
+  <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
+  <style>
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f2f3f5;color:#1a1a1a;font-family:Arial,sans-serif}
+    main{width:min(620px,100%);background:#fff;border:1px solid #e2e2e2;border-radius:16px;padding:42px 28px;text-align:center;box-shadow:0 14px 36px rgba(0,0,0,.08)}
+    .brand{display:inline-flex;align-items:center;gap:10px;color:#b50f14;font-weight:800;font-size:20px}.brand img{width:48px;height:48px;border-radius:12px}
+    .code{margin:24px 0 0;color:#e5141a;font-size:clamp(64px,18vw,104px);font-weight:900;line-height:1}h1{font-size:28px;margin:8px 0 10px}
+    p{color:#5c5c5c;line-height:1.65;margin:0 auto 22px;max-width:470px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+    a{display:inline-block;padding:12px 20px;border-radius:8px;font-weight:700;text-decoration:none}.primary{background:#e5141a;color:#fff}.secondary{border:1px solid #d7d7d7;color:#222;background:#fff}
+    a:focus-visible{outline:3px solid #ffc107;outline-offset:3px}
+  </style>
 </head>
 <body>
-
-<div class="box">
-    <h1>404</h1>
-    <h2>Page Not Found</h2>
-
-    <p>
-        The page you are looking for does not exist
-        or may have been moved.
-    </p>
-
-    <a href="{% url 'home' %}">
-        Back to Home
-    </a>
-</div>
-
+  <main>
+    <div class="brand"><img src="{% static 'core/images/market-icon-64.png' %}" alt="">ChinaZed · 中赞商城</div>
+    <div class="code" aria-hidden="true">404</div>
+    <h1>We couldn’t find that page</h1>
+    <p>The link may be outdated or the page may have moved. Return to the marketplace or ask us to source the product you need.</p>
+    <div class="actions">
+      <a class="primary" href="{% url 'home' %}">Browse products</a>
+      <a class="secondary" href="{% url 'request_product' %}">Request a product</a>
+    </div>
+  </main>
 </body>
 </html>

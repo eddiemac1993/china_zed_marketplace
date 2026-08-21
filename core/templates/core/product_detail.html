@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+{% extends "core/base.html" %}
 {% load static %}
 {% load humanize %}
 
@@ -317,10 +317,33 @@
                     </div>
                     {% endif %}
 
+                    {% if product.imported_from_link %}
+                    <div class="availability-box" style="margin-top:12px;line-height:1.5;">
+                        We verify your requested size, color, and quantity within 2 days after your deposit.
+                        If the requested option is unavailable and you choose not to continue before purchase, your deposit is refunded 100%.
+                    </div>
+                    {% endif %}
                     {% if request.user.is_authenticated %}
                         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
                             {% csrf_token %}
-
+                            {% if product.size_option_list %}
+                            <div class="qty-row">
+                                <label class="qty-label" for="id_size">Size:</label>
+                                <select id="id_size" name="size" class="qty-input" required>
+                                    <option value="">Choose size</option>
+                                    {% for size in product.size_option_list %}<option value="{{ size }}">{{ size }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                            {% if product.color_option_list %}
+                            <div class="qty-row">
+                                <label class="qty-label" for="id_color">Color:</label>
+                                <select id="id_color" name="color" class="qty-input" required>
+                                    <option value="">Choose color</option>
+                                    {% for color in product.color_option_list %}<option value="{{ color }}">{{ color }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
                             <div class="qty-row">
                                 <span class="qty-label">Qty:</span>
                                 <input type="number" name="quantity" value="1" min="1"

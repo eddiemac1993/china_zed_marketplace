@@ -1,4 +1,4 @@
-﻿import json
+import json
 import requests
 from django.conf import settings
 from django.utils import timezone
@@ -24,6 +24,7 @@ from .forms import (
     CustomUserRegistrationForm,
     PaymentProofForm,
 )
+from .marketplace_importer import ImportFailure, import_marketplace_product
 from .models import (
     Product,
     ProductReview,
@@ -43,6 +44,10 @@ from django.http import HttpResponse
 from django.conf import settings
 import os
 import textwrap
+import re
+import html as html_lib
+from urllib.parse import urlparse
+from datetime import timedelta
 
 WHATSAPP_NUMBER = "260766491002"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
@@ -55,7 +60,9 @@ Answer clearly and politely. Keep replies short and practical.
 Business rules:
 - China pre-orders use a 35% deposit.
 - Balance is paid when the order arrives and is ready for pickup or local delivery.
-- China pre-order delivery estimate is usually 14 to 30 days.
+- Link-imported China pre-orders have an estimated delivery window of 14 to 60 days.
+- After the first deposit, requested size, color, and quantity are verified within two days.
+- If the buyer declines unavailable options before purchase, the full deposit is refundable.
 - Customers can request a product quote from Alibaba, Taobao, Temu, 1688, Shein, or another supplier.
 - If an item is unavailable, ChinaZed helps find an alternative or adjusts the order.
 - Refunds or changes follow the order policy.
@@ -71,13 +78,13 @@ def fallback_assistant_reply(message):
         return "ChinaZed pre-orders start with a 35% deposit. The balance is paid when your order arrives and is ready for pickup or local delivery."
 
     if "delivery" in text or "arrive" in text or "shipping" in text:
-        return "Most China pre-orders have an estimated delivery window of 14 to 30 days. You can track your order progress from your profile after ordering."
+        return "Link-imported China pre-orders have an estimated delivery window of 14 to 60 days. Size, color, and quantity are verified within two days after the deposit."
 
     if "request" in text or "quote" in text or "alibaba" in text or "taobao" in text or "temu" in text or "1688" in text or "shein" in text:
         return "You can request any product from China by sending the product link through the Request Product page. ChinaZed will check availability, shipping, and quote the Zambia price."
 
     if "refund" in text or "unavailable" in text or "change" in text:
-        return "If an item is unavailable after review, ChinaZed can help find an alternative, adjust the order, or handle the deposit according to the order policy."
+        return "If the requested size, color, or quantity is unavailable, ChinaZed will send the available options. If you decide not to continue before purchase, your deposit is refunded in full."
 
     return "I can help with ChinaZed deposits, delivery, product requests, order tracking, balances, and refunds. What would you like to know?"
 
@@ -149,6 +156,28 @@ def assistant_chat_view(request):
 
     return JsonResponse({"reply": reply})
 
+
+@login_required(login_url="login")
+@require_POST
+@ratelimit(key="user", rate="20/h", method="POST", block=True)
+def marketplace_import_preview_view(request):
+    if not is_approved_supplier(request.user):
+        return JsonResponse({"error": "Approved supplier access is required.", "code": "forbidden"}, status=403)
+    share_text = (request.POST.get("share_text") or "").strip()
+    try:
+        result = import_marketplace_product(
+            share_text,
+            owner_id=request.user.pk,
+            translate=_translate_product_text,
+        )
+        return JsonResponse(result.as_dict())
+    except ImportFailure as exc:
+        return JsonResponse({"error": exc.message, "code": exc.code}, status=exc.status)
+
+
+def taobao_import_preview_view(request):
+    """Backward-compatible endpoint; the shared importer auto-detects the marketplace."""
+    return marketplace_import_preview_view(request)
 
 def service_worker_view(request):
     response = render(
@@ -524,6 +553,15 @@ def add_to_cart_view(request, slug):
     if quantity < 1:
         quantity = 1
 
+    requested_size = (request.POST.get("size") or "").strip()
+    requested_color = (request.POST.get("color") or "").strip()
+    if requested_size and requested_size not in product.size_option_list():
+        messages.error(request, "Please choose a valid size.")
+        return redirect("product_detail", slug=product.slug)
+    if requested_color and requested_color not in product.color_option_list():
+        messages.error(request, "Please choose a valid color.")
+        return redirect("product_detail", slug=product.slug)
+
     if product.product_type == "local" and product.stock_quantity <= 0:
         messages.error(request, "This product is currently out of stock.")
         return redirect("product_detail", slug=product.slug)
@@ -533,6 +571,8 @@ def add_to_cart_view(request, slug):
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
+        requested_size=requested_size,
+        requested_color=requested_color,
         defaults={"quantity": quantity}
     )
 
@@ -662,12 +702,20 @@ def checkout_cart_view(request):
                     product=item.product,
                     product_name=item.product.name,
                     quantity=item.quantity,
+                    requested_size=item.requested_size,
+                    requested_color=item.requested_color,
+                    availability_status=("pending" if item.product.imported_from_link and item.product.product_type == "preorder" else "not_required"),
                     unit_price=item.product.selling_price(),
                     product_type=item.product.product_type,
                     line_total=item.line_total(),
                 )
 
             order.recalculate_totals()
+            if order.items.filter(product__imported_from_link=True, product__product_type="preorder").exists():
+                order.availability_status = "awaiting_deposit"
+                order.estimated_arrival_start = timezone.now().date() + timedelta(days=14)
+                order.estimated_arrival_end = timezone.now().date() + timedelta(days=60)
+                order.save(update_fields=["availability_status", "estimated_arrival_start", "estimated_arrival_end", "updated_at"])
             cart.clear()
 
             order_link = request.build_absolute_uri(
@@ -789,9 +837,15 @@ def place_order_view(request, slug):
                 unit_price=product.selling_price(),
                 product_type=product.product_type,
                 line_total=product.selling_price(),
+                availability_status=("pending" if product.imported_from_link and product.product_type == "preorder" else "not_required"),
             )
 
             order.recalculate_totals()
+            if product.imported_from_link and product.product_type == "preorder":
+                order.availability_status = "awaiting_deposit"
+                order.estimated_arrival_start = timezone.now().date() + timedelta(days=14)
+                order.estimated_arrival_end = timezone.now().date() + timedelta(days=60)
+                order.save(update_fields=["availability_status", "estimated_arrival_start", "estimated_arrival_end", "updated_at"])
 
             order_link = request.build_absolute_uri(
                 reverse("order_detail", kwargs={"order_id": order.id})
@@ -896,6 +950,29 @@ def order_detail_view(request, order_id):
 
 
 @login_required(login_url="login")
+@require_POST
+def cancel_after_availability_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if not order.deposit_confirmed or order.availability_status not in ["checking", "options_sent"]:
+        messages.error(request, "This order is not eligible for availability cancellation.")
+        return redirect("order_detail", order_id=order.id)
+    if order.status in ["purchased", "shipped", "in_transit", "arrived", "ready", "successful"]:
+        messages.error(request, "This order has already moved beyond availability verification.")
+        return redirect("order_detail", order_id=order.id)
+    order.availability_status = "cancelled"
+    order.status = "cancelled"
+    order.refund_status = "due"
+    order.refund_amount = order.deposit_amount
+    order.save(update_fields=["availability_status", "status", "refund_status", "refund_amount", "updated_at"])
+    messages.success(request, "Order cancelled. A 100% refund of your confirmed deposit is now due.")
+    send_mail(
+        subject=f"Full deposit refund requested - {order.tracking_code}",
+        message=f"Order {order.tracking_code} was cancelled by the customer after availability checking. Refund the full deposit: K{order.refund_amount}.",
+        from_email=None, recipient_list=[ADMIN_ORDER_EMAIL], fail_silently=True,
+    )
+    return redirect("order_detail", order_id=order.id)
+
+@login_required(login_url="login")
 def receipt_view(request, order_id):
     order = get_object_or_404(
         Order,
@@ -975,15 +1052,19 @@ def supplier_submit_product(request):
     if request.method == "POST":
         form = SupplierProductRequestForm(
             request.POST,
-            request.FILES
+            request.FILES,
+            user=request.user,
         )
 
         if form.is_valid():
             supplier_request = form.save(commit=False)
             supplier_request.submitted_by = request.user
 
-            # Set preview image from first uploaded image later
+            # Imported images were already validated and saved to local media storage.
+            imported_paths = form.cleaned_data.get("imported_image_paths") or []
             uploaded_images = request.FILES.getlist("images")
+            if imported_paths and not request.FILES.get("image"):
+                supplier_request.image.name = imported_paths[0]
 
             # fallback single image
             if not uploaded_images and request.FILES.get("image"):
@@ -991,7 +1072,15 @@ def supplier_submit_product(request):
 
             supplier_request.save()
 
-            # Save multiple images
+            # Save locally imported marketplace images.
+            for path in imported_paths:
+                SupplierProductRequestImage.objects.create(
+                    supplier_request=supplier_request,
+                    image=path,
+                    caption="Imported product image",
+                )
+
+            # Save multiple uploaded images
             for index, img in enumerate(uploaded_images):
 
                 SupplierProductRequestImage.objects.create(
@@ -1032,7 +1121,7 @@ def supplier_submit_product(request):
                 "supplier_name": last.supplier_name,
                 "supplier_contact": last.supplier_contact,
             }
-        form = SupplierProductRequestForm(initial=initial)
+        form = SupplierProductRequestForm(initial=initial, user=request.user)
 
     my_submissions = (
         SupplierProductRequest.objects

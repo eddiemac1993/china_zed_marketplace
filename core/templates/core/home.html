@@ -2,7 +2,8 @@
 {% load static %}
 {% load humanize %}
 
-{% block title %}ChinaZed · 中赞商城{% endblock %}
+{% block title %}Shop China & Zambia Products | ChinaZed{% endblock %}
+{% block meta_description %}Shop Zambia stock and pre-order products directly from China with ChinaZed. Pay a 35% deposit and track delivery online.{% endblock %}
 
 {% block extra_style %}
         /* ── HERO BANNER ── */
@@ -42,7 +43,7 @@
             text-align: center;
         }
         .hero-badge small { display: block; font-size: 11px; font-family: 'Noto Sans SC'; font-weight: 700; }
-        .hero-text h2 {
+        .hero-text h1 {
             font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
             font-size: 26px; color: #fff; letter-spacing: -.3px; line-height: 1.15;
             text-shadow: 0 2px 10px rgba(0,0,0,.45);
@@ -303,7 +304,7 @@
             }
             .hero-banner::before { display: none; }
             .hero-left { align-items: flex-start; gap: 12px; }
-            .hero-text h2 { font-size: 19px; line-height: 1.2; }
+            .hero-text h1 { font-size: 19px; line-height: 1.2; }
             .hero-badge { font-size: 17px; padding: 7px 11px; }
             .hero-points { gap: 5px; margin-top: 8px; }
             .hero-points li { font-size: 10px; padding: 4px 8px; }
@@ -319,6 +320,17 @@
         @media (max-width: 380px) {
             .product-grid-5, .product-grid-dense { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* Keep primary mobile actions comfortably tappable */
+        @media (max-width: 768px) {
+            .empty-row-cta, .section-head-more {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .section-head-more { padding: 8px 10px; }
+        }
 {% endblock %}
 
 {% block content %}
@@ -330,7 +342,7 @@
         <div class="hero-left">
             <div class="hero-badge">🔥 HOT<small>DEALS</small></div>
             <div class="hero-text">
-                <h2>Buy Direct from China · Delivered to Zambia</h2>
+                <h1>Buy Direct from China · Delivered to Zambia</h1>
                 <ul class="hero-points">
                     <li>35% deposit</li>
                     <li>Balance on arrival</li>

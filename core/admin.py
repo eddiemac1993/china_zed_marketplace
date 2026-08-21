@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.core.mail import send_mail
 from django.utils import timezone
+from datetime import timedelta
 from django.utils.html import format_html
 from webpush import send_user_notification
 
@@ -73,12 +74,16 @@ class CartItemInline(admin.TabularInline):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
+    fields = (
+        "product_name", "requested_size", "requested_color", "quantity",
+        "availability_status", "available_sizes", "available_colors",
+        "available_quantity", "availability_note", "availability_checked_at",
+        "unit_price", "line_total", "product_type", "created_at",
+    )
     readonly_fields = (
-        "product_name",
-        "unit_price",
-        "line_total",
-        "product_type",
-        "created_at",
+        "product_name", "requested_size", "requested_color", "quantity",
+        "unit_price", "line_total", "product_type", "created_at",
+        "availability_checked_at",
     )
 
 
@@ -230,6 +235,7 @@ class ProductAdmin(admin.ModelAdmin):
             "fields": (
                 "source_platform",
                 "source_link",
+                "imported_from_link",
                 "supplier_name",
                 "supplier_contact",
                 "supplier_note",
@@ -377,6 +383,8 @@ class OrderAdmin(admin.ModelAdmin):
         "order_products",
         "status",
         "deposit_confirmed",
+        "availability_status",
+        "refund_status",
         "balance_paid",
         "stock_reduced",
         "total_price",
@@ -388,6 +396,8 @@ class OrderAdmin(admin.ModelAdmin):
 
     list_editable = (
         "status",
+        "availability_status",
+        "refund_status",
         "deposit_confirmed",
         "balance_paid",
     )
@@ -447,6 +457,13 @@ class OrderAdmin(admin.ModelAdmin):
                 "deposit_confirmed",
                 "balance_paid",
                 "stock_reduced",
+            )
+        }),
+        ("Link-import availability check", {
+            "fields": (
+                "availability_status", "availability_due_at",
+                "availability_message", "availability_notified_at",
+                "refund_status", "refund_amount", "refund_completed_at",
             )
         }),
         ("Money", {
@@ -553,6 +570,43 @@ class OrderAdmin(admin.ModelAdmin):
 
     progress_display.short_description = "Progress"
 
+    def save_model(self, request, obj, form, change):
+        previous = Order.objects.filter(pk=obj.pk).first() if obj.pk else None
+        imported_preorder = obj.pk and obj.items.filter(product__imported_from_link=True, product__product_type="preorder").exists()
+
+        if imported_preorder and obj.deposit_confirmed and (not previous or not previous.deposit_confirmed):
+            obj.availability_status = "checking"
+            obj.availability_due_at = timezone.now() + timedelta(days=2)
+
+        if obj.availability_status == "cancelled" and obj.deposit_confirmed:
+            obj.status = "cancelled"
+            obj.refund_status = "due"
+            obj.refund_amount = obj.deposit_amount
+
+        notify_options = (
+            obj.availability_status == "options_sent"
+            and obj.availability_message.strip()
+            and (not previous or previous.availability_status != "options_sent" or previous.availability_message != obj.availability_message)
+        )
+        super().save_model(request, obj, form, change)
+
+        if notify_options:
+            obj.availability_notified_at = timezone.now()
+            obj.save(update_fields=["availability_notified_at", "updated_at"])
+            subject = f"Availability update for order {obj.tracking_code}"
+            body = (
+                f"Hello {obj.user.username},\n\n"
+                f"We checked the requested size, color, and quantity for your order.\n\n"
+                f"{obj.availability_message}\n\n"
+                "Please sign in to review the available options. If you do not want to continue before we purchase the item, cancel and your deposit will be refunded in full.\n"
+            )
+            if obj.user.email:
+                send_mail(subject, body, None, [obj.user.email], fail_silently=True)
+            try:
+                send_user_notification(user=obj.user, payload={"head": subject, "body": obj.availability_message, "url": f"/order/{obj.id}/"}, ttl=172800)
+            except Exception:
+                pass
+
 
 # =========================
 # SUPPLIER REQUEST ACTION
@@ -591,12 +645,23 @@ def approve_supplier_requests(modeladmin, request, queryset):
         product = Product.objects.create(
             name=supplier_request.product_name,
             description=supplier_request.description,
+            original_product_name=supplier_request.original_product_name,
+            original_description=supplier_request.original_description,
+            source_product_id=supplier_request.source_product_id,
+            source_currency=supplier_request.source_currency,
+            displayed_price_min=supplier_request.displayed_price_min,
+            displayed_price_max=supplier_request.displayed_price_max,
+            original_displayed_price=supplier_request.original_displayed_price,
+            variant_data=supplier_request.imported_variant_data,
             rmb_price=product_price,
             category=supplier_request.category,
             product_type=supplier_request.product_type,
             stock_quantity=stock_quantity,
             source_platform=supplier_request.source_platform,
             source_link=supplier_request.source_link,
+            imported_from_link=bool(supplier_request.source_link and supplier_request.source_platform in {"taobao", "aliexpress"}),
+            external_image_url=(supplier_request.external_image_url if supplier_request.source_platform != "aliexpress" else ""),
+            external_gallery_urls=(supplier_request.external_gallery_urls if supplier_request.source_platform != "aliexpress" else ""),
             supplier_name=supplier_request.supplier_name,
             supplier_contact=supplier_request.supplier_contact,
             status="active",
