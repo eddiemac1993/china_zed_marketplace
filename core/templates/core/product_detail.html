@@ -130,6 +130,28 @@
             background: #111827; color: #fff; padding: 12px 0; border-radius: 4px; font-size: 13px; font-weight: 700; transition: .2s;
         }
         .btn-save-poster:hover { background: #ea580c; }
+        .btn-whatsapp {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: #25D366; color: #fff; text-decoration: none; padding: 11px 16px;
+            border-radius: 8px; font-weight: 800; font-size: 13px; margin-top: 8px;
+            transition: background .15s, transform .1s; box-shadow: 0 4px 12px rgba(37,211,102,.25);
+        }
+        .btn-whatsapp:hover { background: #1EBE57; transform: translateY(-1px); }
+        .momo-strip {
+            background: #FFF8E7; border: 1px dashed #FFB800; border-radius: 8px;
+            padding: 10px 12px; margin-top: 14px; display: flex; align-items: center; gap: 8px;
+            font-size: 11px; color: #664D00; font-weight: 700;
+        }
+        .timeline-steps-mini {
+            background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px;
+            padding: 14px; margin-top: 16px;
+        }
+        .timeline-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .timeline-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; }
+        .t-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .t-icon { width: 28px; height: 28px; border-radius: 50%; background: #EFF6FF; color: #1677FF; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; }
+        .t-step.active .t-icon { background: var(--orange); color: #fff; }
+        .t-label { font-size: 9px; color: var(--ink); font-weight: 700; line-height: 1.2; }
 
         .trust-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F0F0; }
         .trust-pill { display: inline-flex; align-items: center; gap: 4px; background: #F8F8F8; border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; font-size: 10px; font-weight: 700; color: var(--muted); }
@@ -373,6 +395,10 @@
                         <a href="{% url 'save_product_image' product.slug %}"
                            class="btn-save-poster">
                             ðŸ“¥ Save Product Poster
+                        </a>
+                        <a href="https://wa.me/?text=Hi!%20I%20am%20interested%20in%20ordering%20{{ product.name|urlencode }}%20on%20ChinaZed:%20https://www.chinatozambia.org{% url 'product_detail' product.slug %}"
+                           target="_blank" rel="noopener" class="btn-whatsapp">
+                            💬 Share or Order on WhatsApp
                         </a>
 
                     {% else %}
