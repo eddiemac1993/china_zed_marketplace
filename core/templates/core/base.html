@@ -12,21 +12,23 @@
 
     <style>
         :root {
-            --red: #E5141A;
-            --red-dark: #B50F14;
-            --red-bright: #FF2D2D;
-            --orange: #FF6600;
-            --orange-light: #FF8C00;
+            --red: #FF0036;
+            --red-dark: #D4002D;
+            --red-bright: #FF2B00;
+            --orange: #FF5000;
+            --orange-light: #FF7A00;
             --gold: #FFC107;
             --gold-dark: #E6A800;
             --yellow: #FFE500;
-            --bg: #F0F0F0;
+            --bg: #F4F4F4;
             --white: #FFFFFF;
             --ink: #1A1A1A;
-            --muted: #6B6B6B;   /* 5.3:1 on white; #888 was 3.5:1 and failed AA */
-            --border: #E0E0E0;
-            --card-radius: 10px;
+            --muted: #6B6B6B;
+            --border: #EAEAEA;
+            --card-radius: 12px;
             --header-h: 130px;
+            --tb-gradient: linear-gradient(135deg, #FF9000 0%, #FF5000 100%);
+            --tb-header-bg: linear-gradient(135deg, #FF5000 0%, #E60000 100%);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -74,7 +76,7 @@
 
         /* ── MAIN HEADER ── */
         .main-header {
-            background: linear-gradient(135deg, #C0060B 0%, #E5141A 50%, #EE2020 100%);
+            background: var(--tb-header-bg);
             position: sticky; top: 0; z-index: 200;
             box-shadow: 0 3px 20px rgba(0,0,0,.35);
         }
