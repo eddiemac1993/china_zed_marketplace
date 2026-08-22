@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}{% load static %}
 {% block title %}Communinity · ChinaZed{% endblock %}
+{% block floating_actions %}{% endblock %}
 {% block content %}<link rel="stylesheet" href="{% static 'communinity/chat.css' %}?v=7">
 <main class="comm-shell"><section class="comm-card comm-home"><div class="comm-emoji">💬</div><h1>Communinity</h1><p class="comm-tagline">Talk. Laugh. Stay anonymous.</p><p class="comm-muted">Create a private room or join friends using their five-character code. No account needed.</p>{% if error %}<div class="comm-error">{{ error }}</div>{% endif %}
 <form method="post" action="{% url 'communinity:create' %}">{% csrf_token %}<button class="comm-btn comm-primary" type="submit">✨ Create Room</button></form>
