@@ -906,7 +906,7 @@ Your requested product quote is ready.
 Product: {product_request.product_name or product_request.product_link}
 Quoted Price: K{product_request.quoted_price}
 Deposit Required: K{product_request.quoted_deposit}
-Estimated Delivery: {product_request.estimated_delivery_days or "14-30 days"}
+Estimated Delivery: {product_request.estimated_delivery_days or "24-60 days"}
 
 Note:
 {product_request.customer_message or product_request.admin_note or "Please log in to your ChinaZed profile to review the quote."}

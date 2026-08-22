@@ -86,7 +86,7 @@
                     {% if product_request.quoted_price %}
                         <div class="font-display text-2xl font-black leading-none text-brand-red">K{{ product_request.quoted_price|floatformat:0|intcomma }}</div>
                         <div class="mt-1 text-[10px] text-brand-muted">Deposit: K{{ product_request.quoted_deposit|floatformat:0|intcomma }}</div>
-                        <div class="text-[10px] text-brand-muted">Delivery: {{ product_request.estimated_delivery_days|default:"14-30 days" }}</div>
+                        <div class="text-[10px] text-brand-muted">Delivery: {{ product_request.estimated_delivery_days|default:"24-60 days" }}</div>
                     {% else %}
                         <div class="font-display text-xl font-black leading-none text-brand-red">Pending</div>
                         <div class="mt-1 text-[10px] text-brand-muted">We are checking supplier price and delivery.</div>

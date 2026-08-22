@@ -127,8 +127,8 @@ class Product(TimeStampedModel):
     is_available = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
 
-    delivery_min_days = models.PositiveIntegerField(default=14)
-    delivery_max_days = models.PositiveIntegerField(default=30)
+    delivery_min_days = models.PositiveIntegerField(default=24)
+    delivery_max_days = models.PositiveIntegerField(default=60)
 
     source_platform = models.CharField(max_length=20, choices=SOURCE_CHOICES, default="other")
     source_link = models.URLField(blank=True)
@@ -484,7 +484,7 @@ class CustomerProductRequest(TimeStampedModel):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
     quoted_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     quoted_deposit = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    estimated_delivery_days = models.CharField(max_length=40, blank=True, default="14-30 days")
+    estimated_delivery_days = models.CharField(max_length=40, blank=True, default="24-60 days")
     quoted_at = models.DateTimeField(blank=True, null=True)
     customer_message = models.TextField(blank=True)
     customer_notified_at = models.DateTimeField(blank=True, null=True)
