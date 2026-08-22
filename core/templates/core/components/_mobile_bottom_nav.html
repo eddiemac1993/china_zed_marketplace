@@ -1,0 +1,28 @@
+<nav class="safe-b fixed inset-x-0 bottom-0 z-[400] border-t border-brand-border bg-white lg:hidden print:hidden">
+    <div class="grid grid-cols-5">
+        <a href="{% url 'home' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold {% if not product_type and not query %}text-brand-red{% else %}text-brand-muted{% endif %}">
+            <i class="fa-solid fa-house text-lg leading-none"></i>Home
+        </a>
+        <a href="{% url 'home' %}?type=local#results" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold {% if product_type == 'local' %}text-brand-red{% else %}text-brand-muted{% endif %}">
+            <span class="text-lg leading-none">🇿🇲</span>Zambia
+        </a>
+        <a href="{% url 'home' %}?type=preorder#results" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold {% if product_type == 'preorder' %}text-brand-red{% else %}text-brand-muted{% endif %}">
+            <span class="text-lg leading-none">🇨🇳</span>China
+        </a>
+        {% if request.user.is_authenticated %}
+        <button type="button" @click="cartOpen = true; $dispatch('cartDrawerOpen')" class="relative flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-muted">
+            <span class="relative"><i class="fa-solid fa-cart-shopping text-lg leading-none"></i>{% if nav_cart_count %}<span class="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-red px-0.5 text-[9px] font-bold text-white">{{ nav_cart_count }}</span>{% endif %}</span>Cart
+        </button>
+        <a href="{% url 'profile' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-muted">
+            <i class="fa-solid fa-user text-lg leading-none"></i>Me
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-muted">
+            <i class="fa-solid fa-key text-lg leading-none"></i>Login
+        </a>
+        <a href="{% url 'register' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-red">
+            <i class="fa-solid fa-sparkles text-lg leading-none"></i>Join
+        </a>
+        {% endif %}
+    </div>
+</nav>

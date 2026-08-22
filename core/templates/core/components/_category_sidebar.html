@@ -1,0 +1,23 @@
+<div class="sticky top-[130px] max-h-[calc(100vh-150px)] overflow-y-auto rounded-xl border border-brand-border bg-white">
+    <div class="flex items-center gap-2 bg-brand-red px-4 py-3 text-[13px] font-bold text-white"><i class="fa-solid fa-folder-open"></i> Categories</div>
+    <a href="{% url 'home' %}" class="flex items-center gap-2 border-b border-neutral-100 px-3.5 py-2.5 text-xs font-medium transition hover:bg-orange-50 hover:pl-4 hover:text-brand-red {% if not category_id and not product_type %}bg-orange-50 font-bold text-brand-red{% endif %}">
+        <i class="fa-solid fa-bag-shopping w-4 text-center"></i> All Products
+    </a>
+    <a href="?type=local#results" class="flex items-center gap-2 border-b border-neutral-100 px-3.5 py-2.5 text-xs font-medium transition hover:bg-orange-50 hover:pl-4 hover:text-brand-red {% if product_type == 'local' %}bg-orange-50 font-bold text-brand-red{% endif %}">
+        <span class="w-4 text-center">🇿🇲</span> In Zambia
+    </a>
+    <a href="?type=preorder#results" class="flex items-center gap-2 border-b border-neutral-100 px-3.5 py-2.5 text-xs font-medium transition hover:bg-orange-50 hover:pl-4 hover:text-brand-red {% if product_type == 'preorder' %}bg-orange-50 font-bold text-brand-red{% endif %}">
+        <span class="w-4 text-center">🇨🇳</span> Pre-order China
+    </a>
+    <a href="{% url 'request_product' %}" class="flex items-center gap-2 border-b border-neutral-100 px-3.5 py-2.5 text-xs font-medium transition hover:bg-orange-50 hover:pl-4 hover:text-brand-red">
+        <i class="fa-solid fa-magnifying-glass w-4 text-center"></i> Request Product
+    </a>
+    <a href="{% url 'faq' %}" class="flex items-center gap-2 border-b border-neutral-100 px-3.5 py-2.5 text-xs font-medium transition hover:bg-orange-50 hover:pl-4 hover:text-brand-red">
+        <i class="fa-solid fa-circle-question w-4 text-center"></i> FAQ
+    </a>
+    {% for category in categories %}
+    <a href="?category={{ category.id }}#results" class="flex items-center gap-2 border-b border-neutral-100 px-3.5 py-2.5 text-xs font-medium transition last:border-0 hover:bg-orange-50 hover:pl-4 hover:text-brand-red {% if category_id == category.id|stringformat:'s' %}bg-orange-50 font-bold text-brand-red{% endif %}">
+        <i class="fa-solid fa-chevron-right w-4 text-center text-[10px]"></i> {{ category.name }}
+    </a>
+    {% endfor %}
+</div>

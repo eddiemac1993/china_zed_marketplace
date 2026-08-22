@@ -1,0 +1,67 @@
+<header class="sticky top-0 z-[200] bg-gradient-to-br from-brand-orange to-red-700 shadow-lg shadow-black/20">
+    <div class="mx-auto flex max-w-[1300px] items-center gap-3.5 px-4 py-3 sm:px-5">
+        <button type="button" @click="menuOpen = true" aria-label="Open menu" aria-expanded="false" :aria-expanded="menuOpen.toString()"
+                class="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-white transition hover:bg-white/15 lg:hidden">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+
+        <a href="{% url 'home' %}" class="flex shrink-0 items-center gap-2" aria-label="ChinaZed home">
+            <svg class="h-9 w-9 flex-none drop-shadow" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
+            <span class="hidden font-display text-2xl font-black leading-none tracking-tight text-white sm:inline">ChinaZed</span>
+        </a>
+
+        <!-- SEARCH -->
+        <div class="relative min-w-0 flex-1" x-data="{ open: false }" @click.outside="open = false">
+            <form method="GET" action="{% url 'home' %}" class="flex h-11 items-center overflow-hidden rounded-xl border-2 border-transparent bg-white shadow-lg shadow-black/10 focus-within:border-orange-200">
+                <input type="text" name="q" value="{{ query|default:'' }}" autocomplete="off"
+                       placeholder="Search products from China"
+                       aria-label="Search products"
+                       class="h-full min-w-0 flex-1 border-0 bg-transparent px-4 text-sm text-brand-ink outline-none placeholder:text-neutral-400"
+                       hx-get="{% url 'search_suggestions' %}"
+                       hx-trigger="keyup changed delay:300ms, focus"
+                       hx-target="#searchSuggestions"
+                       hx-swap="innerHTML"
+                       @focus="open = true" @input="open = true">
+                {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
+                <button type="submit" aria-label="Search"
+                        class="m-1 grid h-9 w-11 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-orange-500 to-brand-red text-white transition hover:brightness-110">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+            <div id="searchSuggestions" x-show="open" x-cloak
+                 class="no-scrollbar absolute left-0 right-0 top-[calc(100%+6px)] max-h-80 overflow-y-auto rounded-xl border border-brand-border bg-white py-1 shadow-2xl"></div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex shrink-0 items-center gap-1">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white sm:flex">
+                    <i class="fa-solid fa-user text-lg"></i>
+                    Account
+                </a>
+                <button type="button" @click="cartOpen = true; $dispatch('cartDrawerOpen')"
+                        class="flex items-center gap-1.5 rounded-lg bg-brand-orange px-3.5 py-2.5 text-sm font-extrabold text-white transition hover:bg-orange-600">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="hidden sm:inline">Cart</span>
+                    {% if nav_cart_count %}<span class="rounded-full bg-white/25 px-1.5 text-xs">{{ nav_cart_count }}</span>{% endif %}
+                </button>
+            {% else %}
+                <a href="{% url 'login' %}" class="hidden items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-bold text-white/90 transition hover:bg-white/15 sm:flex">Sign in</a>
+                <a href="{% url 'register' %}" class="rounded-lg bg-brand-yellow px-3.5 py-2.5 text-sm font-extrabold text-red-800 transition hover:brightness-105">Join Free</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CATEGORY NAV -->
+    <nav class="border-t border-white/10 bg-black/20">
+        <div class="no-scrollbar mx-auto flex max-w-[1300px] gap-1 overflow-x-auto px-4 sm:px-5">
+            <a href="{% url 'home' %}" class="flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if not category_id and not product_type %}border-brand-yellow text-white{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
+            <a href="{% url 'home' %}?type=local#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if product_type == 'local' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
+            <a href="{% url 'home' %}?type=preorder#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if product_type == 'preorder' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
+            {% for category in nav_categories %}
+                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if category_id == category.id|stringformat:'s' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">{{ category.name }}</a>
+            {% endfor %}
+            <a href="{% url 'communinity:home' %}" class="ml-auto flex items-center gap-1.5 whitespace-nowrap border-b-[3px] border-transparent px-3.5 py-2.5 text-xs font-bold text-brand-yellow transition hover:bg-white/10"><i class="fa-solid fa-comments"></i> Community</a>
+        </div>
+    </nav>
+</header>

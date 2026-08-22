@@ -4,570 +4,280 @@
 
 {% block title %}{{ product.name }} · ChinaZed 中赞商城{% endblock %}
 
-{% block extra_style %}
-        /* ── BREADCRUMB ── */
-        .pd-breadcrumb {
-            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-            font-size: 12px; color: var(--muted); margin-bottom: 12px;
-        }
-        .pd-breadcrumb a { color: var(--muted); transition: color .15s; }
-        .pd-breadcrumb a:hover { color: var(--red); }
-        .pd-breadcrumb .sep { color: #707070; }
-        .pd-breadcrumb .current { color: var(--ink); font-weight: 700; }
-
-        /* ── PRODUCT LAYOUT ── */
-        .product-layout { display: grid; grid-template-columns: 1fr 380px; gap: 12px; align-items: start; }
-
-        /* ── IMAGE PANEL ── */
-        .image-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
-        .main-image-box { position: relative; background: #F8F8F8; overflow: hidden; aspect-ratio: 1; cursor: zoom-in; }
-        .main-image-box img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; display: block; }
-        .main-image-box:hover img { transform: scale(1.04); }
-        .main-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #707070; }
-        /* a full square of "No Image Available" pushes the price off-screen — keep it short */
-        .main-image-box.is-empty {
-            aspect-ratio: auto; min-height: 150px; cursor: default;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .main-image-box.is-empty .main-no-img { height: auto; }
-
-        .img-type-stamp { position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 3px; letter-spacing: .04em; z-index: 2; }
-        .stamp-local { background: #00A854; color: #fff; }
-        .stamp-china { background: #1677FF; color: #fff; }
-        .stamp-hot { position: absolute; top: 12px; right: 12px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 3px; z-index: 2; }
-
-        .thumb-row { display: flex; gap: 8px; padding: 12px; overflow-x: auto; border-top: 1px solid var(--border); }
-        .thumb-row::-webkit-scrollbar { display: none; }
-        .thumb { flex-shrink: 0; width: 64px; height: 64px; border-radius: 4px; overflow: hidden; border: 2px solid transparent; cursor: pointer; transition: border-color .15s; background: #F8F8F8; }
-        .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .thumb:hover { border-color: var(--orange); }
-        .thumb.active { border-color: var(--red); }
-        .zoom-hint { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.62); color: #fff; border-radius: 999px; padding: 6px 10px; font-size: 11px; font-weight: 800; z-index: 3; }
-        .product-options { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 14px 16px; }
-        .option-row { margin-bottom: 13px; }
-        .option-row:last-child { margin-bottom: 0; }
-        .option-label { display: block; font-size: 11px; color: var(--muted); font-weight: 900; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
-        .option-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-        .option-pill { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 800; color: var(--ink); }
-        .option-pill.color { padding-left: 11px; }
-        .availability-box { display: flex; align-items: center; gap: 8px; background: #F0FFF4; border: 1px solid #C6F6D5; color: #137333; border-radius: 8px; padding: 10px 12px; font-size: 12px; font-weight: 800; }
-        .zoom-modal { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.88); padding: 18px; }
-        .zoom-modal.open { display: flex; }
-        .zoom-modal img { max-width: min(96vw, 980px); max-height: 92vh; object-fit: contain; border-radius: 8px; background: #fff; }
-        .zoom-close { position: absolute; top: 14px; right: 16px; border: 0; border-radius: 999px; width: 42px; height: 42px; background: #fff; color: #111; font-size: 24px; cursor: pointer; }
-
-        /* ── INFO PANEL ── */
-        .info-panel { display: flex; flex-direction: column; gap: 10px; }
-
-        .title-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 16px 18px; }
-        .product-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-        .tag { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 2px; }
-        .tag-cat { background: #FFF0F0; color: var(--red); }
-        .tag-local { background: #F0FFF4; color: #00A854; }
-        .tag-china { background: #EFF6FF; color: #1677FF; }
-        .tag-out { background: #FFF0F0; color: #C00; }
-        .tag-stock { background: #F5F5F5; color: var(--muted); }
-
-        .product-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; color: var(--ink); line-height: 1.15; letter-spacing: -.3px; margin-bottom: 10px; }
-        .product-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
-
-        /* PRICE CARD */
-        .price-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
-        .price-card-head { background: var(--red); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; }
-        .price-card-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.7); text-transform: uppercase; letter-spacing: .08em; }
-        .price-card-body { padding: 16px 18px; }
-
-        .final-price-row { display: flex; align-items: baseline; gap: 4px; margin-bottom: 14px; }
-        .final-curr { font-size: 16px; font-weight: 700; color: var(--red); }
-        .final-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 42px; color: var(--red); line-height: 1; letter-spacing: -1px; }
-
-        .price-split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-        .price-split-box { background: #F8F8F8; border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
-        .psb-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
-        .psb-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 20px; color: var(--ink); line-height: 1; }
-        .psb-deposit .psb-amount { color: var(--orange); }
-
-        .delivery-box { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 4px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-        .delivery-icon { font-size: 20px; flex-shrink: 0; }
-        .delivery-text h4 { font-size: 12px; font-weight: 700; color: #1E40AF; }
-        .delivery-text p { font-size: 11px; color: #3B82F6; margin-top: 2px; }
-
-        .qty-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .qty-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
-        .qty-input { width: 70px; height: 40px; border: 1px solid var(--border); border-radius: 4px; text-align: center; font-size: 14px; font-weight: 700; font-family: inherit; color: var(--ink); outline: none; transition: border-color .15s; }
-        .qty-input:focus { border-color: var(--red); }
-
-        .btn-add-cart {
-            display: block; width: 100%; background: var(--red); color: #fff; border: none; padding: 13px 0;
-            font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; border-radius: 4px;
-            text-align: center; transition: background .15s, transform .1s; margin-bottom: 8px;
-        }
-        .btn-add-cart:hover { background: var(--red-dark); }
-        .btn-add-cart:active { transform: scale(.98); }
-
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .btn-ai-assistant {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            background: linear-gradient(135deg, var(--red), var(--orange)); color: #fff; border: none; padding: 11px 0;
-            font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; border-radius: 4px;
-            text-align: center; transition: background .15s;
-        }
-        .btn-ai-assistant:hover { background: var(--red-dark); }
-        .btn-buy-now {
-            display: flex; align-items: center; justify-content: center; background: var(--ink); color: #fff;
-            border: none; padding: 11px 0; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer;
-            border-radius: 4px; text-align: center; transition: background .15s;
-        }
-        .btn-buy-now:hover { background: #333; }
-        .btn-login-cta {
-            display: block; background: var(--orange); color: #fff; border: none; padding: 13px 0;
-            font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; border-radius: 4px;
-            text-align: center; transition: background .15s;
-        }
-        .btn-login-cta:hover { background: var(--orange-light); }
-        .btn-save-poster {
-            display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 10px;
-            background: #111827; color: #fff; padding: 12px 0; border-radius: 4px; font-size: 13px; font-weight: 700; transition: .2s;
-        }
-        .btn-save-poster:hover { background: #ea580c; }
-        .btn-whatsapp {
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            background: #25D366; color: #fff; text-decoration: none; padding: 11px 16px;
-            border-radius: 8px; font-weight: 800; font-size: 13px; margin-top: 8px;
-            transition: background .15s, transform .1s; box-shadow: 0 4px 12px rgba(37,211,102,.25);
-        }
-        .btn-whatsapp:hover { background: #1EBE57; transform: translateY(-1px); }
-        .momo-strip {
-            background: #FFF8E7; border: 1px dashed #FFB800; border-radius: 8px;
-            padding: 10px 12px; margin-top: 14px; display: flex; align-items: center; gap: 8px;
-            font-size: 11px; color: #664D00; font-weight: 700;
-        }
-        .timeline-steps-mini {
-            background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px;
-            padding: 14px; margin-top: 16px;
-        }
-        .timeline-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-        .timeline-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; }
-        .t-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .t-icon { width: 28px; height: 28px; border-radius: 50%; background: #EFF6FF; color: #1677FF; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; }
-        .t-step.active .t-icon { background: var(--orange); color: #fff; }
-        .t-label { font-size: 9px; color: var(--ink); font-weight: 700; line-height: 1.2; }
-        .rmb-badge {
-            display: inline-flex; align-items: center; gap: 7px; margin-top: 10px;
-            background: #FFF7ED; border: 1px solid #FFD9A8; border-radius: 8px;
-            padding: 7px 11px; font-size: 12px; font-weight: 700; color: #9A3412;
-        }
-        .rmb-badge .rmb-from { color: #C2410C; font-weight: 900; }
-        .rmb-badge .rmb-arrow { color: #F97316; font-weight: 900; }
-        .rmb-badge .rmb-to { color: var(--orange); font-weight: 900; }
-        .rmb-badge .rmb-rate { font-size: 10px; color: var(--muted); font-weight: 600; margin-left: 2px; }
-
-        .trust-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F0F0; }
-        .trust-pill { display: inline-flex; align-items: center; gap: 4px; background: #F8F8F8; border: 1px solid var(--border); padding: 4px 10px; border-radius: 2px; font-size: 10px; font-weight: 700; color: var(--muted); }
-
-        /* ── RELATED PRODUCTS ── */
-        .related-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; margin-top: 12px; }
-        .section-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid #F0F0F0; }
-        .section-head-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 17px; color: var(--red); letter-spacing: .5px; }
-        .section-head-more { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; border: 1px solid var(--border); padding: 5px 12px; border-radius: 4px; transition: all .15s; }
-        .section-head-more:hover { border-color: var(--red); color: var(--red); }
-
-        .related-grid { display: grid; grid-template-columns: repeat(5, 1fr); }
-        .prod-card { border-right: 1px solid #F0F0F0; border-bottom: 1px solid #F0F0F0; position: relative; cursor: pointer; background: #fff; transition: box-shadow .2s; }
-        .prod-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,.14); z-index: 10; }
-        .prod-card:hover .prod-card-img { transform: scale(1.06); }
-        .prod-card:nth-child(5n) { border-right: none; }
-        .prod-img-box { position: relative; overflow: hidden; aspect-ratio: 1; background: #F8F8F8; }
-        .prod-card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; display: block; }
-        .prod-no-img-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #707070; font-size: 11px; }
-        .badge { position: absolute; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 2px; z-index: 2; }
-        .b-tl { top: 6px; left: 6px; }
-        .b-china { background: #1677FF; color: #fff; }
-        .b-local { background: #00A854; color: #fff; }
-        .prod-info { padding: 8px 10px 10px; }
-        .prod-name-link { display: block; font-size: 12px; color: var(--ink); line-height: 1.4; margin-bottom: 6px; transition: color .15s; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .prod-name-link:hover { color: var(--red); }
-        .related-grid .price-row { display: flex; align-items: baseline; gap: 3px; margin-bottom: 6px; }
-        .related-grid .price-curr { font-size: 11px; color: var(--red); font-weight: 700; }
-        .related-grid .price-main { font-size: 16px; font-weight: 900; color: var(--red); font-family: 'Barlow Condensed', sans-serif; letter-spacing: -.5px; line-height: 1; }
-        .related-grid .btn-cart { display: block; width: 100%; background: var(--red); color: #fff; border: none; padding: 7px 0; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; font-family: inherit; text-align: center; transition: background .15s; }
-        .related-grid .btn-cart:hover { background: var(--red-dark); }
-        .related-grid .btn-login { display: block; width: 100%; background: var(--orange); color: #fff; border: none; padding: 7px 0; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 4px; font-family: inherit; text-align: center; transition: background .15s; }
-
-        /* MOBILE STICKY BUY BAR */
-        /* sits above the bottom nav (81px tall + 10px inset) — must clear it, not tuck under */
-        .mobile-buy-bar {
-            display: none; position: fixed; bottom: calc(99px + env(safe-area-inset-bottom));
-            left: 10px; right: 10px; background: #fff;
-            border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; z-index: 490;
-            box-shadow: 0 -4px 20px rgba(0,0,0,.1); align-items: center; gap: 10px;
-        }
-        .mbb-price { flex: 1; }
-        .mbb-label { font-size: 10px; color: var(--muted); font-weight: 600; }
-        .mbb-amount { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 22px; color: var(--red); }
-        .mbb-btn {
-            background: var(--red); color: #fff; border: none; padding: 10px 20px; border-radius: 8px;
-            font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; transition: background .15s;
-        }
-        .mbb-btn:hover { background: var(--red-dark); }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 1100px) {
-            .related-grid { grid-template-columns: repeat(4, 1fr); }
-            .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
-            .prod-card:nth-child(4n) { border-right: none; }
-        }
-        @media (max-width: 900px) {
-            .product-layout { grid-template-columns: 1fr; }
-            .related-grid { grid-template-columns: repeat(3, 1fr); }
-            .prod-card:nth-child(4n) { border-right: 1px solid #F0F0F0; }
-            .prod-card:nth-child(3n) { border-right: none; }
-        }
-        @media (max-width: 640px) {
-            .page-body { padding-bottom: 210px; }
-            /* clear the buy bar as well as the nav, so the AI button never covers "Add to Cart" */
-            .floating-actions { bottom: calc(175px + env(safe-area-inset-bottom)); }
-            .product-title { font-size: 20px; }
-            .final-amount { font-size: 32px; }
-            .related-grid { grid-template-columns: repeat(2, 1fr); }
-            .prod-card:nth-child(3n), .prod-card:nth-child(4n) { border-right: 1px solid #F0F0F0; }
-            .prod-card:nth-child(2n) { border-right: none; }
-            .mobile-buy-bar { display: flex; }
-            .btn-row { grid-template-columns: 1fr; }
-        }
-{% endblock %}
-
 {% block content %}
-<div class="page-body">
+<div class="mx-auto max-w-[1300px] px-4 py-3.5 pb-[210px] sm:px-5 lg:pb-3.5" x-data="{ zoomOpen: false, mainImg: '{{ product.display_image_url|escapejs }}' }">
 
-    <div class="pd-breadcrumb">
-        <a href="{% url 'home' %}">Home</a>
-        <span class="sep">›</span>
+    <div class="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-brand-muted">
+        <a href="{% url 'home' %}" class="transition hover:text-brand-red">Home</a>
+        <span class="text-neutral-300">›</span>
         {% if product.category %}
-            <a href="{% url 'home' %}?category={{ product.category.id }}">{{ product.category.name }}</a>
-            <span class="sep">›</span>
+            <a href="{% url 'home' %}?category={{ product.category.id }}" class="transition hover:text-brand-red">{{ product.category.name }}</a>
+            <span class="text-neutral-300">›</span>
         {% endif %}
-        <span class="current">{{ product.name|truncatechars:40 }}</span>
+        <span class="font-bold text-brand-ink">{{ product.name|truncatechars:40 }}</span>
     </div>
 
-    <div class="product-layout">
+    <div class="grid grid-cols-1 items-start gap-3 lg:grid-cols-[1fr_380px]">
 
         <!-- LEFT: IMAGE PANEL -->
-        <div class="image-panel">
-            <div class="main-image-box{% if not product.display_image_url %} is-empty{% endif %}" onclick="openImageZoom()">
+        <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
+            <div class="relative {% if product.display_image_url %}aspect-square cursor-zoom-in{% else %}flex min-h-[150px] items-center justify-center{% endif %} overflow-hidden bg-neutral-50" @click="if (mainImg) zoomOpen = true">
                 {% if product.display_image_url %}
-                    <img id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}" fetchpriority="high">
-                    <span class="zoom-hint">Tap to zoom</span>
+                    <img :src="mainImg" id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}" fetchpriority="high" class="h-full w-full object-cover transition duration-400 hover:scale-105">
+                    <span class="absolute bottom-3 right-3 z-[3] rounded-full bg-black/60 px-2.5 py-1.5 text-[11px] font-black text-white">Tap to zoom</span>
                 {% else %}
-                    <div class="main-no-img">No Image Available</div>
+                    <div class="text-sm text-neutral-400">No Image Available</div>
                 {% endif %}
 
                 {% if product.product_type == "local" %}
-                    <span class="img-type-stamp stamp-local">🇿🇲 ZM STOCK</span>
+                    <span class="absolute left-3 top-3 z-[2] rounded bg-brand-green px-2.5 py-1 text-[11px] font-bold text-white">🇿🇲 ZM STOCK</span>
                 {% else %}
-                    <span class="img-type-stamp stamp-china">🇨🇳 CHINA</span>
+                    <span class="absolute left-3 top-3 z-[2] rounded bg-brand-blue px-2.5 py-1 text-[11px] font-bold text-white">🇨🇳 CHINA</span>
                 {% endif %}
                 {% if product.is_featured %}
-                    <span class="stamp-hot">🔥 HOT</span>
+                    <span class="absolute right-3 top-3 z-[2] rounded bg-brand-red px-2.5 py-1 text-[11px] font-bold text-white"><i class="fa-solid fa-fire"></i> HOT</span>
                 {% endif %}
             </div>
 
             <!-- THUMBNAILS -->
             {% if product.display_gallery_urls %}
-            <div class="thumb-row">
+            <div class="no-scrollbar flex gap-2 overflow-x-auto border-t border-brand-border p-3">
                 {% for image_url in product.display_gallery_urls %}
-                    <div class="thumb {% if forloop.first %}active{% endif %}" onclick="setMainImage(event, this, '{{ image_url }}')">
-                        <img src="{{ image_url }}" alt="{{ product.name }}" loading="lazy">
-                    </div>
+                    <button type="button" @click="mainImg = '{{ image_url|escapejs }}'"
+                            class="h-16 w-16 shrink-0 overflow-hidden rounded border-2 bg-neutral-50 transition {% if forloop.first %}border-brand-red{% else %}border-transparent hover:border-brand-orange{% endif %}"
+                            :class="mainImg === '{{ image_url|escapejs }}' ? 'border-brand-red' : 'border-transparent'">
+                        <img src="{{ image_url }}" alt="{{ product.name }}" loading="lazy" class="h-full w-full object-cover">
+                    </button>
                 {% endfor %}
             </div>
             {% endif %}
         </div>
 
         <!-- RIGHT: INFO PANEL -->
-        <div class="info-panel">
+        <div class="flex flex-col gap-2.5">
 
             <!-- TITLE CARD -->
-            <div class="title-card">
-                <div class="product-tags">
+            <div class="rounded-xl border border-brand-border bg-white p-4.5">
+                <div class="mb-2.5 flex flex-wrap gap-1.5">
                     {% if product.category %}
-                        <span class="tag tag-cat">{{ product.category.name }}</span>
+                        <span class="rounded bg-red-50 px-2 py-1 text-[10px] font-bold text-brand-red">{{ product.category.name }}</span>
                     {% endif %}
                     {% if product.product_type == "local" %}
                         {% if product.stock_quantity > 0 %}
-                            <span class="tag tag-local">🇿🇲 In Zambia</span>
-                            <span class="tag tag-stock">Stock: {{ product.stock_quantity }}</span>
+                            <span class="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">🇿🇲 In Zambia</span>
+                            <span class="rounded bg-neutral-100 px-2 py-1 text-[10px] font-bold text-brand-muted">Stock: {{ product.stock_quantity }}</span>
                         {% else %}
-                            <span class="tag tag-out">Out of Stock</span>
+                            <span class="rounded bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">Out of Stock</span>
                         {% endif %}
                     {% else %}
-                        <span class="tag tag-china">🇨🇳 Pre-order</span>
+                        <span class="rounded bg-blue-50 px-2 py-1 text-[10px] font-bold text-brand-blue">🇨🇳 Pre-order</span>
                     {% endif %}
                 </div>
 
-                <h1 class="product-title">{{ product.name }}</h1>
+                <h1 class="mb-2.5 font-display text-2xl font-black leading-tight tracking-tight text-brand-ink sm:text-[26px]">{{ product.name }}</h1>
 
                 {% if product.description %}
-                    <p class="product-desc">{{ product.description }}</p>
+                    <p class="text-sm leading-relaxed text-brand-muted">{{ product.description }}</p>
                 {% endif %}
             </div>
 
             <!-- PRICE CARD -->
-            <div class="price-card">
-                <div class="price-card-head">
-                    <span class="price-card-label">Final Price</span>
+            <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
+                <div class="flex items-center justify-between bg-brand-red px-4.5 py-2.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wide text-white/70">Final Price</span>
                     {% if product.product_type == "preorder" %}
-                        <span style="font-size:10px; color:rgba(255,255,255,.7); font-weight:700;">35% deposit secures order</span>
+                        <span class="text-[10px] font-bold text-white/70">35% deposit secures order</span>
                     {% endif %}
                 </div>
-                <div class="price-card-body">
+                <div class="p-4.5">
 
-                    <div class="final-price-row">
-                        <span class="final-curr">K</span>
-                        <span class="final-amount">{{ product.selling_price|floatformat:0|intcomma }}</span>
+                    <div class="mb-3.5 flex items-baseline gap-1">
+                        <span class="text-base font-bold text-brand-red">K</span>
+                        <span class="font-display text-[42px] font-black leading-none tracking-tight text-brand-red">{{ product.selling_price|floatformat:0|intcomma }}</span>
                     </div>
 
-                    <div class="price-split">
-                        <div class="price-split-box psb-deposit">
-                            <div class="psb-label">💰 Deposit Now</div>
-                            <div class="psb-amount">K{{ product.deposit_amount|floatformat:0|intcomma }}</div>
+                    <div class="mb-3.5 grid grid-cols-2 gap-2">
+                        <div class="rounded border border-brand-border bg-neutral-50 px-3 py-2.5">
+                            <div class="mb-1 text-[10px] font-semibold text-brand-muted"><i class="fa-solid fa-sack-dollar"></i> Deposit Now</div>
+                            <div class="font-display text-xl font-black text-brand-orange">K{{ product.deposit_amount|floatformat:0|intcomma }}</div>
                         </div>
-                        <div class="price-split-box">
-                            <div class="psb-label">📦 Balance on Arrival</div>
-                            <div class="psb-amount">K{{ product.balance_amount|floatformat:0|intcomma }}</div>
+                        <div class="rounded border border-brand-border bg-neutral-50 px-3 py-2.5">
+                            <div class="mb-1 text-[10px] font-semibold text-brand-muted"><i class="fa-solid fa-box"></i> Balance on Arrival</div>
+                            <div class="font-display text-xl font-black text-brand-ink">K{{ product.balance_amount|floatformat:0|intcomma }}</div>
                         </div>
                     </div>
 
                     {% if product.delivery_range %}
-                    <div class="delivery-box">
-                        <span class="delivery-icon">✈️</span>
-                        <div class="delivery-text">
-                            <h4>Delivery: {{ product.delivery_range }}</h4>
-                            <p>Ships from China · Track in your profile</p>
+                    <div class="mb-3.5 flex items-center gap-2.5 rounded border border-blue-200 bg-blue-50 px-3.5 py-2.5">
+                        <i class="fa-solid fa-plane text-lg text-blue-600"></i>
+                        <div>
+                            <h4 class="text-xs font-bold text-blue-900">Delivery: {{ product.delivery_range }}</h4>
+                            <p class="mt-0.5 text-[11px] text-blue-600">Ships from China · Track in your profile</p>
                         </div>
                     </div>
                     {% endif %}
 
                     {% if product.imported_from_link %}
-                    <div class="availability-box" style="margin-top:12px;line-height:1.5;">
-                        We verify your requested size, color, and quantity within 2 days after your deposit.
-                        If the requested option is unavailable and you choose not to continue before purchase, your deposit is refunded 100%.
+                    <div class="mb-3 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold leading-relaxed text-emerald-800">
+                        <i class="fa-solid fa-circle-check mt-0.5"></i>
+                        <span>We verify your requested size, color, and quantity within 2 days after your deposit. If the requested option is unavailable and you choose not to continue before purchase, your deposit is refunded 100%.</span>
                     </div>
                     {% endif %}
                     {% if request.user.is_authenticated %}
                         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
                             {% csrf_token %}
                             {% if product.size_option_list %}
-                            <div class="qty-row">
-                                <label class="qty-label" for="id_size">Size:</label>
-                                <select id="id_size" name="size" class="qty-input" required>
+                            <div class="mb-2.5 flex items-center gap-2.5">
+                                <label class="text-xs font-bold text-brand-muted" for="id_size">Size:</label>
+                                <select id="id_size" name="size" required class="h-10 flex-1 rounded border border-brand-border px-2.5 text-sm font-bold text-brand-ink outline-none focus:border-brand-red">
                                     <option value="">Choose size</option>
                                     {% for size in product.size_option_list %}<option value="{{ size }}">{{ size }}</option>{% endfor %}
                                 </select>
                             </div>
                             {% endif %}
                             {% if product.color_option_list %}
-                            <div class="qty-row">
-                                <label class="qty-label" for="id_color">Color:</label>
-                                <select id="id_color" name="color" class="qty-input" required>
+                            <div class="mb-2.5 flex items-center gap-2.5">
+                                <label class="text-xs font-bold text-brand-muted" for="id_color">Color:</label>
+                                <select id="id_color" name="color" required class="h-10 flex-1 rounded border border-brand-border px-2.5 text-sm font-bold text-brand-ink outline-none focus:border-brand-red">
                                     <option value="">Choose color</option>
                                     {% for color in product.color_option_list %}<option value="{{ color }}">{{ color }}</option>{% endfor %}
                                 </select>
                             </div>
                             {% endif %}
-                            <div class="qty-row">
-                                <span class="qty-label">Qty:</span>
+                            <div class="mb-3 flex items-center gap-2.5">
+                                <span class="text-xs font-bold text-brand-muted">Qty:</span>
                                 <input type="number" name="quantity" value="1" min="1"
                                        {% if product.product_type == "local" %}max="{{ product.stock_quantity }}"{% endif %}
-                                       class="qty-input">
+                                       class="h-10 w-[70px] rounded border border-brand-border text-center text-sm font-bold text-brand-ink outline-none focus:border-brand-red">
                             </div>
 
                             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                                <button disabled class="btn-add-cart" style="background:#DDD; color:#595959; cursor:not-allowed;">
+                                <button disabled class="mb-2 block w-full cursor-not-allowed rounded bg-neutral-200 py-3.5 text-sm font-bold text-neutral-500">
                                     Out of Stock
                                 </button>
                             {% else %}
-                                <button type="submit" class="btn-add-cart">🛒 Add to Cart</button>
+                                <button type="submit" class="mb-2 block w-full rounded bg-brand-red py-3.5 text-sm font-bold text-white transition hover:bg-brand-red-dark active:scale-[0.98]"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
                             {% endif %}
                         </form>
 
-                        <div class="btn-row">
+                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                               class="btn-ai-assistant">AI Ask Assistant</a>
+                               class="flex items-center justify-center gap-1.5 rounded bg-gradient-to-br from-brand-red to-brand-orange py-2.5 text-[13px] font-bold text-white transition hover:brightness-105"><i class="fa-solid fa-robot"></i> AI Ask Assistant</a>
 
                             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                                <button disabled class="btn-buy-now" style="opacity:.5; cursor:not-allowed;">Buy Now</button>
+                                <button disabled class="flex items-center justify-center rounded bg-neutral-200 py-2.5 text-[13px] font-bold text-neutral-500">Buy Now</button>
                             {% else %}
-                                <a href="{% url 'place_order' product.slug %}" class="btn-buy-now">⚡ Buy Now</a>
+                                <a href="{% url 'place_order' product.slug %}" class="flex items-center justify-center gap-1.5 rounded bg-brand-ink py-2.5 text-[13px] font-bold text-white transition hover:bg-neutral-700"><i class="fa-solid fa-bolt"></i> Buy Now</a>
                             {% endif %}
                         </div>
                         <a href="{% url 'save_product_image' product.slug %}"
-                           class="btn-save-poster">
-                            📥 Save Product Poster
+                           class="mt-2.5 flex w-full items-center justify-center rounded bg-neutral-900 py-3 text-[13px] font-bold text-white transition hover:bg-orange-600">
+                            <i class="fa-solid fa-download mr-1.5"></i> Save Product Poster
                         </a>
                         <a href="https://wa.me/?text=Hi!%20I%20am%20interested%20in%20ordering%20{{ product.name|urlencode }}%20on%20ChinaZed:%20https://www.chinatozambia.org{% url 'product_detail' product.slug %}"
-                           target="_blank" rel="noopener" class="btn-whatsapp">
-                            💬 Share or Order on WhatsApp
+                           target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600">
+                            <i class="fa-brands fa-whatsapp text-base"></i> Share or Order on WhatsApp
                         </a>
 
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn-login-cta">🔑 Login to Add to Cart</a>
-                        <div class="btn-row" style="margin-top:8px;">
+                        <a href="{% url 'login' %}" class="block rounded bg-brand-orange py-3.5 text-center text-sm font-bold text-white transition hover:bg-orange-500"><i class="fa-solid fa-key"></i> Login to Add to Cart</a>
+                        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                               class="btn-ai-assistant">AI Ask Assistant</a>
-                            <a href="{% url 'register' %}" class="btn-buy-now">📝 Register Free</a>
+                               class="flex items-center justify-center gap-1.5 rounded bg-gradient-to-br from-brand-red to-brand-orange py-2.5 text-[13px] font-bold text-white transition hover:brightness-105"><i class="fa-solid fa-robot"></i> AI Ask Assistant</a>
+                            <a href="{% url 'register' %}" class="flex items-center justify-center gap-1.5 rounded bg-brand-ink py-2.5 text-[13px] font-bold text-white transition hover:bg-neutral-700"><i class="fa-solid fa-user-plus"></i> Register Free</a>
                         </div>
                     {% endif %}
 
-                    <div class="trust-pills">
-                        <span class="trust-pill">✅ 35% Deposit Only</span>
-                        <span class="trust-pill">💬 AI Assistant</span>
-                        <span class="trust-pill">📦 Real-time Tracking</span>
+                    <div class="mt-3 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-3">
+                        <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-circle-check text-emerald-500"></i> 35% Deposit Only</span>
+                        <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-robot text-brand-red"></i> AI Assistant</span>
+                        <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-location-dot text-brand-blue"></i> Real-time Tracking</span>
                     </div>
 
                 </div>
             </div>
 
-            <div class="product-options">
-                <div class="option-row">
-                    <span class="option-label">Availability</span>
-                    <div class="availability-box">✓ {{ product.availability_label }}</div>
+            <div class="rounded-xl border border-brand-border bg-white p-4">
+                <div class="mb-3.5">
+                    <span class="mb-2 block text-[11px] font-black uppercase tracking-wide text-brand-muted">Availability</span>
+                    <div class="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-800"><i class="fa-solid fa-circle-check"></i> {{ product.availability_label }}</div>
                 </div>
                 {% if product.size_option_list %}
-                <div class="option-row">
-                    <span class="option-label">Size</span>
-                    <div class="option-pills">
+                <div class="mb-3.5">
+                    <span class="mb-2 block text-[11px] font-black uppercase tracking-wide text-brand-muted">Size</span>
+                    <div class="flex flex-wrap gap-2">
                         {% for size in product.size_option_list %}
-                            <span class="option-pill">{{ size }}</span>
+                            <span class="rounded-full border border-brand-border bg-white px-3 py-1.5 text-xs font-bold text-brand-ink">{{ size }}</span>
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
                 {% if product.color_option_list %}
-                <div class="option-row">
-                    <span class="option-label">Color</span>
-                    <div class="option-pills">
+                <div>
+                    <span class="mb-2 block text-[11px] font-black uppercase tracking-wide text-brand-muted">Color</span>
+                    <div class="flex flex-wrap gap-2">
                         {% for color in product.color_option_list %}
-                            <span class="option-pill color">{{ color }}</span>
+                            <span class="rounded-full border border-brand-border bg-white px-3.5 py-1.5 text-xs font-bold text-brand-ink">{{ color }}</span>
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
             </div>
 
-        </div><!-- end info-panel -->
-    </div><!-- end product-layout -->
+        </div>
+    </div>
 
     <!-- RELATED PRODUCTS -->
     {% if related_products %}
-    <div class="related-panel">
-        <div class="section-head">
-            <span class="section-head-title">🛍️ YOU MAY ALSO LIKE</span>
+    <div class="mt-3 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
+            <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-bag-shopping"></i> YOU MAY ALSO LIKE</span>
             {% if product.category %}
-                <a href="{% url 'home' %}?category={{ product.category.id }}" class="section-head-more">View All ›</a>
+                <a href="{% url 'home' %}?category={{ product.category.id }}" class="text-xs font-semibold text-brand-muted transition hover:text-brand-red">View All ›</a>
             {% else %}
-                <a href="{% url 'home' %}" class="section-head-more">View All ›</a>
+                <a href="{% url 'home' %}" class="text-xs font-semibold text-brand-muted transition hover:text-brand-red">View All ›</a>
             {% endif %}
         </div>
-        <div class="related-grid">
+        <div class="grid grid-cols-2 gap-3 p-3.5 sm:grid-cols-3 lg:grid-cols-5">
             {% for rel in related_products %}
-                <div class="prod-card">
-                    <a href="{% url 'product_detail' rel.slug %}">
-                        <div class="prod-img-box">
-                            {% if rel.display_image_url %}
-                                <img src="{{ rel.display_image_url }}" alt="{{ rel.name }}" class="prod-card-img" loading="lazy">
-                            {% else %}
-                                <div class="prod-no-img-box">No Image</div>
-                            {% endif %}
-                            {% if rel.product_type == "local" %}
-                                <span class="badge b-tl b-local">ZM</span>
-                            {% else %}
-                                <span class="badge b-tl b-china">CN</span>
-                            {% endif %}
-                        </div>
-                    </a>
-                    <div class="prod-info">
-                        <a href="{% url 'product_detail' rel.slug %}" class="prod-name-link">{{ rel.name }}</a>
-                        <div class="price-row">
-                            <span class="price-curr">K</span>
-                            <span class="price-main">{{ rel.selling_price|floatformat:0|intcomma }}</span>
-                        </div>
-                        {% if request.user.is_authenticated %}
-                            <form method="POST" action="{% url 'add_to_cart' rel.slug %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-cart">Add to Cart</button>
-                            </form>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="btn-login">Login to Order</a>
-                        {% endif %}
-                    </div>
-                </div>
+                {% include "core/components/_product_card.html" with product=rel %}
             {% endfor %}
         </div>
     </div>
     {% endif %}
 
-</div><!-- end page-body -->
+</div>
 
 <!-- MOBILE STICKY BUY BAR -->
-<div class="mobile-buy-bar">
-    <div class="mbb-price">
-        <div class="mbb-label">Price</div>
-        <div class="mbb-amount">K{{ product.selling_price|floatformat:0|intcomma }}</div>
+<div class="safe-b fixed inset-x-2.5 z-[490] flex items-center gap-2.5 rounded-xl border border-brand-border bg-white px-3.5 py-2.5 shadow-2xl lg:hidden" style="bottom: calc(99px + env(safe-area-inset-bottom));">
+    <div class="flex-1">
+        <div class="text-[10px] font-semibold text-brand-muted">Price</div>
+        <div class="font-display text-xl font-black text-brand-red">K{{ product.selling_price|floatformat:0|intcomma }}</div>
     </div>
     {% if request.user.is_authenticated %}
         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
             {% csrf_token %}
             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                <button disabled class="mbb-btn" style="background:#DDD; color:#595959;">Out of Stock</button>
+                <button disabled class="whitespace-nowrap rounded-lg bg-neutral-200 px-5 py-2.5 text-[13px] font-bold text-neutral-500">Out of Stock</button>
             {% else %}
-                <button type="submit" class="mbb-btn">🛒 Add to Cart</button>
+                <button type="submit" class="whitespace-nowrap rounded-lg bg-brand-red px-5 py-2.5 text-[13px] font-bold text-white"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
             {% endif %}
         </form>
     {% else %}
-        <a href="{% url 'login' %}" class="mbb-btn" style="display:inline-block; text-align:center;">Login to Order</a>
+        <a href="{% url 'login' %}" class="whitespace-nowrap rounded-lg bg-brand-red px-5 py-2.5 text-center text-[13px] font-bold text-white">Login to Order</a>
     {% endif %}
 </div>
 
 {% if product.display_image_url %}
-<div class="zoom-modal" id="imageZoomModal" onclick="closeImageZoom()">
-    <button type="button" class="zoom-close" aria-label="Close image zoom">×</button>
-    <img id="zoomImage" src="{{ product.display_image_url }}" alt="{{ product.name }}">
+<div class="fixed inset-0 z-[2000] items-center justify-center bg-black/90 p-4.5" x-show="zoomOpen" x-cloak @click="zoomOpen = false" style="display: none;">
+    <button type="button" class="absolute right-4 top-3.5 grid h-11 w-11 place-items-center rounded-full bg-white text-2xl text-neutral-900" aria-label="Close image zoom">×</button>
+    <img :src="mainImg" alt="{{ product.name }}" class="max-h-[92vh] max-w-[96vw] rounded-lg bg-white object-contain">
 </div>
 {% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function setMainImage(event, thumbEl, url) {
-    if (event) event.stopPropagation();
-    const mainImage = document.getElementById('mainProductImage');
-    if (!mainImage) return;
-    mainImage.src = url;
-    const zoomImage = document.getElementById('zoomImage');
-    if (zoomImage) zoomImage.src = url;
-    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-    thumbEl.classList.add('active');
-}
-function openImageZoom() {
-    const mainImage = document.getElementById('mainProductImage');
-    const zoom = document.getElementById('imageZoomModal');
-    const zoomImage = document.getElementById('zoomImage');
-    if (!mainImage || !zoom || !zoomImage) return;
-    zoomImage.src = mainImage.src;
-    zoom.classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-function closeImageZoom() {
-    const zoom = document.getElementById('imageZoomModal');
-    if (!zoom) return;
-    zoom.classList.remove('open');
-    document.body.style.overflow = '';
-}
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') closeImageZoom();
-});
-
 // ── Recently Viewed: record this product ──
 (function () {
     try {
@@ -576,7 +286,8 @@ document.addEventListener('keydown', function(event) {
             name: "{{ product.name|escapejs }}",
             url: "{% url 'product_detail' product.slug %}",
             img: "{{ product.display_image_url|default:'' }}",
-            price: "K{{ product.selling_price|floatformat:0|intcomma }}"
+            price: "K{{ product.selling_price|floatformat:0|intcomma }}",
+            category_id: {{ product.category_id|default:"null" }}
         };
         if (!item.slug) return;
         var key = 'czRecentlyViewed';

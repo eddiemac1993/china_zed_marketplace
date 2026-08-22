@@ -6,190 +6,40 @@
     <meta name="description" content="{% block meta_description %}Shop products from China and Zambia with ChinaZed. Browse local stock, pre-order from China, pay a 35% deposit, and track delivery online.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
     <title>{% block title %}ChinaZed · 中赞商城{% endblock %}</title>
-  <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
+    <link rel="stylesheet" href="{% static 'core/css/tailwind.css' %}">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
+    <script src="https://unpkg.com/@alpinejs/collapse@3.14.9/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
+    <script src="https://unpkg.com/swiper@11/swiper-bundle.min.js" defer></script>
+
+    {# ── Legacy compatibility layer: product_detail.html, cart.html, and the #}
+    {# static info pages (about/faq/terms/privacy/order_policy/supplier_*) still #}
+    {# use these pre-Tailwind variables/classes and get redone in a later pass. #}
     <style>
         :root {
-            --red: #FF0036;
-            --red-dark: #D4002D;
-            --red-bright: #FF2B00;
-            --orange: #FF5000;
-            --orange-light: #FF7A00;
-            --gold: #FFC107;
-            --gold-dark: #E6A800;
-            --yellow: #FFE500;
-            --bg: #F4F4F4;
-            --white: #FFFFFF;
-            --ink: #1A1A1A;
-            --muted: #6B6B6B;
-            --border: #EAEAEA;
+            --red: #FF0036; --red-dark: #D4002D; --red-bright: #FF2B00;
+            --orange: #FF5000; --orange-light: #FF7A00;
+            --gold: #FFC107; --gold-dark: #E6A800; --yellow: #FFE500;
+            --bg: #F4F4F4; --white: #FFFFFF; --ink: #1A1A1A; --muted: #6B6B6B; --border: #EAEAEA;
             --card-radius: 12px;
-            --header-h: 130px;
-            --tb-gradient: linear-gradient(135deg, #FF9000 0%, #FF5000 100%);
-            --tb-header-bg: linear-gradient(135deg, #FF5000 0%, #E60000 100%);
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 13px;
-            -webkit-font-smoothing: antialiased;
-        }
-
+        * { box-sizing: border-box; }
+        body { font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; }
         a { text-decoration: none; color: inherit; }
         .noscroll::-webkit-scrollbar { display: none; }
         .noscroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .clamp2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        /* ── PAGE BODY WRAPPER ── */
+        .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .page-body { max-width: 1300px; margin: 0 auto; padding: 14px 20px; }
-
-        /* ── MESSAGE FLASH ── */
-        .msg-strip {
-            background: #F0FFF4; border: 1px solid #B7EBC5; color: #1D6A34;
-            padding: 10px 16px; font-size: 13px; border-radius: 6px; margin-bottom: 12px;
-        }
+        .msg-strip { background: #F0FFF4; border: 1px solid #B7EBC5; color: #1D6A34; padding: 10px 16px; font-size: 13px; border-radius: 6px; margin-bottom: 12px; }
         .msg-strip.error { background: #FFF0F0; border-color: #F5B6B6; color: #A31414; }
-
-        /* ── UTILITY BAR ── */
-        .utility-bar { background: #111; color: #999; font-size: 11px; padding: 6px 0; }
-        .utility-bar-inner {
-            max-width: 1300px; margin: 0 auto; padding: 0 20px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .04em; }
-        .utility-bar-links { display: flex; align-items: center; }
-        .utility-bar a { color: #777; transition: color .15s; padding: 0 10px; border-right: 1px solid #2a2a2a; }
-        .utility-bar a:last-child { border-right: none; }
-        .utility-bar a:hover { color: #fff; }
-        .utility-bar a.highlight { color: var(--gold); font-weight: 700; }
-
-        /* ── MAIN HEADER ── */
-        .main-header {
-            background: var(--tb-header-bg);
-            position: sticky; top: 0; z-index: 200;
-            box-shadow: 0 3px 20px rgba(0,0,0,.35);
-        }
-        .header-top {
-            display: flex; align-items: center; gap: 14px;
-            padding: 12px 20px; max-width: 1300px; margin: 0 auto;
-        }
-
-        /* LOGO */
-        .site-logo { flex-shrink: 0; display: flex; flex-direction: column; gap: 0; text-decoration: none; }
-        .logo-main {
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 32px; color: #fff; letter-spacing: -1.5px; line-height: 1;
-        }
-        .logo-sub { font-size: 9px; color: rgba(255,255,255,.55); letter-spacing: .12em; font-weight: 600; text-transform: uppercase; }
-
-        /* SEARCH */
-.search-bar { flex:1; display:flex; align-items:center; min-width:0; max-width:720px; height:48px; padding:4px; background:#fff; border:2px solid transparent; border-radius:14px; box-shadow:0 8px 24px rgba(87,0,0,.16); transition:border-color .2s,box-shadow .2s,transform .2s; overflow:hidden; }
-.search-bar:focus-within { border-color:#ffd2c0; box-shadow:0 10px 28px rgba(87,0,0,.22); transform:translateY(-1px); }
-.search-select { border:0; outline:0; padding:0 34px 0 13px; width:150px; font-size:12px; font-family:inherit; height:38px; background:#f5f5f5; color:#383030; font-weight:700; border-radius:10px; cursor:pointer; flex-shrink:0; }
-.search-input { flex:1; min-width:0; border:0; outline:0; padding:0 16px; font-size:14px; font-family:inherit; height:40px; color:var(--ink); background:transparent; }
-.search-input::placeholder { color:#767676; }
-/* icon-only: square button so the glyph sits centred, not in a text-width pill */
-.search-btn { display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#ff7a00,#f25500); color:#fff; border:0; padding:0; width:38px; height:38px; font-size:15px; line-height:1; cursor:pointer; border-radius:10px; font-family:inherit; flex-shrink:0; box-shadow:0 5px 12px rgba(242,85,0,.25); }
-.search-btn:hover { transform:translateY(-1px); box-shadow:0 7px 16px rgba(242,85,0,.34); }
-/* HEADER ACTIONS */
-        .header-actions { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
-        .hdr-link {
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-            color: rgba(255,255,255,.85); font-size: 11px; padding: 4px 9px;
-            border-radius: 6px; transition: background .15s; white-space: nowrap;
-        }
-        .hdr-link:hover { background: rgba(255,255,255,.18); color: #fff; }
-        .hdr-link .hdr-icon { font-size: 19px; line-height: 1; }
-        .hdr-cart {
-            background: var(--orange); color: #fff; padding: 9px 16px;
-            border-radius: 6px; font-weight: 800; font-size: 13px;
-            display: flex; align-items: center; gap: 5px; transition: background .15s;
-        }
-        .hdr-cart:hover { background: #d95500; }
-
-        /* CATEGORY NAV */
-        .cat-nav {
-            background: rgba(0,0,0,0.22);
-            border-top: 1px solid rgba(255,255,255,.1);
-        }
-        .cat-nav-inner {
-            max-width: 1300px; margin: 0 auto; padding: 0 20px;
-            display: flex; overflow-x: auto;
-        }
-        .cat-nav-inner::-webkit-scrollbar { display: none; }
-        .cat-nav a {
-            display: inline-flex; align-items: center; padding: 9px 14px;
-            font-size: 12px; font-weight: 700; color: rgba(255,255,255,.8);
-            white-space: nowrap; transition: all .15s;
-            border-bottom: 3px solid transparent; gap: 5px;
-        }
-        .cat-nav a:hover, .cat-nav a.active {
-            background: rgba(255,255,255,.14); color: #fff;
-            border-bottom-color: var(--yellow);
-        }
-        .cat-nav a.sell-link { margin-left: auto; color: var(--yellow); font-weight: 900; }
-
-        /* MOBILE MENU BTN */
-        .mobile-menu-btn {
-            display: none;
-            width: 40px; height: 40px; padding: 0;
-            border: none; background: transparent; cursor: pointer;
-            position: relative; flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .mobile-menu-btn span {
-            position: absolute; left: 8px; width: 24px; height: 2.5px;
-            background: #fff; border-radius: 2px;
-            transition: transform .25s ease, opacity .2s ease, top .25s ease;
-        }
-        .mobile-menu-btn span:nth-child(1) { top: 12px; }
-        .mobile-menu-btn span:nth-child(2) { top: 19px; }
-        .mobile-menu-btn span:nth-child(3) { top: 26px; }
-        .mobile-menu-btn.active span:nth-child(1) { top: 19px; transform: rotate(45deg); }
-        .mobile-menu-btn.active span:nth-child(2) { opacity: 0; }
-        .mobile-menu-btn.active span:nth-child(3) { top: 19px; transform: rotate(-45deg); }
-
-        /* MOBILE DRAWER */
-        .mobile-drawer {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 290px; height: 100vh; background: #fff; z-index: 1000;
-            overflow-y: auto; transform: translateX(-100%);
-            transition: transform .3s ease; box-shadow: 4px 0 24px rgba(0,0,0,.22);
-        }
-        .mobile-drawer.open { transform: translateX(0); }
-        .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; }
-        .drawer-overlay.open { display: block; }
-        .drawer-header { background: var(--red); padding: 16px; display: flex; align-items: center; justify-content: space-between; }
-        .drawer-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 24px; color: #fff; }
-        .drawer-close { color: rgba(255,255,255,.8); font-size: 22px; cursor: pointer; padding: 4px; }
-        .drawer-section { padding: 10px 0; border-bottom: 1px solid #F0F0F0; }
-        .drawer-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 0 16px 8px; }
-        .drawer-link { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 13px; font-weight: 500; color: var(--ink); transition: all .15s; }
-        .drawer-link:hover, .drawer-link.active { background: #FFF0F0; color: var(--red); }
-        .drawer-link.active { font-weight: 700; border-left: 3px solid var(--red); }
-        .drawer-link .di { font-size: 16px; }
-
-        /* ── FORM CONTROLS (shared across every form page) ── */
-        .form-control {
-            display: block; width: 100%; font-family: inherit; font-size: 13px;
-            color: var(--ink); background: #fff; border: 1.5px solid var(--border);
-            border-radius: 6px; padding: 10px 12px; transition: border-color .15s, box-shadow .15s;
-        }
-        .form-control:focus {
-            outline: none; border-color: var(--red);
-            box-shadow: 0 0 0 3px rgba(229,20,26,.12);
-        }
+        .form-control { display: block; width: 100%; font-family: inherit; font-size: 13px; color: var(--ink); background: #fff; border: 1.5px solid var(--border); border-radius: 6px; padding: 10px 12px; transition: border-color .15s, box-shadow .15s; }
+        .form-control:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px rgba(229,20,26,.12); }
         .form-control::placeholder { color: #767676; }
         select.form-control { cursor: pointer; }
         textarea.form-control { resize: vertical; min-height: 90px; }
@@ -197,438 +47,150 @@
         .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
         .form-hint { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
         .form-error { font-size: 11px; color: var(--red); margin-top: 5px; font-weight: 600; }
-        .btn-primary {
-            display: inline-flex; align-items: center; justify-content: center;
-            background: var(--red); color: #fff; border: none; border-radius: 6px;
-            padding: 12px 20px; font-size: 13px; font-weight: 800; font-family: inherit;
-            cursor: pointer; transition: background .15s; letter-spacing: .02em;
-        }
+        .btn-primary { display: inline-flex; align-items: center; justify-content: center; background: var(--red); color: #fff; border: none; border-radius: 6px; padding: 12px 20px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; transition: background .15s; letter-spacing: .02em; }
         .btn-primary:hover { background: var(--red-dark); }
-        .btn-secondary {
-            display: inline-flex; align-items: center; justify-content: center;
-            background: #fff; color: var(--ink); border: 1.5px solid var(--border); border-radius: 6px;
-            padding: 12px 20px; font-size: 13px; font-weight: 800; font-family: inherit;
-            cursor: pointer; transition: all .15s;
-        }
+        .btn-secondary { display: inline-flex; align-items: center; justify-content: center; background: #fff; color: var(--ink); border: 1.5px solid var(--border); border-radius: 6px; padding: 12px 20px; font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer; transition: all .15s; }
         .btn-secondary:hover { border-color: var(--red); color: var(--red); }
 
-        /* ── DOCUMENT / INFO PAGES (about, faq, terms, privacy, policy) ── */
         .doc-wrap { max-width: 900px; margin: 0 auto; }
-        .doc-hero {
-            background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #4A0B0D 100%);
-            border-radius: var(--card-radius); padding: 26px 24px; color: #fff; margin-bottom: 14px;
-        }
-        .doc-hero h1 {
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 32px; line-height: 1.08; margin-bottom: 7px;
-        }
+        .doc-hero { background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #4A0B0D 100%); border-radius: var(--card-radius); padding: 26px 24px; color: #fff; margin-bottom: 14px; }
+        .doc-hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 32px; line-height: 1.08; margin-bottom: 7px; }
         .doc-hero p { font-size: 13px; color: rgba(255,255,255,.75); line-height: 1.7; max-width: 640px; }
         .doc-updated { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 9px; }
-
-        .doc-card {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--card-radius); padding: 24px; margin-bottom: 14px;
-        }
-        .doc-card h2 {
-            font-size: 17px; color: var(--red); margin: 26px 0 8px; font-weight: 800;
-        }
+        .doc-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 24px; margin-bottom: 14px; }
+        .doc-card h2 { font-size: 17px; color: var(--red); margin: 26px 0 8px; font-weight: 800; }
         .doc-card h2:first-child { margin-top: 0; }
         .doc-card p, .doc-card li { color: #555; font-size: 13px; line-height: 1.8; }
         .doc-card ul { padding-left: 20px; margin: 8px 0; }
         .doc-card li { margin-bottom: 5px; }
-
-        /* accordion-style Q&A list */
         .doc-list { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; }
         .doc-item { padding: 18px 20px; border-bottom: 1px solid #F0F0F0; }
         .doc-item:last-child { border-bottom: none; }
         .doc-item h2 { font-size: 15px; color: var(--red); margin-bottom: 6px; font-weight: 800; }
         .doc-item p { color: #555; font-size: 13px; line-height: 1.8; }
-
         @media (max-width: 640px) {
-            .doc-hero { padding: 20px 18px; }
-            .doc-hero h1 { font-size: 25px; }
-            .doc-card { padding: 18px 16px; }
-            .doc-item { padding: 15px 16px; }
+            .doc-hero { padding: 20px 18px; } .doc-hero h1 { font-size: 25px; }
+            .doc-card { padding: 18px 16px; } .doc-item { padding: 15px 16px; }
         }
-
-        /* ── FOOTER ── */
-        .site-footer { background: #111; margin-top: 24px; }
-        .footer-top { padding: 28px 20px; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 36px; max-width: 1300px; margin: 0 auto; }
-        .footer-logo-text { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; color: var(--red); }
-        /* the footer sits on #111, so these greys have to run light, not dark */
-        .footer-tagline { font-size: 10px; color: #9A9A9A; margin-top: 2px; letter-spacing: .1em; text-transform: uppercase; }
-        .footer-desc { font-size: 12px; color: #B0B0B0; margin-top: 10px; line-height: 1.8; }
-        .footer-contact { margin-top: 14px; }
-        .footer-contact div { font-size: 12px; color: #B0B0B0; margin-bottom: 6px; }
-        .footer-col h4 { font-size: 11px; font-weight: 700; color: #A6A6A6; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .1em; padding-bottom: 8px; border-bottom: 1px solid #222; }
-        .footer-col a { display: block; font-size: 12px; color: #C4C4C4; margin-bottom: 8px; transition: color .15s; }
-        .footer-col a:hover { color: var(--red); }
-        .partner-callout { border-top: 1px solid #1E1E1E; padding: 24px 20px; max-width: 1300px; margin: 0 auto; }
-        .partner-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px; border: 1px solid #202020; border-radius: 10px; background: linear-gradient(135deg, #171717, #101010); }
-        .partner-kicker { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: #A6A6A6; text-transform:uppercase; margin-bottom: 8px; }
-        .partner-card h3 { color: #fff; font-size: 22px; line-height: 1.15; margin-bottom: 8px; }
-        .partner-card p { color: #B0B0B0; font-size: 13px; line-height: 1.7; max-width: 620px; }
-        .partner-points { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-        .partner-points span { color: #ddd; background: #1d1d1d; border: 1px solid #292929; border-radius: 999px; padding: 7px 10px; font-size: 11px; font-weight: 700; }
-        .partner-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 190px; }
-        .partner-button { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px 14px; border-radius: 8px; background: var(--red); color: #fff; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
-        .partner-note { color: #9A9A9A; font-size: 11px; text-align: right; line-height: 1.5; }
-        .footer-bottom { border-top: 1px solid #1E1E1E; padding: 14px 20px; text-align: center; font-size: 11px; color: #333; max-width: 1300px; margin: 0 auto; }
-
-        /* ── FLOATING ── */
-        .floating-actions {
-            position: fixed; right: 18px; bottom: 76px; z-index: 300;
-            display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
-            transition: transform .25s ease, opacity .25s ease;
-        }
-        /* slides away while scrolling down so it stops sitting on top of page content */
-        .floating-actions.is-tucked {
-            transform: translateY(140px); opacity: 0; pointer-events: none;
-        }
-        .float-btn {
-            border: none; text-decoration: none; cursor: pointer; font-family: inherit;
-            box-shadow: 0 4px 18px rgba(229,20,26,.34); transition: transform .15s, box-shadow .15s, background .15s;
-        }
-        .float-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.22); }
-        .wa-btn {
-            background: linear-gradient(135deg, var(--red), var(--orange));
-            color: #fff; border-radius: 999px; min-width: 58px; height: 52px; padding: 0 15px;
-            display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; font-weight: 900;
-            letter-spacing: .02em;
-        }
-        .install-btn {
-            display: none; align-items: center; justify-content: center; gap: 7px;
-            min-height: 42px; padding: 0 13px; border-radius: 999px;
-            background: #111; color: #fff; font-size: 12px; font-weight: 800;
-        }
-        .install-btn.show { display: inline-flex; }
-        .install-icon { font-size: 15px; line-height: 1; }
-        .back-top {
-            background: rgba(0,0,0,.5);
-            color: #fff; border-radius: 50%; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center; font-size: 16px;
-            cursor: pointer; transition: background .15s, opacity .15s; opacity: 0;
-        }
-        .back-top:hover { background: var(--red); }
 
         {% block extra_style %}{% endblock %}
-        /* Unified ChinaZed application icon */
-    .footer-app-icon { width:70px;height:70px;display:block;object-fit:contain;border-radius:16px;margin-bottom:10px; }
-    @media (max-width:768px) { .brand-app-icon { width:46px;height:46px;border-radius:11px; } }
-
-    .cz-market-icon { width:58px;height:58px;display:block;flex:none;filter:drop-shadow(0 2px 5px rgba(0,0,0,.16)); }
-    .drawer-logo .cz-market-icon { width:46px;height:46px; }
-    .site-footer .cz-market-icon { width:70px;height:70px;margin-bottom:10px; }
-    @media(max-width:768px){.site-logo .cz-market-icon{width:46px;height:46px;}}
-
-    /* WCAG-sized touch targets for phones and tablets */
-    @media (max-width: 768px) {
-        .mobile-menu-btn { width: 44px; height: 44px; min-width: 44px; }
-        .search-input { min-height: 44px; }
-        .search-btn { width: 44px; min-width: 44px; height: 44px; }
-        .cat-nav a { min-height: 44px; display: flex; align-items: center; }
-        .drawer-close { min-width: 44px; min-height: 44px; display: grid; place-items: center; }
-    }
-</style>
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body x-data="{ cartOpen: false, menuOpen: false }" class="bg-brand-bg font-sans text-[13px] text-brand-ink antialiased">
 
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+{% include "core/components/_mobile_menu.html" %}
+{% if request.user.is_authenticated %}
+    {% include "core/components/_cart_drawer.html" %}
+{% endif %}
 
-<!-- MOBILE DRAWER -->
-<div class="mobile-drawer" id="mobileDrawer">
-    <div class="drawer-header">
-        <span class="drawer-logo"><svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg></span>
-        <span class="drawer-close" onclick="closeDrawer()">✕</span>
-    </div>
-    {% if request.user.is_authenticated %}
-    <div class="drawer-section">
-        <div class="drawer-section-title">My Account</div>
-        <a href="{% url 'profile' %}" class="drawer-link"><span class="di">👤</span> My Profile & Orders</a>
-        <a href="{% url 'cart' %}" class="drawer-link"><span class="di">🛒</span> My Cart{% if nav_cart_count %} ({{ nav_cart_count }}){% endif %}</a>
-        <a href="{% url 'communinity:home' %}" class="drawer-link"><span class="di">💬</span> Community</a>
-        <a href="{% url 'logout' %}" class="drawer-link"><span class="di">🚪</span> Logout</a>
-    </div>
-    {% else %}
-    <div class="drawer-section">
-        <div class="drawer-section-title">Account</div>
-        <a href="{% url 'login' %}" class="drawer-link"><span class="di">🔑</span> Sign In</a>
-        <a href="{% url 'register' %}" class="drawer-link" style="color:var(--red);font-weight:700;"><span class="di">📝</span> Register Free</a>
-    </div>
-    {% endif %}
-    <div class="drawer-section">
-        <div class="drawer-section-title">Shop</div>
-        <a href="{% url 'home' %}" class="drawer-link {% if not category_id and not product_type %}active{% endif %}"><span class="di">🛍️</span> All Products</a>
-        <a href="{% url 'home' %}?type=local#results" class="drawer-link {% if product_type == 'local' %}active{% endif %}"><span class="di">🇿🇲</span> Available in Zambia</a>
-        <a href="{% url 'home' %}?type=preorder#results" class="drawer-link {% if product_type == 'preorder' %}active{% endif %}"><span class="di">🇨🇳</span> Pre-order from China</a>
-        {% for category in nav_categories %}
-        <a href="{% url 'home' %}?category={{ category.id }}#results" class="drawer-link {% if category_id == category.id|stringformat:'s' %}active{% endif %}"><span class="di">›</span> {{ category.name }}</a>
-        {% endfor %}
-    </div>
-    <div class="drawer-section">
-        <div class="drawer-section-title">Help</div>
-        <a href="{% url 'about' %}" class="drawer-link"><span class="di">ℹ</span> About ChinaZed</a>
-        <a href="{% url 'order_policy' %}" class="drawer-link"><span class="di">📋</span> Order Policy</a>
-    </div>
+<div class="print:hidden">
+    {% include "core/components/_utility_bar.html" %}
+    {% include "core/components/_header.html" %}
 </div>
-
-<!-- UTILITY BAR -->
-<div class="utility-bar">
-    <div class="utility-bar-inner">
-        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
-        <div class="utility-bar-links">
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'profile' %}">My Account</a>
-                <a href="{% url 'cart' %}" class="highlight">Cart{% if nav_cart_count %} ({{ nav_cart_count }}){% endif %}</a>
-                <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Sign In</a>
-                <a href="{% url 'register' %}" class="highlight">Register Free</a>
-            {% endif %}
-            <a href="{% url 'about' %}">About</a>
-            <a href="{% url 'order_policy' %}">Policy</a>
-        </div>
-    </div>
-</div>
-
-<!-- MAIN HEADER -->
-<header class="main-header">
-    <div class="header-top">
-        <button class="mobile-menu-btn" id="menuToggle" onclick="openDrawer()" aria-label="Open menu" aria-expanded="false">
-            <span></span><span></span><span></span>
-        </button>
-        <a href="{% url 'home' %}" class="site-logo" aria-label="ChinaZed home"><svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg></a>
-
-        <form method="GET" action="{% url 'home' %}" class="search-bar" id="searchForm">
-            <select class="search-select" name="category" id="searchCatSelect" aria-label="Filter products by category">
-                <option value="">All Categories</option>
-                {% for category in nav_categories %}
-                <option value="{{ category.id }}" {% if category_id == category.id|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>
-                {% endfor %}
-            </select>
-            <input type="text" class="search-input" name="q" aria-label="Search products"
-                   placeholder="Search phones, electronics, fashion…"
-                   value="{{ query|default:'' }}">
-            {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
-            <button type="submit" class="search-btn" aria-label="Search">
-                <span aria-hidden="true">🔍</span>
-            </button>
-        </form>
-
-        <div class="header-actions">
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="hdr-link">
-                    <span class="hdr-icon">👤</span><span>Orders</span>
-                </a>
-                <a href="{% url 'cart' %}" class="hdr-cart">
-                    🛒 Cart{% if nav_cart_count %} <span style="background:rgba(255,255,255,.25);padding:0 6px;border-radius:10px;">{{ nav_cart_count }}</span>{% endif %}
-                </a>
-                <a href="{% url 'logout' %}" class="hdr-link">
-                    <span class="hdr-icon">🚪</span><span>Logout</span>
-                </a>
-            {% else %}
-                <a href="{% url 'login' %}" class="hdr-link">
-                    <span class="hdr-icon">🔑</span><span>Sign In</span>
-                </a>
-                <a href="{% url 'register' %}" class="hdr-cart" style="background:var(--yellow);color:var(--red-dark);">Join Free</a>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- CATEGORY NAV -->
-    <div class="cat-nav">
-        <div class="cat-nav-inner noscroll">
-            <a href="{% url 'home' %}" class="{% if not category_id and not product_type %}active{% endif %}">🏠 All</a>
-            <a href="{% url 'home' %}?type=local#results" class="{% if product_type == 'local' %}active{% endif %}">🇿🇲 Zambia Stock</a>
-            <a href="{% url 'home' %}?type=preorder#results" class="{% if product_type == 'preorder' %}active{% endif %}">🇨🇳 Pre-order</a>
-            <a href="{% url 'request_product' %}">🔎 Request Product</a>
-            <a href="{% url 'about' %}">ℹ About</a>
-            <a href="{% url 'faq' %}">❓ FAQ</a>
-            <a href="{% url 'communinity:home' %}">💬 Community</a>
-            {% for category in nav_categories %}
-                <a href="{% url 'home' %}?category={{ category.id }}#results" class="{% if category_id == category.id|stringformat:'s' %}active{% endif %}">{{ category.name }}</a>
-            {% endfor %}
-        </div>
-    </div>
-</header>
 
 {% if messages %}
-<div style="max-width:1300px;margin:10px auto 0;padding:0 20px;">
+<div class="mx-auto max-w-[1300px] px-4 pt-3 sm:px-5">
     {% for message in messages %}
-        <div class="msg-strip{% if message.tags == 'error' %} error{% endif %}">{% if message.tags == 'error' %}⚠{% else %}✓{% endif %} {{ message }}</div>
+        <div class="mb-2.5 rounded-lg border px-4 py-2.5 text-[13px] {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700{% else %}border-emerald-200 bg-emerald-50 text-emerald-700{% endif %}">
+            {% if message.tags == 'error' %}<i class="fa-solid fa-triangle-exclamation"></i>{% else %}<i class="fa-solid fa-circle-check"></i>{% endif %} {{ message }}
+        </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<main id="main-content">
+<main id="main-content" class="pb-20 lg:pb-0">
 {% block content %}{% endblock %}
 </main>
 
 <!-- FOOTER -->
-<footer class="site-footer">
-    <div class="footer-top">
+<footer class="mt-6 bg-neutral-900 print:hidden">
+    <div class="mx-auto grid max-w-[1300px] gap-9 px-5 py-7 sm:grid-cols-3">
         <div>
-            <svg class="cz-market-icon" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
-            <div class="footer-tagline">中赞商城 · Marketplace</div>
-            <div class="footer-desc">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</div>
-            <div class="footer-contact">
-                <div>📞 +260 766491002</div>
-                <div>✉️ chinatozambia.zm@gmail.com</div>
+            <svg class="h-[70px] w-[70px]" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
+            <div class="mt-2.5 text-[10px] uppercase tracking-widest text-neutral-500">中赞商城 · Marketplace</div>
+            <p class="mt-2.5 text-xs leading-relaxed text-neutral-400">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</p>
+            <div class="mt-3.5 space-y-1.5 text-xs text-neutral-400">
+                <div><i class="fa-solid fa-phone mr-1.5 text-neutral-500"></i> +260 766491002</div>
+                <div><i class="fa-solid fa-envelope mr-1.5 text-neutral-500"></i> chinatozambia.zm@gmail.com</div>
             </div>
         </div>
-        <div class="footer-col">
-            <h4>Buyer</h4>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'home' %}?type=local#results">Local Stock</a>
-            <a href="{% url 'home' %}?type=preorder#results">Pre-order China</a>
-            <a href="{% url 'about' %}">About ChinaZed</a>
-            <a href="{% url 'faq' %}">FAQ</a>
-            <a href="{% url 'communinity:home' %}">Community 💬</a>
-            <a href="{% url 'order_policy' %}">Order Policy</a>
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'profile' %}">Track Orders</a>
-                <a href="{% url 'cart' %}">My Cart</a>
-                <a href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Sign In</a>
-                <a href="{% url 'register' %}">Register Free</a>
-            {% endif %}
+        <div>
+            <h4 class="mb-3 border-b border-neutral-800 pb-2 text-[11px] font-bold uppercase tracking-widest text-neutral-400">Buyer</h4>
+            <div class="flex flex-col gap-2 text-xs text-neutral-300">
+                <a href="{% url 'home' %}" class="transition hover:text-brand-red">Home</a>
+                <a href="{% url 'home' %}?type=local#results" class="transition hover:text-brand-red">Local Stock</a>
+                <a href="{% url 'home' %}?type=preorder#results" class="transition hover:text-brand-red">Pre-order China</a>
+                <a href="{% url 'about' %}" class="transition hover:text-brand-red">About ChinaZed</a>
+                <a href="{% url 'faq' %}" class="transition hover:text-brand-red">FAQ</a>
+                <a href="{% url 'communinity:home' %}" class="transition hover:text-brand-red">Community <i class="fa-solid fa-comments"></i></a>
+                <a href="{% url 'order_policy' %}" class="transition hover:text-brand-red">Order Policy</a>
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="transition hover:text-brand-red">Track Orders</a>
+                    <a href="{% url 'cart' %}" class="transition hover:text-brand-red">My Cart</a>
+                    <a href="{% url 'logout' %}" class="transition hover:text-brand-red">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="transition hover:text-brand-red">Sign In</a>
+                    <a href="{% url 'register' %}" class="transition hover:text-brand-red">Register Free</a>
+                {% endif %}
+            </div>
         </div>
-        <div class="footer-col">
-            <h4>Seller</h4>
-            <a href="{% url 'supplier_submit_product' %}">Submit a Product</a>
-            <a href="{% url 'supplier_submit_product' %}">Become a Supplier</a>
-            <a href="{% url 'pricelist:index' %}">Price Lists</a>
-            <a href="{% url 'order_policy' %}">Supplier Policy</a>
+        <div>
+            <h4 class="mb-3 border-b border-neutral-800 pb-2 text-[11px] font-bold uppercase tracking-widest text-neutral-400">Seller</h4>
+            <div class="flex flex-col gap-2 text-xs text-neutral-300">
+                <a href="{% url 'supplier_submit_product' %}" class="transition hover:text-brand-red">Submit a Product</a>
+                <a href="{% url 'pricelist:index' %}" class="transition hover:text-brand-red">Price Lists</a>
+                <a href="{% url 'order_policy' %}" class="transition hover:text-brand-red">Supplier Policy</a>
+            </div>
         </div>
     </div>
 
-    <div class="partner-callout">
-        <div class="partner-card">
+    <div class="border-t border-neutral-800 px-5 py-6">
+        <div class="mx-auto flex max-w-[1300px] flex-col items-center justify-between gap-5 rounded-xl border border-neutral-800 bg-gradient-to-br from-neutral-800 to-neutral-950 p-6 sm:flex-row">
             <div>
-                <div class="partner-kicker">Advertising opportunities</div>
-                <h3>Partner with ChinaZed</h3>
-                <p>Reach shoppers in Zambia who are actively looking for products, delivery support, payments, fashion, electronics, home goods, and China sourcing services.</p>
-                <div class="partner-points">
-                    <span>Homepage ad space</span>
-                    <span>Category placements</span>
-                    <span>Supplier promotions</span>
-                    <span>Brand campaigns</span>
-                </div>
+                <div class="mb-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-neutral-400">Advertising opportunities</div>
+                <h3 class="text-xl font-bold text-white">Partner with ChinaZed</h3>
+                <p class="mt-1.5 max-w-lg text-xs leading-relaxed text-neutral-400">Reach shoppers in Zambia who are actively looking for products, delivery support, payments, fashion, electronics, home goods, and China sourcing services.</p>
             </div>
-            <div class="partner-actions">
-                <a class="partner-button" href="mailto:chinatozambia.zm@gmail.com?subject=ChinaZed%20advertising%20partnership">Advertise with us</a>
-                <div class="partner-note">Sponsor slots are open for real businesses and trusted partners.</div>
+            <div class="flex shrink-0 flex-col items-stretch gap-2 sm:min-w-[190px] sm:items-end">
+                <a href="mailto:chinatozambia.zm@gmail.com?subject=ChinaZed%20advertising%20partnership" class="rounded-lg bg-brand-red px-4 py-3 text-center text-xs font-black uppercase tracking-wide text-white transition hover:bg-brand-red-dark">Advertise with us</a>
+                <div class="text-right text-[11px] leading-snug text-neutral-500">Sponsor slots are open for real businesses and trusted partners.</div>
             </div>
         </div>
     </div>
 
-    <div class="footer-bottom">
+    <div class="border-t border-neutral-800 px-5 py-3.5 text-center text-[11px] text-neutral-600">
         © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
     </div>
 </footer>
 
-<!-- FLOATING -->
-<div class="floating-actions" aria-label="Quick actions">
-    <a href="{% url 'assistant' %}" class="float-btn wa-btn" title="AI Assistant" aria-label="AI Assistant">
-        <span>AI</span><span class="wa-label">Help</span>
+<!-- FLOATING ACTIONS -->
+<div class="fixed right-4 z-[300] flex flex-col items-end gap-2.5 bottom-[calc(5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-out lg:bottom-6 print:hidden"
+     x-data="{ tucked: false, lastY: 0, showTop: false }"
+     x-init="lastY = window.scrollY"
+     @scroll.window="let y = window.scrollY; showTop = y > 400; if (Math.abs(y - lastY) > 6) { tucked = y > lastY && y > 220; lastY = y; }"
+     :class="tucked ? 'translate-y-36 opacity-0 pointer-events-none' : ''">
+    <a href="{% url 'assistant' %}" title="AI Assistant" aria-label="AI Assistant"
+       class="flex h-[52px] min-w-[58px] items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-brand-red to-brand-orange px-4 text-[13px] font-black text-white shadow-lg shadow-red-900/30 transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fa-solid fa-robot"></i><span>Help</span>
     </a>
-    <button type="button" class="float-btn install-btn" id="installAppBtn" aria-label="Install ChinaZed app">
-        <span class="install-icon">↓</span><span>Install</span>
+    <button type="button" id="installAppBtn" aria-label="Install ChinaZed app"
+            class="hidden min-h-[42px] items-center justify-center gap-1.5 rounded-full bg-neutral-900 px-3.5 text-xs font-bold text-white shadow-lg transition hover:-translate-y-0.5">
+        <i class="fa-solid fa-arrow-down-to-line"></i><span>Install</span>
     </button>
-
-
-
-    <div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+    <button type="button" @click="window.scrollTo({top:0,behavior:'smooth'})" x-show="showTop" x-transition.opacity aria-label="Back to top"
+            class="grid h-10 w-10 place-items-center rounded-full bg-black/50 text-base text-white transition hover:bg-brand-red"><i class="fa-solid fa-arrow-up"></i></button>
 </div>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-bottom-nav">
-    <div class="mobile-bottom-nav-inner">
-        <a href="{% url 'home' %}" class="mbn-item {% if not product_type and not query %}active{% endif %}">
-            <span class="mbn-icon">🏠</span><span>Home</span>
-        </a>
-        <a href="{% url 'home' %}?type=local#results" class="mbn-item {% if product_type == 'local' %}active{% endif %}">
-            <span class="mbn-icon">🇿🇲</span><span>Zambia</span>
-        </a>
-        <a href="{% url 'home' %}?type=preorder#results" class="mbn-item {% if product_type == 'preorder' %}active{% endif %}">
-            <span class="mbn-icon">🇨🇳</span><span>China</span>
-        </a>
-        {% if request.user.is_authenticated %}
-        <a href="{% url 'cart' %}" class="mbn-item">
-            <span class="mbn-icon mbn-cart-badge">🛒{% if nav_cart_count %}<span class="mbn-badge">{{ nav_cart_count }}</span>{% endif %}</span>
-            <span>Cart</span>
-        </a>
-        <a href="{% url 'profile' %}" class="mbn-item">
-            <span class="mbn-icon">👤</span><span>Me</span>
-        </a>
-        {% else %}
-        <a href="{% url 'login' %}" class="mbn-item">
-            <span class="mbn-icon">🔑</span><span>Login</span>
-        </a>
-        <a href="{% url 'register' %}" class="mbn-item active">
-            <span class="mbn-icon">✨</span><span>Join</span>
-        </a>
-        {% endif %}
-    </div>
-</nav>
+{% include "core/components/_mobile_bottom_nav.html" %}
 
 <script>
-    // ── DRAWER ──
-    function openDrawer() {
-        document.getElementById('mobileDrawer').classList.add('open');
-        document.getElementById('drawerOverlay').classList.add('open');
-        var btn = document.getElementById('menuToggle');
-        if (btn) { btn.classList.add('active'); btn.setAttribute('aria-expanded', 'true'); }
-        document.body.style.overflow = 'hidden';
-    }
-    function closeDrawer() {
-        document.getElementById('mobileDrawer').classList.remove('open');
-        document.getElementById('drawerOverlay').classList.remove('open');
-        var btn = document.getElementById('menuToggle');
-        if (btn) { btn.classList.remove('active'); btn.setAttribute('aria-expanded', 'false'); }
-        document.body.style.overflow = '';
-    }
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
-
-    // ── BACK TO TOP + TUCK-AWAY FLOATING ACTIONS ──
+    // ── SCROLL REVEAL ──
     (function () {
-        var lastY = window.scrollY;
-        var actions = document.querySelector('.floating-actions');
-
-        window.addEventListener('scroll', function () {
-            var y = window.scrollY;
-            var btn = document.getElementById('backTop');
-            if (btn) btn.style.opacity = y > 400 ? '1' : '0';
-
-            // scrolling down past the fold hides the buttons; scrolling up brings them back
-            if (actions && Math.abs(y - lastY) > 6) {
-                actions.classList.toggle('is-tucked', y > lastY && y > 220);
-                lastY = y;
-            }
-        }, { passive: true });
-    })();
-
-    // ── MOBILE CHROME TWEAKS ──
-    (function () {
-        // the full placeholder never fits the narrow search field
-        if (window.innerWidth <= 640) {
-            var input = document.querySelector('.search-input');
-            if (input) input.placeholder = 'Search products…';
-        }
-
-        // drop the edge fade once the category row is scrolled to the end
-        var nav = document.querySelector('.cat-nav-inner');
-        if (nav) {
-            var sync = function () {
-                var atEnd = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 2;
-                nav.classList.toggle('at-end', atEnd);
-            };
-            nav.addEventListener('scroll', sync, { passive: true });
-            window.addEventListener('resize', sync);
-            sync();
-        }
+        var obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(function (el) { obs.observe(el); });
     })();
 
     // ── INSTALL APP ──
@@ -641,10 +203,13 @@
             return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         }
 
+        function showInstallBtn() { installBtn.classList.remove('hidden'); installBtn.classList.add('flex'); }
+        function hideInstallBtn() { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
+
         window.addEventListener('beforeinstallprompt', function (event) {
             event.preventDefault();
             deferredPrompt = event;
-            if (!isStandalone()) installBtn.classList.add('show');
+            if (!isStandalone()) showInstallBtn();
         });
 
         installBtn.addEventListener('click', async function () {
@@ -652,38 +217,15 @@
                 deferredPrompt.prompt();
                 await deferredPrompt.userChoice.catch(function () {});
                 deferredPrompt = null;
-                installBtn.classList.remove('show');
+                hideInstallBtn();
                 return;
             }
             alert('To install ChinaZed, open your browser menu and choose Add to Home screen or Install app.');
         });
 
         if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) {
-            installBtn.classList.add('show');
+            showInstallBtn();
         }
-    })();
-
-    // ── AD CAROUSEL ──
-    (function(){
-      const wrap = document.getElementById('adCarousel');
-      if(!wrap) return;
-      const slides = wrap.querySelectorAll('.ad-slide');
-      const dotsEl = document.getElementById('adDots');
-      if(slides.length <= 1){ if(dotsEl) dotsEl.style.display='none'; return; }
-      let cur = 0;
-      slides.forEach((_,i)=>{
-        const d = document.createElement('div');
-        d.className='ad-dot'+(i===0?' active':'');
-        dotsEl.appendChild(d);
-      });
-      function show(n){
-        slides.forEach(s=>s.classList.remove('active'));
-        wrap.querySelectorAll('.ad-dot').forEach(d=>d.classList.remove('active'));
-        slides[n].classList.add('active');
-        wrap.querySelectorAll('.ad-dot')[n].classList.add('active');
-        cur=n;
-      }
-      setInterval(()=>show((cur+1)%slides.length), 4000);
     })();
 </script>
 {% block extra_js %}{% endblock %}

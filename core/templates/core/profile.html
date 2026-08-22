@@ -1,723 +1,240 @@
-﻿{% load static %}
+{% extends "core/base.html" %}
 {% load humanize %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Orders · ChinaZed 中赞商城</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+{% block title %}My Orders · ChinaZed 中赞商城{% endblock %}
 
-    <style>
-        :root {
-            --red: #E5141A;
-            --red-dark: #B50F14;
-            --orange: #FF6600;
-            --gold: #FFC107;
-            --bg: #F2F2F2;
-            --white: #FFFFFF;
-            --ink: #1A1A1A;
-            --muted: #888;
-            --border: #E0E0E0;
-            --r: 8px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 13px;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { text-decoration: none; color: inherit; }
-
-        /* TOP BAR */
-        .top-bar {
-            background: #1a1a1a;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .top-bar a { color: #888; font-size: 11px; font-weight: 600; transition: color .15s; }
-        .top-bar a:hover { color: #fff; }
-        .top-bar .hl { color: var(--orange); }
-        .top-bar .danger { color: #E5141A; }
-        .top-bar-links { display: flex; gap: 12px; align-items: center; }
-
-        /* HEADER */
-        .main-header {
-            background: var(--red);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 12px rgba(0,0,0,.25);
-        }
-        .logo-main {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 26px;
-            color: #fff;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-        .logo-sub { font-size: 9px; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: uppercase; }
-        .hdr-btn {
-            background: var(--orange);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 12px;
-            transition: background .15s;
-        }
-        .hdr-btn:hover { background: #d95500; }
-
-        /* MESSAGES */
-        .msg-wrap { max-width: 1100px; margin: 12px auto 0; padding: 0 16px; }
-        .msg-strip {
-            background: #F0FFF4;
-            border: 1px solid #B7EBC5;
-            color: #1D6A34;
-            padding: 10px 16px;
-            font-size: 13px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-
-        /* BODY */
-        .page-body { max-width: 1180px; margin: 16px auto; padding: 0 16px 44px; }
-
-        /* HERO */
-        .hero {
-            background: linear-gradient(135deg, #B50F14 0%, #E5141A 56%, #FF6600 100%);
-            border-radius: 12px;
-            padding: 24px 26px;
-            margin-bottom: 14px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 14px 36px rgba(181,15,20,.22);
-        }
-        .hero::after {
-            content: '中赞';
-            position: absolute;
-            right: -10px;
-            top: -10px;
-            font-size: 80px;
-            color: rgba(255,255,255,.07);
-            font-weight: 900;
-            pointer-events: none;
-        }
-        .hero-label { font-size: 10px; color: rgba(255,255,255,.65); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-        .hero-name {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 30px;
-            color: #fff;
-            margin: 2px 0 6px;
-            letter-spacing: -.5px;
-        }
-        .hero-desc { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.6; }
-
-        /* SUPPLIER PORTAL BANNER */
-        .supplier-banner {
-            display: flex; align-items: center; gap: 14px;
-            background: linear-gradient(135deg, #111 0%, #2a2a2a 55%, #4A0B0D 100%);
-            border-radius: 10px; padding: 15px 18px; margin: -4px 0 14px;
-            color: #fff; text-decoration: none; transition: transform .15s, box-shadow .15s;
-            box-shadow: 0 8px 22px rgba(0,0,0,.14);
-        }
-        .supplier-banner:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.20); }
-        .supplier-banner-icon { font-size: 26px; flex-shrink: 0; }
-        .supplier-banner-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-        .supplier-banner-text strong { font-size: 14px; font-weight: 900; letter-spacing: .02em; }
-        .supplier-banner-text span { font-size: 11px; color: rgba(255,255,255,.72); line-height: 1.5; }
-        .supplier-banner-cta {
-            flex-shrink: 0; background: #FFE500; color: #B50F14;
-            border-radius: 7px; padding: 10px 15px; font-size: 12px; font-weight: 900; white-space: nowrap;
-        }
-        @media (max-width: 600px) {
-            .supplier-banner { flex-wrap: wrap; gap: 10px; }
-            .supplier-banner-cta { width: 100%; text-align: center; }
-        }
-
-        /* NOTIFICATIONS BANNER */
-        .notif-banner {
-            display: flex; align-items: center; gap: 14px;
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: 10px; padding: 15px 18px; margin-bottom: 14px;
-            box-shadow: 0 8px 22px rgba(0,0,0,.04);
-        }
-        .notif-banner-icon { font-size: 26px; flex-shrink: 0; }
-        .notif-banner-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-        .notif-banner-text strong { font-size: 14px; font-weight: 900; }
-        .notif-banner-text span { font-size: 11px; color: var(--muted); line-height: 1.5; }
-        .notif-banner-cta {
-            flex-shrink: 0; background: var(--orange); color: #fff; border: none;
-            border-radius: 7px; padding: 10px 15px; font-size: 12px; font-weight: 900;
-            white-space: nowrap; cursor: pointer; font-family: inherit; transition: background .15s;
-        }
-        .notif-banner-cta:hover { background: #d95500; }
-        .notif-banner-cta:disabled { opacity: .6; cursor: default; }
-        .notif-banner-cta.is-on { background: var(--ink); }
-        @media (max-width: 600px) {
-            .notif-banner { flex-wrap: wrap; gap: 10px; }
-            .notif-banner-cta { width: 100%; text-align: center; }
-        }
-
-        /* STATS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .stat-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 14px 16px;
-            box-shadow: 0 8px 22px rgba(0,0,0,.04);
-        }
-        .stat-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
-        .stat-val {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 32px;
-            line-height: 1;
-        }
-        .val-orange { color: var(--orange); }
-        .val-green  { color: #00A854; }
-        .val-red    { color: var(--red); }
-        .val-muted  { color: var(--muted); }
-
-        /* SECTION HEAD */
-        .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .section-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 19px;
-            color: var(--red);
-            letter-spacing: .5px;
-        }
-        .section-more {
-            font-size: 12px;
-            color: var(--muted);
-            border: 1px solid var(--border);
-            padding: 5px 12px;
-            border-radius: 4px;
-            transition: all .15s;
-        }
-        .section-more:hover { border-color: var(--red); color: var(--red); }
-
-        /* QUOTE REQUESTS */
-        .requests-panel {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 14px;
-            overflow: hidden;
-            box-shadow: 0 10px 26px rgba(0,0,0,.05);
-        }
-        .request-card {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 12px;
-            padding: 14px 16px;
-            border-top: 1px solid #F3F3F3;
-        }
-        .request-card:first-child { border-top: none; }
-        .request-name { font-weight: 900; font-size: 13px; margin-bottom: 4px; }
-        .request-meta { color: var(--muted); font-size: 11px; line-height: 1.6; word-break: break-word; }
-        .quote-box {
-            min-width: 190px;
-            background: #FFF8F2;
-            border: 1px solid #FFE0C5;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: right;
-        }
-        .quote-price { font-family: 'Barlow Condensed', sans-serif; color: var(--red); font-size: 26px; font-weight: 900; line-height: 1; }
-        .quote-small { color: var(--muted); font-size: 10px; margin-top: 4px; }
-        .request-note { margin-top: 7px; background: #F8F8F8; border-radius: 6px; padding: 8px; font-size: 11px; color: #555; line-height: 1.55; }
-        .req-status {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            margin-bottom: 7px;
-        }
-        .req-new { background: #EFF6FF; color: #1677FF; }
-        .req-reviewing { background: #FFF8DC; color: #B45309; }
-        .req-quoted { background: #F0FFF4; color: #00A854; }
-        .req-ordered { background: #F5F0FF; color: #6D28D9; }
-        .req-unavailable, .req-closed { background: #F5F5F5; color: #777; }
-
-        /* ORDER CARDS */
-        .orders { display: flex; flex-direction: column; gap: 10px; }
-        .order-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 26px rgba(0,0,0,.05);
-        }
-        .order-head {
-            background: #FAFAFA;
-            border-bottom: 1px solid var(--border);
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .order-head-left { display: flex; align-items: center; gap: 8px; }
-        .order-id {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 17px;
-            color: var(--ink);
-        }
-        .order-id a:hover { color: var(--red); }
-        .order-date { font-size: 11px; color: var(--muted); }
-
-        .badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 2px; }
-        .b-pending   { background: #FFF8DC; color: #B45309; }
-        .b-confirmed { background: #EFF6FF; color: #1677FF; }
-        .b-transit   { background: #F5F0FF; color: #6D28D9; }
-        .b-arrived   { background: #F0FFF4; color: #00A854; }
-        .b-success   { background: #F0FFF4; color: #00A854; }
-        .b-delayed   { background: #FFF0F0; color: var(--red); }
-        .b-cancelled { background: #F5F5F5; color: var(--muted); }
-
-        /* ORDER BODY GRID */
-        .order-body {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 240px;
-        }
-        .order-info { padding: 12px 14px; border-right: 1px solid var(--border); }
-
-        /* ITEMS LIST */
-        .items-list { margin-bottom: 10px; }
-        .item-row {
-            display: grid;
-            grid-template-columns: 78px minmax(0, 1fr) auto;
-            align-items: center;
-            gap: 12px;
-            font-size: 12px;
-            padding: 9px 0;
-            border-bottom: 1px solid #F5F5F5;
-        }
-        .item-row:last-child { border-bottom: none; }
-        .item-thumb {
-            width: 78px;
-            height: 78px;
-            border-radius: 7px;
-            overflow: hidden;
-            background: #F3F3F3;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #B8B8B8;
-            font-size: 10px;
-            text-align: center;
-        }
-        .item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .item-main { min-width: 0; }
-        .item-name {
-            display: block;
-            color: var(--ink);
-            font-weight: 800;
-            line-height: 1.35;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .item-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; color: var(--muted); font-size: 10px; }
-        .item-pill { background: #F7F7F7; border: 1px solid #ECECEC; border-radius: 999px; padding: 3px 7px; font-weight: 700; }
-        .item-price { font-weight: 700; color: var(--red); white-space: nowrap; }
-
-        /* PROGRESS */
-        .progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 10px; }
-        .prog-step { padding: 5px 8px; border-radius: 3px; font-size: 10px; font-weight: 700; text-align: center; }
-        .prog-done     { background: #FFF0F0; color: var(--red); }
-        .prog-arrived  { background: #F0FFF4; color: #00A854; }
-        .prog-inactive { background: #F5F5F5; color: #707070; }
-
-        /* ARRIVAL ROW */
-        .arrival-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .mini-box { background: #F8F8F8; border: 1px solid var(--border); border-radius: 4px; padding: 8px 10px; }
-        .mini-label { font-size: 10px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
-        .mini-val { font-size: 12px; font-weight: 700; }
-
-        /* SIDE PANEL */
-        .order-side { padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; }
-        .total-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-        .total-amount {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 26px;
-            color: var(--red);
-            line-height: 1;
-            margin: 2px 0 10px;
-        }
-        .pay-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #F0F0F0; }
-        .pay-row:last-child { border-bottom: none; }
-        .pay-label { color: var(--muted); }
-        .pay-val { font-weight: 700; }
-
-        .pay-status { border-radius: 3px; padding: 5px 8px; font-size: 10px; font-weight: 700; margin-top: 6px; }
-        .dep-ok   { background: #F0FFF4; color: #00A854; }
-        .dep-wait { background: #FFF8DC; color: #B45309; }
-
-        /* SIDE BUTTONS */
-        .side-btns { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-        .btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            padding: 8px 0;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            font-family: inherit;
-            border: none;
-            cursor: pointer;
-            transition: background .15s;
-        }
-        .btn-wa      { background: #25D366; color: #fff; }
-        .btn-wa:hover { background: #1DA851; }
-        .btn-dark    { background: var(--ink); color: #fff; }
-        .btn-dark:hover { background: #333; }
-        .btn-receipt { background: var(--orange); color: #fff; }
-        .btn-receipt:hover { background: #d95500; }
-        .receipt-note { font-size: 10px; color: var(--muted); text-align: center; margin-top: 2px; }
-
-        /* EMPTY STATE */
-        .empty {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 48px;
-            text-align: center;
-        }
-        .empty-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 22px;
-            color: var(--ink);
-            margin-bottom: 6px;
-        }
-        .empty-desc { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-        .btn-browse {
-            display: inline-block;
-            background: var(--red);
-            color: #fff;
-            padding: 10px 24px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 13px;
-            transition: background .15s;
-        }
-        .btn-browse:hover { background: var(--red-dark); }
-
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 640px) {
-            .order-body { grid-template-columns: 1fr; }
-            .order-info { border-right: none; }
-            .order-side { border-top: 1px solid var(--border); }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .top-bar .danger { display: none; }
-            .main-header { align-items: flex-start; gap: 12px; }
-            .hdr-btn { padding: 8px 10px; }
-            .item-row { grid-template-columns: 72px minmax(0, 1fr); }
-            .item-thumb { width: 72px; height: 72px; }
-            .item-price { grid-column: 2; justify-self: start; margin-top: -6px; }
-            .progress { grid-template-columns: repeat(2, 1fr); }
-            .arrival-row { grid-template-columns: 1fr; }
-            .request-card { grid-template-columns: 1fr; }
-            .quote-box { min-width: 0; text-align: left; }
-        }
-    </style>
-</head>
-<body>
-
-<!-- TOP BAR -->
-<div class="top-bar">
-    <a href="{% url 'home' %}">← Back to Marketplace</a>
-    <div class="top-bar-links">
-        <a href="{% url 'cart' %}" class="hl">
-            Cart{% if cart_count %} ({{ cart_count }}){% endif %}
-        </a>
-        <a href="{% url 'order_policy' %}">Order Policy</a>
-        <a href="{% url 'logout' %}" class="danger">Logout</a>
-    </div>
-</div>
-
-<!-- HEADER -->
-<div class="main-header">
-    <a href="{% url 'home' %}" style="text-decoration:none;">
-        <div class="logo-main">CHINAZED</div>
-        <div class="logo-sub">中赞商城 · My Orders</div>
-    </a>
-    <a href="{% url 'home' %}" class="hdr-btn">Continue Shopping</a>
-</div>
-
-<!-- MESSAGES -->
-{% if messages %}
-<div class="msg-wrap">
-    {% for message in messages %}
-        <div class="msg-strip">✓ {{ message }}</div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<!-- PAGE BODY -->
-<div class="page-body">
+{% block content %}
+<div class="mx-auto max-w-[1180px] px-4 py-4 sm:px-5">
 
     <!-- HERO -->
-    <div class="hero">
-        <div class="hero-label">Welcome back</div>
-        <div class="hero-name">{{ request.user.username }}</div>
-        <div class="hero-desc">View your order status, ask the AI assistant for help, and generate receipts once goods arrive.</div>
+    <div class="relative mb-3.5 overflow-hidden rounded-xl bg-gradient-to-br from-red-800 via-brand-red to-orange-600 p-6 shadow-lg shadow-red-900/20">
+        <span class="pointer-events-none absolute right-[-10px] top-[-10px] font-display text-7xl font-black text-white/[0.07]">中赞</span>
+        <div class="relative z-10 text-[10px] font-bold uppercase tracking-wide text-white/65">Welcome back</div>
+        <div class="relative z-10 my-0.5 font-display text-3xl font-black tracking-tight text-white">{{ request.user.username }}</div>
+        <div class="relative z-10 text-xs leading-relaxed text-white/75">View your order status, ask the AI assistant for help, and generate receipts once goods arrive.</div>
     </div>
 
     <!-- NOTIFICATIONS -->
-    <div class="notif-banner" id="notifBanner" data-vapid-key="{{ vapid_public_key }}">
-        <span class="notif-banner-icon">🔔</span>
-        <span class="notif-banner-text">
-            <strong>Get notified about new products</strong>
-            <span id="notifStatus">Turn on browser notifications so you never miss new arrivals.</span>
-        </span>
-        <button type="button" class="notif-banner-cta" id="notifBtn">Enable Notifications</button>
+    <div class="mb-3.5 flex flex-wrap items-center gap-3.5 rounded-xl border border-brand-border bg-white px-4.5 py-3.5 shadow-sm" id="notifBanner" data-vapid-key="{{ vapid_public_key }}">
+        <i class="fa-solid fa-bell shrink-0 text-2xl text-brand-orange"></i>
+        <div class="min-w-0 flex-1">
+            <strong class="block text-sm font-black text-brand-ink">Get notified about new products</strong>
+            <span class="text-[11px] leading-relaxed text-brand-muted" id="notifStatus">Turn on browser notifications so you never miss new arrivals.</span>
+        </div>
+        <button type="button" class="whitespace-nowrap rounded-lg bg-brand-orange px-3.5 py-2.5 text-xs font-black text-white transition hover:bg-orange-600 disabled:cursor-default disabled:opacity-60" id="notifBtn">Enable Notifications</button>
     </div>
 
     {% if is_approved_supplier %}
     <!-- SUPPLIER PORTAL (approved suppliers only) -->
-    <a href="{% url 'supplier_submit_product' %}" class="supplier-banner">
-        <span class="supplier-banner-icon">🏪</span>
-        <span class="supplier-banner-text">
-            <strong>Supplier Portal</strong>
-            <span>Post a new product for review — Zambia stock or China pre-order.</span>
-        </span>
-        <span class="supplier-banner-cta">Submit a Product →</span>
+    <a href="{% url 'supplier_submit_product' %}" class="mb-3.5 -mt-1 flex items-center gap-3.5 rounded-lg bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 px-4.5 py-4 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl">
+        <i class="fa-solid fa-store shrink-0 text-2xl"></i>
+        <div class="min-w-0 flex-1">
+            <strong class="block text-sm font-black tracking-wide">Supplier Portal</strong>
+            <span class="text-[11px] leading-relaxed text-white/70">Post a new product for review — Zambia stock or China pre-order.</span>
+        </div>
+        <span class="whitespace-nowrap rounded-md bg-brand-yellow px-3.5 py-2.5 text-xs font-black text-brand-red-dark">Submit a Product →</span>
     </a>
     {% endif %}
 
     <!-- STATS -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-label">Active Orders</div>
-            <div class="stat-val val-orange">{{ active_orders_count }}</div>
+    <div class="mb-3.5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <div class="rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="mb-1 text-[10px] font-bold uppercase tracking-wide text-brand-muted">Active Orders</div>
+            <div class="font-display text-3xl font-black leading-none text-brand-orange">{{ active_orders_count }}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Successful</div>
-            <div class="stat-val val-green">{{ successful_orders.count }}</div>
+        <div class="rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="mb-1 text-[10px] font-bold uppercase tracking-wide text-brand-muted">Successful</div>
+            <div class="font-display text-3xl font-black leading-none text-brand-green">{{ successful_orders.count }}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Delayed</div>
-            <div class="stat-val val-red">{{ delayed_orders_count }}</div>
+        <div class="rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="mb-1 text-[10px] font-bold uppercase tracking-wide text-brand-muted">Delayed</div>
+            <div class="font-display text-3xl font-black leading-none text-brand-red">{{ delayed_orders_count }}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-label">Cancelled</div>
-            <div class="stat-val val-muted">{{ cancelled_orders.count }}</div>
+        <div class="rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="mb-1 text-[10px] font-bold uppercase tracking-wide text-brand-muted">Cancelled</div>
+            <div class="font-display text-3xl font-black leading-none text-brand-muted">{{ cancelled_orders.count }}</div>
         </div>
     </div>
 
     <!-- PRODUCT REQUESTS -->
-    <div class="section-head">
-        <span class="section-title">🔎 PRODUCT REQUESTS</span>
-        <a href="{% url 'request_product' %}" class="section-more">Request Product</a>
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-magnifying-glass"></i> PRODUCT REQUESTS</span>
+        <a href="{% url 'request_product' %}" class="rounded border border-brand-border px-3 py-1.5 text-xs font-semibold text-brand-muted transition hover:border-brand-red hover:text-brand-red">Request Product</a>
     </div>
 
-    <div class="requests-panel">
+    <div class="mb-3.5 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
         {% for product_request in product_requests %}
-            <div class="request-card">
+            <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-[1fr_auto]">
                 <div>
-                    <span class="req-status req-{{ product_request.status }}">{{ product_request.get_status_display }}</span>
-                    <div class="request-name">{{ product_request.product_name|default:"Product quote request" }}</div>
-                    <div class="request-meta">
+                    <span class="mb-1.5 inline-flex items-center rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-wide
+                        {% if product_request.status == 'new' %}bg-blue-50 text-brand-blue
+                        {% elif product_request.status == 'reviewing' %}bg-amber-50 text-amber-700
+                        {% elif product_request.status == 'quoted' %}bg-emerald-50 text-emerald-700
+                        {% elif product_request.status == 'ordered' %}bg-violet-50 text-violet-700
+                        {% else %}bg-neutral-100 text-brand-muted{% endif %}">{{ product_request.get_status_display }}</span>
+                    <div class="mb-1 text-[13px] font-black text-brand-ink">{{ product_request.product_name|default:"Product quote request" }}</div>
+                    <div class="break-words text-[11px] leading-relaxed text-brand-muted">
                         {{ product_request.get_source_platform_display }} · Requested {{ product_request.created_at|date:"d M Y" }}
-                        <br>
-                        {{ product_request.product_link }}
+                        <br>{{ product_request.product_link }}
                     </div>
                     {% if product_request.customer_message or product_request.admin_note %}
-                        <div class="request-note">{{ product_request.customer_message|default:product_request.admin_note }}</div>
+                        <div class="mt-2 rounded bg-neutral-50 p-2 text-[11px] leading-relaxed text-neutral-600">{{ product_request.customer_message|default:product_request.admin_note }}</div>
                     {% endif %}
                 </div>
 
-                <div class="quote-box">
+                <div class="min-w-[190px] rounded-lg border border-orange-100 bg-orange-50/50 p-2.5 text-right">
                     {% if product_request.quoted_price %}
-                        <div class="quote-price">K{{ product_request.quoted_price|floatformat:0|intcomma }}</div>
-                        <div class="quote-small">Deposit: K{{ product_request.quoted_deposit|floatformat:0|intcomma }}</div>
-                        <div class="quote-small">Delivery: {{ product_request.estimated_delivery_days|default:"14-30 days" }}</div>
+                        <div class="font-display text-2xl font-black leading-none text-brand-red">K{{ product_request.quoted_price|floatformat:0|intcomma }}</div>
+                        <div class="mt-1 text-[10px] text-brand-muted">Deposit: K{{ product_request.quoted_deposit|floatformat:0|intcomma }}</div>
+                        <div class="text-[10px] text-brand-muted">Delivery: {{ product_request.estimated_delivery_days|default:"14-30 days" }}</div>
                     {% else %}
-                        <div class="quote-price">Pending</div>
-                        <div class="quote-small">We are checking supplier price and delivery.</div>
+                        <div class="font-display text-xl font-black leading-none text-brand-red">Pending</div>
+                        <div class="mt-1 text-[10px] text-brand-muted">We are checking supplier price and delivery.</div>
                     {% endif %}
                 </div>
             </div>
         {% empty %}
-            <div class="request-card">
+            <div class="flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <div class="request-name">No product requests yet</div>
-                    <div class="request-meta">Send a product link from Alibaba, Taobao, Temu, 1688, Shein, or another supplier.</div>
+                    <div class="text-[13px] font-black text-brand-ink">No product requests yet</div>
+                    <div class="text-[11px] text-brand-muted">Send a product link from Alibaba, Taobao, Temu, 1688, Shein, or another supplier.</div>
                 </div>
-                <div class="quote-box">
-                    <a href="{% url 'request_product' %}" class="section-more" style="display:inline-block;">Request Now</a>
-                </div>
+                <a href="{% url 'request_product' %}" class="rounded border border-brand-border px-3 py-1.5 text-xs font-semibold text-brand-muted transition hover:border-brand-red hover:text-brand-red">Request Now</a>
             </div>
         {% endfor %}
     </div>
 
     <!-- ORDER HISTORY -->
-    <div class="section-head">
-        <span class="section-title">📦 ORDER HISTORY</span>
-        <a href="{% url 'home' %}" class="section-more">Shop More ›</a>
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-box"></i> ORDER HISTORY</span>
+        <a href="{% url 'home' %}" class="rounded border border-brand-border px-3 py-1.5 text-xs font-semibold text-brand-muted transition hover:border-brand-red hover:text-brand-red">Shop More ›</a>
     </div>
 
-    <div class="orders">
+    <div class="flex flex-col gap-2.5">
         {% for order in orders %}
-            <div class="order-card">
+            <div class="overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
 
                 <!-- ORDER HEAD -->
-                <div class="order-head">
-                    <div class="order-head-left">
-                        <span class="order-id">
-                            <a href="{% url 'order_detail' order.id %}">Order #{{ order.id }}</a>
+                <div class="flex flex-wrap items-center justify-between gap-1.5 border-b border-brand-border bg-neutral-50 px-3.5 py-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="font-display text-lg font-black text-brand-ink">
+                            <a href="{% url 'order_detail' order.id %}" class="transition hover:text-brand-red">Order #{{ order.id }}</a>
                         </span>
 
                         {% if order.is_delayed %}
-                            <span class="badge b-delayed">⚠️ Delayed</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-red-50 text-brand-red"><i class="fa-solid fa-triangle-exclamation"></i> Delayed</span>
                         {% elif order.status == "pending" %}
-                            <span class="badge b-pending">⏳ {{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-amber-50 text-amber-700"><i class="fa-solid fa-hourglass-half"></i> {{ order.get_status_display }}</span>
                         {% elif order.status == "confirmed" %}
-                            <span class="badge b-confirmed">✔️ {{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-blue-50 text-brand-blue"><i class="fa-solid fa-check"></i> {{ order.get_status_display }}</span>
                         {% elif order.status == "purchased" or order.status == "shipped" or order.status == "in_transit" %}
-                            <span class="badge b-transit">🚢 {{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-violet-50 text-violet-700"><i class="fa-solid fa-ship"></i> {{ order.get_status_display }}</span>
                         {% elif order.status == "arrived" or order.status == "ready" %}
-                            <span class="badge b-arrived">📦 {{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-700"><i class="fa-solid fa-box"></i> {{ order.get_status_display }}</span>
                         {% elif order.status == "successful" %}
-                            <span class="badge b-success">✅ {{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-700"><i class="fa-solid fa-circle-check"></i> {{ order.get_status_display }}</span>
                         {% elif order.status == "cancelled" %}
-                            <span class="badge b-cancelled">✖ {{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-neutral-100 text-brand-muted"><i class="fa-solid fa-xmark"></i> {{ order.get_status_display }}</span>
                         {% else %}
-                            <span class="badge b-cancelled">{{ order.get_status_display }}</span>
+                            <span class="rounded px-2 py-1 text-[10px] font-bold bg-neutral-100 text-brand-muted">{{ order.get_status_display }}</span>
                         {% endif %}
                     </div>
-                    <span class="order-date">
-                        Ordered {{ order.order_date|date:"d M Y" }} · {{ order.items.count }} item{% if order.items.count != 1 %}s{% endif %}
-                    </span>
+                    <span class="text-[11px] text-brand-muted">Ordered {{ order.order_date|date:"d M Y" }} · {{ order.items.count }} item{% if order.items.count != 1 %}s{% endif %}</span>
                 </div>
 
                 <!-- ORDER BODY -->
-                <div class="order-body">
+                <div class="grid grid-cols-1 sm:grid-cols-[1fr_240px]">
                     <!-- INFO -->
-                    <div class="order-info">
-                        <div class="items-list">
+                    <div class="border-b border-brand-border p-3.5 sm:border-b-0 sm:border-r">
+                        <div class="mb-2.5">
                             {% for item in order.items.all %}
-                                <div class="item-row">
-                                    <a class="item-thumb" href="{% url 'product_detail' item.product.slug %}">
+                                <div class="grid grid-cols-[72px_1fr] items-center gap-3 border-b border-neutral-100 py-2.5 text-xs last:border-0 sm:grid-cols-[78px_1fr_auto]">
+                                    <a class="grid h-[72px] w-[72px] shrink-0 place-items-center overflow-hidden rounded-lg border border-brand-border bg-neutral-100 text-[10px] text-neutral-400 sm:h-[78px] sm:w-[78px]" href="{% url 'product_detail' item.product.slug %}">
                                         {% if item.product.display_image_url %}
-                                            <img src="{{ item.product.display_image_url }}" alt="{{ item.product_name }}" loading="lazy">
+                                            <img src="{{ item.product.display_image_url }}" alt="{{ item.product_name }}" loading="lazy" class="h-full w-full object-cover">
                                         {% else %}
-                                            No Image
+                                            <i class="fa-solid fa-box-open text-lg"></i>
                                         {% endif %}
                                     </a>
-                                    <div class="item-main">
-                                        <a class="item-name" href="{% url 'product_detail' item.product.slug %}">
-                                            {{ item.product_name }}
-                                        </a>
-                                        <div class="item-meta">
-                                            <span class="item-pill">Qty {{ item.quantity }}</span>
+                                    <div class="min-w-0">
+                                        <a class="block truncate font-extrabold leading-snug text-brand-ink" href="{% url 'product_detail' item.product.slug %}">{{ item.product_name }}</a>
+                                        <div class="mt-1.5 flex flex-wrap gap-1.5 text-[10px] text-brand-muted">
+                                            <span class="rounded-full border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-bold">Qty {{ item.quantity }}</span>
                                             {% if item.product_type == "local" %}
-                                                <span class="item-pill">Zambia stock</span>
+                                                <span class="rounded-full border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-bold">Zambia stock</span>
                                             {% else %}
-                                                <span class="item-pill">China pre-order</span>
+                                                <span class="rounded-full border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-bold">China pre-order</span>
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <span class="item-price">K{{ item.line_total|floatformat:0|intcomma }}</span>
+                                    <span class="col-span-2 justify-self-start font-bold text-brand-red sm:col-span-1 sm:justify-self-end">K{{ item.line_total|floatformat:0|intcomma }}</span>
                                 </div>
                             {% empty %}
-                                <p style="font-size:12px; color:var(--red);">No items found.</p>
+                                <p class="text-xs text-brand-red">No items found.</p>
                             {% endfor %}
                         </div>
 
-                        <div class="progress">
-                            <div class="prog-step prog-done">1. Placed</div>
-                            <div class="prog-step {% if order.status == 'confirmed' or order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}prog-done{% else %}prog-inactive{% endif %}">2. Confirmed</div>
-                            <div class="prog-step {% if order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}prog-done{% else %}prog-inactive{% endif %}">3. Shipped</div>
-                            <div class="prog-step {% if order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}prog-arrived{% else %}prog-inactive{% endif %}">4. Arrived</div>
+                        <div class="mb-2.5 grid grid-cols-2 gap-1 sm:grid-cols-4">
+                            <div class="rounded px-2 py-1.5 text-center text-[10px] font-bold bg-red-50 text-brand-red">1. Placed</div>
+                            <div class="rounded px-2 py-1.5 text-center text-[10px] font-bold {% if order.status == 'confirmed' or order.status == 'purchased' or order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-red-50 text-brand-red{% else %}bg-neutral-100 text-neutral-400{% endif %}">2. Confirmed</div>
+                            <div class="rounded px-2 py-1.5 text-center text-[10px] font-bold {% if order.status == 'shipped' or order.status == 'in_transit' or order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-red-50 text-brand-red{% else %}bg-neutral-100 text-neutral-400{% endif %}">3. Shipped</div>
+                            <div class="rounded px-2 py-1.5 text-center text-[10px] font-bold {% if order.status == 'arrived' or order.status == 'ready' or order.status == 'successful' %}bg-emerald-50 text-emerald-700{% else %}bg-neutral-100 text-neutral-400{% endif %}">4. Arrived</div>
                         </div>
 
-                        <div class="arrival-row">
-                            <div class="mini-box">
-                                <div class="mini-label">Expected Arrival</div>
-                                <div class="mini-val">{{ order.estimated_arrival_start }} – {{ order.estimated_arrival_end }}</div>
+                        <div class="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                            <div class="rounded border border-brand-border bg-neutral-50 px-2.5 py-2">
+                                <div class="text-[10px] font-semibold text-brand-muted">Expected Arrival</div>
+                                <div class="text-xs font-bold">{{ order.estimated_arrival_start }} – {{ order.estimated_arrival_end }}</div>
                             </div>
                             {% if order.arrival_date %}
-                                <div class="mini-box">
-                                    <div class="mini-label">Arrived On</div>
-                                    <div class="mini-val" style="color:#00A854;">{{ order.arrival_date }}</div>
+                                <div class="rounded border border-brand-border bg-neutral-50 px-2.5 py-2">
+                                    <div class="text-[10px] font-semibold text-brand-muted">Arrived On</div>
+                                    <div class="text-xs font-bold text-brand-green">{{ order.arrival_date }}</div>
                                 </div>
                             {% else %}
-                                <div class="mini-box">
-                                    <div class="mini-label">Customer Phone</div>
-                                    <div class="mini-val">{{ order.customer_phone }}</div>
+                                <div class="rounded border border-brand-border bg-neutral-50 px-2.5 py-2">
+                                    <div class="text-[10px] font-semibold text-brand-muted">Customer Phone</div>
+                                    <div class="text-xs font-bold">{{ order.customer_phone }}</div>
                                 </div>
                             {% endif %}
                         </div>
                     </div>
 
                     <!-- SIDE -->
-                    <div class="order-side">
+                    <div class="flex flex-col justify-between p-3.5">
                         <div>
-                            <div class="total-label">Order Amount</div>
-                            <div class="total-amount">K{{ order.total_price|floatformat:0|intcomma }}</div>
-                            <div class="pay-row">
-                                <span class="pay-label">Deposit (35%)</span>
-                                <span class="pay-val">K{{ order.deposit_amount|floatformat:0|intcomma }}</span>
+                            <div class="text-[10px] font-bold uppercase tracking-wide text-brand-muted">Order Amount</div>
+                            <div class="my-0.5 font-display text-2xl font-black leading-none text-brand-red">K{{ order.total_price|floatformat:0|intcomma }}</div>
+                            <div class="flex justify-between border-b border-neutral-100 py-1 text-[11px]">
+                                <span class="text-brand-muted">Deposit (35%)</span>
+                                <span class="font-bold">K{{ order.deposit_amount|floatformat:0|intcomma }}</span>
                             </div>
-                            <div class="pay-row">
-                                <span class="pay-label">Balance on Arrival</span>
-                                <span class="pay-val">K{{ order.balance_amount|floatformat:0|intcomma }}</span>
+                            <div class="flex justify-between py-1 text-[11px]">
+                                <span class="text-brand-muted">Balance on Arrival</span>
+                                <span class="font-bold">K{{ order.balance_amount|floatformat:0|intcomma }}</span>
                             </div>
 
                             {% if order.deposit_confirmed %}
-                                <div class="pay-status dep-ok">✅ Deposit Confirmed</div>
+                                <div class="mt-1.5 rounded px-2 py-1.5 text-[10px] font-bold bg-emerald-50 text-emerald-700"><i class="fa-solid fa-circle-check"></i> Deposit Confirmed</div>
                             {% else %}
-                                <div class="pay-status dep-wait">⏳ Deposit Awaiting Confirmation</div>
+                                <div class="mt-1.5 rounded px-2 py-1.5 text-[10px] font-bold bg-amber-50 text-amber-700"><i class="fa-solid fa-hourglass-half"></i> Deposit Awaiting Confirmation</div>
                             {% endif %}
 
                             {% if order.balance_paid %}
-                                <div class="pay-status dep-ok" style="margin-top:4px;">✅ Balance Paid</div>
+                                <div class="mt-1 rounded px-2 py-1.5 text-[10px] font-bold bg-emerald-50 text-emerald-700"><i class="fa-solid fa-circle-check"></i> Balance Paid</div>
                             {% else %}
-                                <div class="pay-status" style="margin-top:4px; background:#F8F8F8; color:var(--muted);">📦 Balance Due on Arrival</div>
+                                <div class="mt-1 rounded bg-neutral-50 px-2 py-1.5 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-box"></i> Balance Due on Arrival</div>
                             {% endif %}
                         </div>
 
-                        <div class="side-btns">
+                        <div class="mt-2.5 flex flex-col gap-1.5">
                             <a href="{% url 'assistant' %}?message=Help%20me%20with%20Order%20%23{{ order.id }}"
-                               class="btn btn-wa">AI Ask Assistant</a>
-                            <a href="{% url 'order_detail' order.id %}" class="btn btn-dark">View Details</a>
+                               class="block w-full rounded bg-emerald-500 py-2 text-center text-xs font-bold text-white transition hover:bg-emerald-600">AI Ask Assistant</a>
+                            <a href="{% url 'order_detail' order.id %}" class="block w-full rounded bg-brand-ink py-2 text-center text-xs font-bold text-white transition hover:bg-neutral-700">View Details</a>
                             {% if order.status == "arrived" or order.status == "ready" or order.status == "successful" %}
-                                <a href="{% url 'receipt' order.id %}" class="btn btn-receipt">🧾 Generate Receipt</a>
+                                <a href="{% url 'receipt' order.id %}" class="block w-full rounded bg-brand-orange py-2 text-center text-xs font-bold text-white transition hover:bg-orange-600"><i class="fa-solid fa-receipt"></i> Generate Receipt</a>
                             {% else %}
-                                <div class="receipt-note">Receipt available once goods arrive.</div>
+                                <div class="text-center text-[10px] text-brand-muted">Receipt available once goods arrive.</div>
                             {% endif %}
                         </div>
                     </div>
@@ -725,17 +242,18 @@
                 </div>
             </div>
         {% empty %}
-            <div class="empty">
-                <div class="empty-title">No orders yet</div>
-                <div class="empty-desc">Start shopping and your orders will appear here.</div>
-                <a href="{% url 'home' %}" class="btn-browse">Browse Products</a>
+            <div class="rounded-xl border border-brand-border bg-white p-12 text-center">
+                <div class="mb-1.5 font-display text-2xl font-black text-brand-ink">No orders yet</div>
+                <div class="mb-4 text-sm text-brand-muted">Start shopping and your orders will appear here.</div>
+                <a href="{% url 'home' %}" class="inline-block rounded bg-brand-red px-6 py-2.5 text-sm font-bold text-white transition hover:bg-brand-red-dark">Browse Products</a>
             </div>
         {% endfor %}
     </div>
 
 </div>
+{% endblock %}
 
-
+{% block extra_js %}
 <script>
 (function () {
     var banner = document.getElementById('notifBanner');
@@ -775,13 +293,15 @@
 
     function setOn() {
         btn.textContent = 'Notifications On';
-        btn.classList.add('is-on');
+        btn.classList.remove('bg-brand-orange', 'hover:bg-orange-600');
+        btn.classList.add('bg-neutral-900', 'hover:bg-neutral-700');
         statusEl.textContent = "You'll be notified about new products.";
     }
 
     function setOff() {
         btn.textContent = 'Enable Notifications';
-        btn.classList.remove('is-on');
+        btn.classList.remove('bg-neutral-900', 'hover:bg-neutral-700');
+        btn.classList.add('bg-brand-orange', 'hover:bg-orange-600');
         statusEl.textContent = "Turn on browser notifications so you never miss new arrivals.";
     }
 
@@ -833,5 +353,4 @@
     refreshState();
 })();
 </script>
-</body>
-</html>
+{% endblock %}

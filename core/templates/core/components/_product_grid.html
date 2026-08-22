@@ -1,0 +1,18 @@
+{% if products %}
+<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    {% for product in products %}
+        {% include "core/components/_product_card.html" %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-brand-border bg-neutral-50 p-4">
+    <i class="fa-solid fa-box-open text-xl text-neutral-400"></i>
+    <div class="min-w-0 flex-1">
+        <div class="text-sm font-bold text-brand-ink">{{ empty_title|default:"Nothing to show here yet" }}</div>
+        {% if empty_note %}<div class="mt-0.5 text-xs text-brand-muted">{{ empty_note }}</div>{% endif %}
+    </div>
+    {% if empty_cta_url %}
+        <a href="{{ empty_cta_url }}" class="whitespace-nowrap rounded-md bg-brand-red px-3.5 py-2 text-xs font-bold text-white transition hover:bg-brand-red-dark">{{ empty_cta_label|default:"Browse products" }}</a>
+    {% endif %}
+</div>
+{% endif %}

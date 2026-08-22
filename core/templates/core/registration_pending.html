@@ -1,70 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Your Email · ChinaZed</title>
-    <style>
-        body { margin: 0; min-height: 100vh; background: #f2f2f2; color: #1a1a1a; font-family: Arial, sans-serif; display: flex; align-items: center; justify-content: center; padding: 18px; }
-        .card { width: 100%; max-width: 520px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 28px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
-        .brand { color: #E5141A; font-weight: 900; font-size: 30px; margin-bottom: 12px; }
-        .icon { width: 58px; height: 58px; border-radius: 50%; background: #FFF8E1; color: #B50F14; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; margin-bottom: 14px; }
-        h1 { margin: 0 0 10px; font-size: 26px; }
-        p { color: #666; line-height: 1.7; margin: 0 0 14px; }
-        .email { font-weight: 800; color: #1a1a1a; word-break: break-word; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 10px; padding: 11px 18px; background: #E5141A; color: #fff; border-radius: 5px; text-decoration: none; font-weight: 800; }
-        .spam-box { margin-top: 16px; padding: 12px 14px; border-radius: 6px; background: #FFF8E1; border: 1px solid #FFE082; color: #7C4A00; font-size: 13px; line-height: 1.6; }
-        .spam-box strong { display: block; color: #B50F14; margin-bottom: 4px; }
-        .hint { margin-top: 12px; font-size: 12px; color: #6B6B6B; }
-        .message { margin-bottom: 14px; padding: 10px 12px; border-radius: 6px; background: #F0FFF4; color: #1D6A34; border: 1px solid #B7EBC5; font-size: 12px; }
-        .message.error { background: #FFF0F0; color: #991B1B; border-color: #FECACA; }
-        .resend-box { margin-top: 16px; padding: 14px; border-radius: 6px; background: #F9F9F9; border: 1px solid #e0e0e0; text-align: left; }
-        .resend-box label { display: block; font-size: 12px; font-weight: 800; margin-bottom: 6px; }
-        .resend-row { display: flex; gap: 8px; }
-        .resend-row input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #d8d8d8; border-radius: 5px; }
-        .resend-row button { border: none; background: #111; color: #fff; border-radius: 5px; padding: 10px 12px; font-weight: 800; cursor: pointer; }
-        .dev-box { margin-top: 18px; padding: 14px; border-radius: 6px; background: #FFF8E1; border: 1px solid #FFE082; text-align: left; }
-        .dev-box strong { display: block; color: #7C4A00; margin-bottom: 6px; }
-        .dev-box p { font-size: 12px; margin-bottom: 10px; }
-        .dev-box a { color: #E5141A; font-weight: 900; word-break: break-all; }
-    </style>
-</head>
-<body>
-    <main class="card">
-        <div class="brand">CHINAZED</div>
-        <div class="icon">✓</div>
-        <h1>Check your email</h1>
+{% extends "core/base.html" %}
+
+{% block title %}Check Your Email · ChinaZed{% endblock %}
+
+{% block content %}
+<div class="mx-auto flex min-h-[calc(100vh-260px)] max-w-[520px] items-center px-4 py-8">
+    <main class="w-full rounded-xl border border-brand-border bg-white p-7 text-center shadow-lg">
+        <div class="mb-3 font-display text-3xl font-black text-brand-red">CHINAZED</div>
+        <div class="mx-auto mb-3.5 grid h-[58px] w-[58px] place-items-center rounded-full bg-amber-50 text-2xl font-black text-red-800"><i class="fa-solid fa-check"></i></div>
+        <h1 class="mb-2.5 text-2xl font-bold text-brand-ink">Check your email</h1>
         {% for message in messages %}
-            <div class="message {% if message.tags == 'error' %}error{% endif %}">{{ message }}</div>
+            <div class="mb-3.5 rounded-md border px-3 py-2.5 text-xs {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-800{% else %}border-emerald-200 bg-emerald-50 text-emerald-800{% endif %}">{{ message }}</div>
         {% endfor %}
         {% if email %}
-            <p>We sent an activation link to <span class="email">{{ email }}</span>.</p>
+            <p class="mb-3.5 leading-relaxed text-brand-muted">We sent an activation link to <span class="break-words font-extrabold text-brand-ink">{{ email }}</span>.</p>
         {% else %}
-            <p>We sent an activation link to the email address you used to register.</p>
+            <p class="mb-3.5 leading-relaxed text-brand-muted">We sent an activation link to the email address you used to register.</p>
         {% endif %}
-        <p>Click that link to verify your email and activate your account. You will not be able to log in until the email is verified.</p>
-        <a href="{% url 'login' %}" class="btn">Go to Login</a>
-        <div class="spam-box">
-            <strong>Important</strong>
+        <p class="mb-3.5 leading-relaxed text-brand-muted">Click that link to verify your email and activate your account. You will not be able to log in until the email is verified.</p>
+        <a href="{% url 'login' %}" class="inline-flex items-center justify-center rounded-md bg-brand-red px-4.5 py-2.5 text-sm font-extrabold text-white transition hover:bg-brand-red-dark">Go to Login</a>
+
+        <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3.5 text-left text-[13px] leading-relaxed text-amber-900">
+            <strong class="mb-1 block text-red-800">Important</strong>
             If the email is not in your inbox, please check your Spam, Junk, Promotions, or Updates folder for the activation link.
         </div>
-        <div class="hint">Still cannot find it? Register again with the correct email address.</div>
-        <form method="POST" action="{% url 'resend_activation' %}" class="resend-box">
+        <div class="mt-3 text-xs text-brand-muted">Still cannot find it? Register again with the correct email address.</div>
+
+        <form method="POST" action="{% url 'resend_activation' %}" class="mt-4 rounded-md border border-brand-border bg-neutral-50 p-3.5 text-left">
             {% csrf_token %}
-            <label for="resend-email">Resend activation email</label>
-            <div class="resend-row">
-                <input id="resend-email" type="email" name="email" value="{{ email }}" placeholder="Enter your email address" required>
-                <button type="submit">Resend</button>
+            <label for="resend-email" class="mb-1.5 block text-xs font-extrabold text-brand-ink">Resend activation email</label>
+            <div class="flex gap-2">
+                <input id="resend-email" type="email" name="email" value="{{ email }}" placeholder="Enter your email address" required
+                       class="min-w-0 flex-1 rounded border border-brand-border px-3 py-2.5 text-sm outline-none focus:border-brand-red">
+                <button type="submit" class="rounded bg-brand-ink px-3.5 py-2.5 text-sm font-extrabold text-white transition hover:bg-neutral-700">Resend</button>
             </div>
         </form>
+
         {% if dev_activation_link %}
-            <div class="dev-box">
-                <strong>Local development mode</strong>
-                <p>Email sending is not configured, so Django printed the email to the local server log instead of sending it to the inbox.</p>
-                <p>Use this local activation link while testing:</p>
-                <a href="{{ dev_activation_link }}">{{ dev_activation_link }}</a>
+            <div class="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3.5 text-left">
+                <strong class="mb-1.5 block text-amber-900">Local development mode</strong>
+                <p class="mb-2.5 text-xs text-neutral-700">Email sending is not configured, so Django printed the email to the local server log instead of sending it to the inbox.</p>
+                <p class="mb-2.5 text-xs text-neutral-700">Use this local activation link while testing:</p>
+                <a href="{{ dev_activation_link }}" class="break-all text-xs font-extrabold text-brand-red">{{ dev_activation_link }}</a>
             </div>
         {% endif %}
     </main>
-</body>
-</html>
+</div>
+{% endblock %}

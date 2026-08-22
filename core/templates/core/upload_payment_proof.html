@@ -1,167 +1,50 @@
-{% load static %}
+{% extends "core/base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload Payment Proof · ChinaZed</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}Upload Payment Proof · ChinaZed{% endblock %}
 
-    <style>
-        body{
-            margin:0;
-            font-family:Arial,sans-serif;
-            background:#f5f5f5;
-            min-height:100vh;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            padding:20px;
-        }
+{% block content %}
+<div class="mx-auto flex min-h-[calc(100vh-260px)] max-w-[520px] items-center px-4 py-8">
+    <div class="w-full overflow-hidden rounded-xl border border-brand-border bg-white shadow-lg">
 
-        .card{
-            background:#fff;
-            max-width:520px;
-            width:100%;
-            border-radius:12px;
-            overflow:hidden;
-            box-shadow:0 10px 30px rgba(0,0,0,.08);
-        }
-
-        .header{
-            background:#E5141A;
-            color:#fff;
-            padding:28px 24px;
-            text-align:center;
-        }
-
-        .logo{
-            font-size:36px;
-            font-weight:900;
-        }
-
-        .body{
-            padding:28px 24px;
-        }
-
-        h2{
-            margin:0 0 10px;
-        }
-
-        p{
-            color:#666;
-            line-height:1.7;
-            font-size:14px;
-        }
-
-        .summary{
-            background:#fff8ee;
-            border:1px solid #ffe0b0;
-            padding:14px;
-            border-radius:8px;
-            margin:18px 0;
-            font-size:14px;
-        }
-
-        .summary strong{
-            color:#E5141A;
-        }
-
-        input[type="file"]{
-            width:100%;
-            padding:14px;
-            border:1px dashed #ccc;
-            border-radius:8px;
-            background:#fafafa;
-            margin:14px 0;
-        }
-
-        .btn{
-            width:100%;
-            border:none;
-            background:#E5141A;
-            color:#fff;
-            padding:14px;
-            border-radius:8px;
-            font-weight:700;
-            cursor:pointer;
-        }
-
-        .btn:hover{
-            background:#B50F14;
-        }
-
-        .back{
-            display:block;
-            text-align:center;
-            margin-top:16px;
-            color:#777;
-            text-decoration:none;
-            font-size:13px;
-        }
-
-        .back:hover{
-            color:#E5141A;
-        }
-
-        .error{
-            background:#fff3f3;
-            border:1px solid #ffcaca;
-            color:#b00020;
-            padding:12px;
-            border-radius:8px;
-            font-size:13px;
-            margin-bottom:14px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="card">
-
-    <div class="header">
-        <div class="logo">CHINAZED</div>
-        <div>Upload Deposit Payment Proof</div>
-    </div>
-
-    <div class="body">
-
-        <h2>Order #{{ order.id }}</h2>
-
-        <p>
-            Upload a screenshot or photo of your 35% deposit payment.
-            We will review it and confirm your order.
-        </p>
-
-        <div class="summary">
-            <div>Total Price: <strong>K{{ order.total_price }}</strong></div>
-            <div>Deposit Required: <strong>K{{ order.deposit_amount }}</strong></div>
-            <div>Balance on Arrival: <strong>K{{ order.balance_amount }}</strong></div>
+        <div class="bg-brand-red px-6 py-7 text-center text-white">
+            <div class="font-display text-3xl font-black tracking-tight">CHINAZED</div>
+            <div class="mt-1 text-sm">Upload Deposit Payment Proof</div>
         </div>
 
-        {% if form.errors %}
-            <div class="error">
-                Please upload a valid image file.
+        <div class="p-6">
+
+            <h2 class="mb-2.5 text-lg font-black text-brand-ink">Order #{{ order.id }}</h2>
+
+            <p class="text-sm leading-relaxed text-brand-muted">Upload a screenshot or photo of your 35% deposit payment. We will review it and confirm your order.</p>
+
+            <div class="my-4 rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-sm text-neutral-700">
+                <div>Total Price: <strong class="text-brand-red">K{{ order.total_price }}</strong></div>
+                <div>Deposit Required: <strong class="text-brand-red">K{{ order.deposit_amount }}</strong></div>
+                <div>Balance on Arrival: <strong class="text-brand-red">K{{ order.balance_amount }}</strong></div>
             </div>
-        {% endif %}
 
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
+            {% if form.errors %}
+                <div class="mb-3.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+                    Please upload a valid image file.
+                </div>
+            {% endif %}
 
-            {{ form.payment_proof }}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-            <button type="submit" class="btn">
-                Upload Payment Proof
-            </button>
-        </form>
+                {{ form.payment_proof }}
 
-        <a href="{% url 'order_detail' order.id %}" class="back">
-            ← Back to Order
-        </a>
+                <button type="submit" class="mt-3.5 block w-full rounded-lg bg-brand-red py-3.5 text-sm font-bold text-white transition hover:bg-brand-red-dark">
+                    Upload Payment Proof
+                </button>
+            </form>
+
+            <a href="{% url 'order_detail' order.id %}" class="mt-3.5 block text-center text-[13px] text-brand-muted transition hover:text-brand-red">
+                ← Back to Order
+            </a>
+
+        </div>
 
     </div>
-
 </div>
-
-</body>
-</html>
+{% endblock %}

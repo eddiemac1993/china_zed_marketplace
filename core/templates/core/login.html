@@ -1,369 +1,73 @@
-﻿{% load static %}
+{% extends "core/base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login · ChinaZed 中赞商城</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+{% block title %}Login · ChinaZed 中赞商城{% endblock %}
 
-    <style>
-        :root {
-            --red: #E5141A;
-            --red-dark: #B50F14;
-            --orange: #FF6600;
-            --bg: #F2F2F2;
-            --white: #FFFFFF;
-            --ink: #1A1A1A;
-            --muted: #888;
-            --border: #E0E0E0;
-            --r: 8px;
-        }
+{% block content %}
+<div class="mx-auto flex min-h-[calc(100vh-260px)] max-w-[900px] items-center px-4 py-8 sm:px-5">
+    <div class="grid w-full grid-cols-1 items-stretch gap-3 lg:grid-cols-[1fr_360px]">
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 13px;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { text-decoration: none; color: inherit; }
-
-        .top-bar {
-            background: #1a1a1a;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .top-bar a {
-            color: #888;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .top-bar a:hover { color: #fff; }
-        .top-bar .hl { color: var(--orange); }
-
-        .page {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 36px);
-            padding: 20px 16px;
-        }
-
-        .login-grid {
-            display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 12px;
-            width: 100%;
-            max-width: 860px;
-            align-items: stretch;
-        }
-
-        .promo {
-            background: var(--red);
-            border-radius: var(--r);
-            padding: 32px 28px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .promo::after {
-            content: '中赞';
-            position: absolute;
-            right: -12px;
-            bottom: -16px;
-            font-size: 100px;
-            color: rgba(255,255,255,.08);
-            font-weight: 900;
-            font-family: 'Barlow Condensed', sans-serif;
-            pointer-events: none;
-        }
-
-        .promo-tag {
-            display: inline-block;
-            background: rgba(255,255,255,.18);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 2px;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-            align-self: flex-start;
-        }
-
-        .promo-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 34px;
-            color: #fff;
-            line-height: 1.1;
-            letter-spacing: -.5px;
-            margin-bottom: 12px;
-        }
-
-        .promo-desc {
-            font-size: 12px;
-            color: rgba(255,255,255,.7);
-            line-height: 1.7;
-            margin-bottom: 20px;
-        }
-
-        .promo-pills {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .promo-pill {
-            background: rgba(255,255,255,.14);
-            border-radius: 4px;
-            padding: 10px 12px;
-        }
-
-        .pill-title {
-            font-weight: 700;
-            font-size: 12px;
-            color: #fff;
-            margin-bottom: 2px;
-        }
-
-        .pill-sub {
-            font-size: 10px;
-            color: rgba(255,255,255,.65);
-        }
-
-        .login-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--r);
-            padding: 26px 22px;
-        }
-
-        .card-logo {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 30px;
-            color: var(--red);
-            letter-spacing: -1px;
-            text-align: center;
-            line-height: 1;
-            margin-bottom: 2px;
-        }
-
-        .card-sub {
-            font-size: 11px;
-            color: var(--muted);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .err-box {
-            background: #FFF0F0;
-            border: 1px solid #FECACA;
-            color: #991B1B;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-bottom: 14px;
-        }
-
-        .form-group { margin-bottom: 12px; }
-
-        .form-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            letter-spacing: .04em;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 10px 12px;
-            font-size: 13px;
-            font-family: inherit;
-            outline: none;
-            color: var(--ink);
-            background: #FAFAFA;
-        }
-
-        .form-group input:focus {
-            border-color: var(--red);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(229,20,26,.1);
-        }
-
-        .forgot-row {
-            text-align: right;
-            margin-top: -4px;
-            margin-bottom: 14px;
-        }
-
-        .forgot-row a {
-            font-size: 11px;
-            color: var(--red);
-            font-weight: 700;
-        }
-
-        .forgot-row a:hover {
-            text-decoration: underline;
-        }
-
-        .btn-login {
-            display: block;
-            width: 100%;
-            background: var(--red);
-            color: #fff;
-            border: none;
-            padding: 12px 0;
-            font-size: 14px;
-            font-weight: 700;
-            font-family: inherit;
-            cursor: pointer;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        .btn-login:hover { background: var(--red-dark); }
-
-        .register-box {
-            background: #FFF8EE;
-            border: 1px solid #FFE0B0;
-            border-radius: 4px;
-            padding: 10px 14px;
-            text-align: center;
-            margin-top: 12px;
-            font-size: 12px;
-            color: #7C4A00;
-        }
-
-        .register-box a {
-            color: var(--orange);
-            font-weight: 700;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 12px;
-            font-size: 11px;
-            color: var(--muted);
-        }
-
-        .back-link:hover { color: var(--red); }
-
-        @media (max-width: 700px) {
-            .login-grid { grid-template-columns: 1fr; }
-            .promo { display: none; }
-            .page { align-items: flex-start; padding-top: 16px; }
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="top-bar">
-    <a href="{% url 'home' %}">← Back to Marketplace</a>
-    <a href="{% url 'register' %}" class="hl">Register Free →</a>
-</div>
-
-<div class="page">
-    <div class="login-grid">
-
-        <div class="promo">
-            <div class="promo-tag">🇨🇳 China to Zambia Marketplace</div>
-            <div class="promo-title">Login and track your orders easily.</div>
-            <div class="promo-desc">
-                View order progress, get AI help, and generate receipts once goods arrive in Zambia.
-            </div>
-
-            <div class="promo-pills">
-                <div class="promo-pill">
-                    <div class="pill-title">Order</div>
-                    <div class="pill-sub">From China</div>
+        <div class="relative hidden flex-col justify-center overflow-hidden rounded-xl bg-brand-red p-8 text-white lg:flex">
+            <span class="pointer-events-none absolute bottom-[-16px] right-[-12px] font-display text-[100px] font-black leading-none text-white/[0.08]">中赞</span>
+            <div class="relative z-10 mb-4 inline-block w-fit rounded bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wide">🇨🇳 China to Zambia Marketplace</div>
+            <h2 class="relative z-10 mb-3 font-display text-4xl font-black leading-tight tracking-tight">Login and track your orders easily.</h2>
+            <p class="relative z-10 mb-5 text-[13px] leading-relaxed text-white/75">View order progress, get AI help, and generate receipts once goods arrive in Zambia.</p>
+            <div class="relative z-10 grid grid-cols-3 gap-2">
+                <div class="rounded bg-white/15 px-3 py-2.5">
+                    <div class="text-xs font-bold">Order</div>
+                    <div class="text-[10px] text-white/70">From China</div>
                 </div>
-                <div class="promo-pill">
-                    <div class="pill-title">Track</div>
-                    <div class="pill-sub">In profile</div>
+                <div class="rounded bg-white/15 px-3 py-2.5">
+                    <div class="text-xs font-bold">Track</div>
+                    <div class="text-[10px] text-white/70">In profile</div>
                 </div>
-                <div class="promo-pill">
-                    <div class="pill-title">Receipt</div>
-                    <div class="pill-sub">After arrival</div>
+                <div class="rounded bg-white/15 px-3 py-2.5">
+                    <div class="text-xs font-bold">Receipt</div>
+                    <div class="text-[10px] text-white/70">After arrival</div>
                 </div>
             </div>
         </div>
 
-        <div class="login-card">
-            <div class="card-logo">CHINAZED</div>
-            <div class="card-sub">中赞商城 · Welcome Back</div>
+        <div class="rounded-xl border border-brand-border bg-white p-6">
+            <div class="text-center font-display text-3xl font-black leading-none tracking-tight text-brand-red">CHINAZED</div>
+            <div class="mb-5 text-center text-[11px] text-brand-muted">中赞商城 · Welcome Back</div>
 
             {% if form.errors %}
-                <div class="err-box">
-                    ❌ Invalid username or password. Please try again.
+                <div class="mb-3.5 rounded border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800">
+                    <i class="fa-solid fa-circle-xmark"></i> Invalid username or password. Please try again.
                 </div>
             {% endif %}
 
             <form method="POST">
                 {% csrf_token %}
 
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input type="text"
-                           name="username"
-                           autocomplete="username"
-                           placeholder="Enter your username"
-                           required>
+                <div class="mb-3">
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Username</label>
+                    <input type="text" name="username" autocomplete="username" placeholder="Enter your username" required
+                           class="w-full rounded border border-brand-border bg-neutral-50 px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-red-100">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password"
-                           name="password"
-                           autocomplete="current-password"
-                           placeholder="Enter your password"
-                           required>
+                <div class="mb-3">
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Password</label>
+                    <input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required
+                           class="w-full rounded border border-brand-border bg-neutral-50 px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-red-100">
                 </div>
 
-                <div class="forgot-row">
-                    <a href="{% url 'password_reset' %}">
-                        Forgot Password?
-                    </a>
+                <div class="-mt-1 mb-3.5 text-right">
+                    <a href="{% url 'password_reset' %}" class="text-[11px] font-bold text-brand-red hover:underline">Forgot Password?</a>
                 </div>
 
-                <button type="submit" class="btn-login">
-                    🔑 Login
+                <button type="submit" class="block w-full rounded bg-brand-red py-3 text-center text-sm font-bold text-white transition hover:bg-brand-red-dark">
+                    <i class="fa-solid fa-key"></i> Login
                 </button>
             </form>
 
-            <div class="register-box">
-                No account? <a href="{% url 'register' %}">Create account free</a>
+            <div class="mt-3 rounded border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-center text-xs text-amber-900">
+                No account? <a href="{% url 'register' %}" class="font-bold text-brand-orange hover:underline">Create account free</a>
             </div>
 
-            <a href="{% url 'home' %}" class="back-link">
-                ← Back to marketplace
-            </a>
+            <a href="{% url 'home' %}" class="mt-3 block text-center text-[11px] text-brand-muted transition hover:text-brand-red">← Back to marketplace</a>
         </div>
 
     </div>
 </div>
-
-</body>
-</html>
+{% endblock %}

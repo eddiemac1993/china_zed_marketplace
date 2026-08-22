@@ -1,0 +1,50 @@
+<div x-show="menuOpen" x-cloak class="fixed inset-0 z-[1000]" aria-hidden="true">
+    <div class="absolute inset-0 bg-black/50"
+         x-show="menuOpen" x-transition:enter="transition-opacity ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="menuOpen = false"></div>
+
+    <div class="no-scrollbar absolute left-0 top-0 h-full w-[290px] overflow-y-auto bg-white shadow-2xl"
+         x-show="menuOpen"
+         x-transition:enter="transition ease-out duration-250" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
+         @keydown.escape.window="menuOpen = false">
+
+        <div class="flex items-center justify-between bg-brand-red px-4 py-4">
+            <svg class="h-11 w-11" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
+            <button type="button" @click="menuOpen = false" aria-label="Close menu" class="grid h-10 w-10 place-items-center rounded-full text-lg text-white/85 transition hover:bg-white/15"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        {% if request.user.is_authenticated %}
+        <div class="border-b border-neutral-100 py-2.5">
+            <div class="px-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-brand-muted">My Account</div>
+            <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-user w-4 text-center"></i> My Profile &amp; Orders</a>
+            <a href="{% url 'cart' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-cart-shopping w-4 text-center"></i> My Cart{% if nav_cart_count %} ({{ nav_cart_count }}){% endif %}</a>
+            <a href="{% url 'communinity:home' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-comments w-4 text-center"></i> Community</a>
+            <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Logout</a>
+        </div>
+        {% else %}
+        <div class="border-b border-neutral-100 py-2.5">
+            <div class="px-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-brand-muted">Account</div>
+            <a href="{% url 'login' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-key w-4 text-center"></i> Sign In</a>
+            <a href="{% url 'register' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-bold text-brand-red transition hover:bg-orange-50"><i class="fa-solid fa-user-plus w-4 text-center"></i> Register Free</a>
+        </div>
+        {% endif %}
+
+        <div class="border-b border-neutral-100 py-2.5">
+            <div class="px-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-brand-muted">Shop</div>
+            <a href="{% url 'home' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red {% if not category_id and not product_type %}border-l-[3px] border-brand-red bg-orange-50 font-bold{% endif %}"><i class="fa-solid fa-bag-shopping w-4 text-center"></i> All Products</a>
+            <a href="{% url 'home' %}?type=local#results" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red {% if product_type == 'local' %}border-l-[3px] border-brand-red bg-orange-50 font-bold{% endif %}">🇿🇲 Available in Zambia</a>
+            <a href="{% url 'home' %}?type=preorder#results" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red {% if product_type == 'preorder' %}border-l-[3px] border-brand-red bg-orange-50 font-bold{% endif %}">🇨🇳 Pre-order from China</a>
+            {% for category in nav_categories %}
+            <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red {% if category_id == category.id|stringformat:'s' %}border-l-[3px] border-brand-red bg-orange-50 font-bold{% endif %}"><i class="fa-solid fa-chevron-right w-4 text-center text-[10px]"></i> {{ category.name }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="py-2.5">
+            <div class="px-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-brand-muted">Help</div>
+            <a href="{% url 'about' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-circle-info w-4 text-center"></i> About ChinaZed</a>
+            <a href="{% url 'order_policy' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-clipboard-list w-4 text-center"></i> Order Policy</a>
+        </div>
+    </div>
+</div>

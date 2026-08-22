@@ -5,776 +5,182 @@
 {% block title %}Shop China & Zambia Products | ChinaZed{% endblock %}
 {% block meta_description %}Shop Zambia stock and pre-order products directly from China with ChinaZed. Pay a 35% deposit and track delivery online.{% endblock %}
 
-{% block extra_style %}
-        /* ── HERO BANNER ── */
-        .hero-banner {
-            background:
-                linear-gradient(90deg, rgba(150,10,14,.55) 0%, rgba(200,16,22,.32) 42%, rgba(229,20,26,.12) 68%, rgba(229,20,26,.02) 100%),
-                url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") center right / cover no-repeat;
-            /* webp is 61% smaller; browsers without image-set() keep the jpeg above */
-            background:
-                linear-gradient(90deg, rgba(150,10,14,.55) 0%, rgba(200,16,22,.32) 42%, rgba(229,20,26,.12) 68%, rgba(229,20,26,.02) 100%),
-                image-set(
-                    url("{% static 'core/images/china-zed-homepage-hero.webp' %}") type("image/webp"),
-                    url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") type("image/jpeg")
-                ) center right / cover no-repeat;
-            border-radius: var(--card-radius); padding: 28px;
-            min-height: 220px;
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 16px; margin-bottom: 14px; position: relative; overflow: hidden;
-        }
-        .hero-banner::before {
-            content: ''; position: absolute;
-            width: 500px; height: 500px; background: rgba(255,255,255,.04);
-            border-radius: 50%; top: -280px; right: 80px; pointer-events: none;
-        }
-        /* legibility scrim — keeps the headline readable over the product photo */
-        .hero-banner::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(90deg, rgba(0,0,0,.30) 0%, rgba(0,0,0,.14) 45%, rgba(0,0,0,.04) 75%, rgba(0,0,0,0) 100%);
-            pointer-events: none;
-        }
-        .hero-left { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
-        .hero-badge {
-            background: var(--yellow); color: var(--red-dark);
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 22px; padding: 10px 16px; border-radius: 6px;
-            white-space: nowrap; letter-spacing: .3px; flex-shrink: 0; line-height: 1.2;
-            text-align: center;
-        }
-        .hero-badge small { display: block; font-size: 11px; font-family: 'Noto Sans SC'; font-weight: 700; }
-        .hero-text h1 {
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 26px; color: #fff; letter-spacing: -.3px; line-height: 1.15;
-            text-shadow: 0 2px 10px rgba(0,0,0,.60);
-        }
-        .hero-points {
-            display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; list-style: none;
-        }
-        .hero-points li {
-            font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap;
-            background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.22);
-            border-radius: 999px; padding: 4px 10px; backdrop-filter: blur(2px);
-        }
-        .hero-chips { display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 1; }
-        .hero-chip {
-            background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.32);
-            color: #fff; padding: 8px 16px; border-radius: 6px;
-            font-size: 12px; font-weight: 800; white-space: nowrap; transition: all .15s;
-        }
-        .hero-chip:hover { background: rgba(255,255,255,.32); }
-        .hero-chip.yellow { background: var(--yellow); color: var(--red-dark); border-color: var(--yellow); }
-
-        /* ── TWO-COL ── */
-        .two-col { display: grid; grid-template-columns: 190px 1fr; gap: 14px; margin-bottom: 14px; }
-
-        /* ── SIDEBAR ── */
-        .sidebar-cats {
-            background: var(--white); border-radius: var(--card-radius);
-            overflow: hidden auto; border: 1px solid var(--border);
-            align-self: start; position: sticky; top: 130px;
-            max-height: calc(100vh - 150px);
-            scrollbar-width: thin;
-            scrollbar-color: #D8D8D8 transparent;
-        }
-        .sidebar-cats::-webkit-scrollbar { width: 6px; }
-        .sidebar-cats::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-cats::-webkit-scrollbar-thumb { background: #D8D8D8; border-radius: 999px; }
-        .sidebar-cat-title { background: var(--red); color: #fff; font-weight: 800; font-size: 13px; padding: 12px 16px; }
-        .sidebar-cat-item {
-            display: flex; align-items: center; padding: 10px 14px;
-            font-size: 12px; font-weight: 500; color: var(--ink);
-            border-bottom: 1px solid #F5F5F5; transition: all .15s; gap: 8px;
-        }
-        .sidebar-cat-item:last-child { border-bottom: none; }
-        .sidebar-cat-item:hover { background: #FFF0F0; color: var(--red); padding-left: 19px; }
-        .sidebar-cat-item.active { background: #FFF0F0; color: var(--red); border-left: 3px solid var(--red); font-weight: 700; }
-        .sidebar-cat-icon { font-size: 15px; }
-
-        /* ── SECTION HEADER ── */
-        .section-head {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 18px 12px; border-bottom: 1px solid #F0F0F0;
-            background: linear-gradient(to right, #FFFAF9, #fff);
-        }
-        .section-head-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .section-head-title {
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 20px; color: var(--ink); letter-spacing: .5px;
-            border-left: 4px solid var(--orange); padding-left: 10px;
-        }
-        .section-head-sub { font-size: 11px; color: var(--muted); }
-        /* Recently Viewed strip */
-        #recentlyViewed { display: none; margin-bottom: 18px; }
-        .rv-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .rv-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 20px; color: var(--ink); letter-spacing: .5px; border-left: 4px solid var(--orange); padding-left: 10px; }
-        .rv-clear { font-size: 11px; color: var(--muted); cursor: pointer; background: none; border: none; font-weight: 700; }
-        .rv-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
-        .rv-scroll::-webkit-scrollbar { height: 0; }
-        .rv-card { flex: 0 0 118px; width: 118px; background: #fff; border: 1px solid #EAEAEA; border-radius: 10px; overflow: hidden; text-decoration: none; transition: box-shadow .15s, transform .15s; }
-        .rv-card:hover { box-shadow: 0 6px 18px rgba(255,80,0,.15); transform: translateY(-2px); }
-        .rv-img { width: 100%; height: 118px; object-fit: cover; background: #F5F5F5; display: block; }
-        .rv-noimg { width: 100%; height: 118px; display: flex; align-items: center; justify-content: center; font-size: 26px; background: #F5F5F5; }
-        .rv-info { padding: 7px 8px 9px; }
-        .rv-name { font-size: 11px; color: var(--ink); line-height: 1.35; height: 30px; overflow: hidden; margin-bottom: 4px; }
-        .rv-price { font-size: 14px; font-weight: 900; color: var(--orange); font-family: 'Barlow Condensed', sans-serif; }
-        .section-head-more {
-            font-size: 12px; color: var(--muted); display: flex; align-items: center;
-            gap: 4px; border: 1px solid var(--border); padding: 5px 13px;
-            border-radius: 20px; transition: all .15s; white-space: nowrap; flex-shrink: 0;
-            font-weight: 600;
-        }
-        .section-head-more:hover { border-color: var(--red); color: var(--red); background: #FFF0F0; }
-
-        /* ── PRODUCT PANEL ── */
-        .product-panel {
-            background: transparent; border-radius: 0;
-            border: none; overflow: visible; margin-bottom: 18px;
-        }
-
-        .product-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-        .product-grid-dense { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-
-        /* Taobao product card */
-        .prod-card {
-            border: 1px solid #EAEAEA; border-radius: 12px;
-            position: relative; cursor: pointer; background: #fff; overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,.03);
-            transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-        }
-        .prod-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(255,80,0,.18); border-color: var(--orange); z-index: 10; }
-        .prod-card:hover .prod-card-img { transform: scale(1.06); }
-
-        .prod-img-box {
-            position: relative; overflow: hidden; aspect-ratio: 1;
-            background: #F8F8F8;
-        }
-        .prod-card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .38s ease; display: block; }
-        .prod-no-img-box {
-            width: 100%; height: 100%; display: flex; align-items: center;
-            justify-content: center; flex-direction: column; gap: 8px;
-            color: #707070; font-size: 11px; background: #F8F8F8;
-        }
-        .prod-no-img-box::before { content: '📦'; font-size: 30px; }
-
-        .badge {
-            position: absolute; font-size: 10px; font-weight: 800;
-            padding: 3px 7px; border-radius: 10px; z-index: 2;
-            letter-spacing: .03em; text-transform: uppercase;
-            box-shadow: 0 2px 6px rgba(0,0,0,.15);
-        }
-        .b-tl { top: 7px; left: 7px; }
-        .b-tr { top: 7px; right: 7px; }
-        .b-bl { bottom: 7px; left: 7px; }
-        .b-hot { background: linear-gradient(90deg, #FF0036 0%, #FF5000 100%); color: #fff; }
-        .b-china { background: linear-gradient(90deg, #007AFF 0%, #0051FF 100%); color: #fff; }
-        .b-local { background: linear-gradient(90deg, #00C853 0%, #009624 100%); color: #fff; }
-        .b-sale { background: linear-gradient(90deg, #FF9000 0%, #FF5000 100%); color: #fff; }
-
-        .prod-info { padding: 10px 11px 12px; }
-        .prod-name-link {
-            display: block; font-size: 12px; color: var(--ink);
-            line-height: 1.45; margin-bottom: 7px; transition: color .15s; font-weight: 500;
-        }
-        .prod-name-link:hover { color: var(--orange); }
-
-        .price-row { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; }
-        .price-label {
-            font-size: 10px; color: var(--muted); font-weight: 800;
-            text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px;
-        }
-        .price-curr { font-size: 12px; color: var(--orange); font-weight: 900; }
-        .price-main {
-            font-size: 21px; font-weight: 900; color: var(--orange);
-            font-family: 'Barlow Condensed', sans-serif; letter-spacing: -.5px; line-height: 1;
-        }
-        .price-deposit { font-size: 10px; color: var(--muted); margin-bottom: 9px; }
-        .price-deposit span { color: var(--orange); font-weight: 700; }
-
-        .delivery-pill {
-            display: inline-flex; align-items: center; background: #FFF2ED;
-            color: #FF5000; font-size: 10px; font-weight: 800;
-            padding: 3px 8px; border-radius: 4px; margin-bottom: 7px;
-        }
-        .prod-meta-row {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 6px; margin: 8px 0 9px; flex-wrap: wrap;
-        }
-        .prod-type-pill {
-            display: inline-flex; align-items: center; border-radius: 999px;
-            padding: 3px 8px; font-size: 10px; font-weight: 900;
-            text-transform: uppercase; letter-spacing: .03em;
-        }
-        .prod-type-pill.local { background: #EAFBF1; color: #008743; }
-        .prod-type-pill.china { background: #EFF6FF; color: #1677FF; }
-
-        .btn-cart {
-            display: block; width: 100%; background: var(--red); color: #fff;
-            border: none; padding: 9px 0; font-size: 12px; font-weight: 800;
-            cursor: pointer; border-radius: 5px; font-family: inherit;
-            text-align: center; transition: background .15s, transform .1s;
-            letter-spacing: .02em;
-        }
-        .btn-cart:hover { background: var(--red-dark); }
-        .btn-cart:active { transform: scale(.98); }
-        .btn-cart-disabled { background: #DDD; color: #595959; cursor: not-allowed; }
-        .btn-login {
-            display: block; width: 100%; background: var(--orange); color: #fff;
-            border: none; padding: 9px 0; font-size: 12px; font-weight: 800;
-            cursor: pointer; border-radius: 5px; font-family: inherit;
-            text-align: center; transition: background .15s;
-        }
-        .btn-login:hover { background: var(--orange-light); }
-
-        /* ── RESULTS HEADER (shown during search/filter) ── */
-        .results-header {
-            background: linear-gradient(to right, #FFF8E1, #FFF3CD);
-            border: 1px solid #FFD966; border-radius: var(--card-radius);
-            padding: 14px 18px; margin-bottom: 14px;
-            display: flex; align-items: center; gap: 12px;
-            animation: slideIn .3s ease;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        .results-header-icon { font-size: 24px; }
-        .results-header-text h3 { font-size: 14px; font-weight: 800; color: #7A4F00; }
-        .results-header-text p { font-size: 12px; color: #8B6914; margin-top: 2px; }
-        .results-header-clear { margin-left: auto; background: #fff; border: 1px solid #FFD966; color: #7A4F00; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s; }
-        .results-header-clear:hover { background: var(--red); color: #fff; border-color: var(--red); }
-
-        /* ── EMPTY STATE ── */
-        .empty-row {
-            grid-column: 1 / -1;
-            display: flex; align-items: center; gap: 12px;
-            padding: 18px 20px; margin: 12px; border-radius: 8px;
-            background: #FAFAFA; border: 1px dashed var(--border);
-        }
-        .empty-row::before {
-            content: '📦'; font-size: 20px; line-height: 1; flex-shrink: 0;
-        }
-        .empty-row-body { flex: 1; min-width: 0; }
-        .empty-row-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-        .empty-row-note { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
-        .empty-row-cta {
-            flex-shrink: 0; background: var(--red); color: #fff;
-            border-radius: 6px; padding: 8px 14px; font-size: 12px; font-weight: 800;
-            white-space: nowrap;
-        }
-        .empty-row-cta:hover { background: var(--red-dark); }
-        @media (max-width: 640px) {
-            .empty-row { flex-wrap: wrap; padding: 14px; margin: 10px; gap: 10px; }
-            .empty-row-cta { width: 100%; text-align: center; }
-        }
-
-        /* ── HOW IT WORKS ── */
-        .how-panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; margin-bottom: 14px; }
-        .how-steps { display: grid; grid-template-columns: repeat(4, 1fr); padding: 22px; gap: 22px; }
-        .how-step { display: flex; align-items: flex-start; gap: 13px; }
-        .how-step-num {
-            width: 36px; height: 36px; border-radius: 50%; background: var(--red);
-            color: #fff; font-weight: 900; font-size: 16px; display: flex;
-            align-items: center; justify-content: center; flex-shrink: 0;
-            font-family: 'Barlow Condensed', sans-serif;
-        }
-        .how-step-info h4 { font-size: 13px; font-weight: 800; margin-bottom: 5px; }
-        .how-step-info p { font-size: 11px; color: var(--muted); line-height: 1.6; }
-
-        .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 18px; }
-        .testimonial-card { background: #fff; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px; }
-        .testimonial-stars { color: var(--gold-dark); font-size: 13px; margin-bottom: 8px; }
-        .testimonial-card p { color: #555; font-size: 12px; line-height: 1.7; margin-bottom: 10px; }
-        .testimonial-card strong { display: block; color: var(--ink); font-size: 12px; }
-        .testimonial-card span { color: var(--muted); font-size: 11px; }
-
-        /* ════ RESPONSIVE (page content) ════ */
-        @media (max-width: 1100px) {
-            .product-grid-5, .product-grid-dense { grid-template-columns: repeat(4, 1fr); }
-            .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
-            .prod-card:nth-child(4n) { border-right: none; }
-        }
-        @media (max-width: 900px) {
-            .two-col { grid-template-columns: 1fr; }
-            .sidebar-cats { display: none; }
-            .how-steps { grid-template-columns: repeat(2, 1fr); }
-            .product-grid-5, .product-grid-dense { grid-template-columns: repeat(3, 1fr); }
-            .testimonial-grid { grid-template-columns: 1fr; }
-            .prod-card:nth-child(4n) { border-right: 1px solid #F0F0F0; }
-            .prod-card:nth-child(3n) { border-right: none; }
-        }
-        @media (max-width: 640px) {
-            .hero-banner {
-                padding: 16px; min-height: 0;
-                background:
-                    linear-gradient(180deg, rgba(140,9,13,.46) 0%, rgba(170,12,17,.38) 100%),
-                    url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") center center / cover no-repeat;
-                /* phones never need the 1600px file — the 800px webp is 32 KB against 219 KB */
-                background:
-                    linear-gradient(180deg, rgba(140,9,13,.46) 0%, rgba(170,12,17,.38) 100%),
-                    image-set(
-                        url("{% static 'core/images/china-zed-homepage-hero-800.webp' %}") type("image/webp"),
-                        url("{% static 'core/images/china-zed-homepage-hero.jpeg' %}") type("image/jpeg")
-                    ) center center / cover no-repeat;
-            }
-            /* photo detail is unreadable at this width — flatten it behind a solid scrim */
-            .hero-banner::after {
-                background: linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.42));
-            }
-            .hero-banner::before { display: none; }
-            .hero-left { align-items: flex-start; gap: 12px; }
-            .hero-text h1 { font-size: 19px; line-height: 1.2; }
-            .hero-badge { font-size: 17px; padding: 7px 11px; }
-            .hero-points { gap: 5px; margin-top: 8px; }
-            .hero-points li { font-size: 10px; padding: 4px 8px; }
-            .hero-chips { display: none; }
-            .product-grid-5, .product-grid-dense { grid-template-columns: repeat(2, 1fr); }
-            .prod-card:nth-child(3n), .prod-card:nth-child(4n), .prod-card:nth-child(5n) { border-right: 1px solid #F0F0F0; }
-            .prod-card:nth-child(2n) { border-right: none; }
-            .price-main { font-size: 16px; }
-            .section-head-sub { display: none; }
-            .section-head-title { font-size: 17px; }
-            .how-steps { grid-template-columns: 1fr; gap: 14px; padding: 14px; }
-        }
-        @media (max-width: 380px) {
-            .product-grid-5, .product-grid-dense { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* Keep primary mobile actions comfortably tappable */
-        @media (max-width: 768px) {
-            .empty-row-cta, .section-head-more {
-                min-height: 44px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .section-head-more { padding: 8px 10px; }
-        }
-
-        /* ── SCROLL REVEAL ── */
-        .reveal { opacity: 0; transform: translateY(24px); transition: opacity .5s ease, transform .5s ease; }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
-
-        /* ── FLASH SALE TIMER ── */
-        .flash-sale-banner {
-            background: linear-gradient(135deg, var(--orange) 0%, var(--red) 100%);
-            border-radius: var(--card-radius); padding: 20px;
-            margin-bottom: 14px;
-            display: flex; align-items: center; justify-content: space-between; gap: 16px;
-            box-shadow: 0 4px 12px rgba(255,80,0,.25);
-        }
-        .flash-sale-left { display: flex; align-items: center; gap: 14px; }
-        .flash-sale-icon { font-size: 36px; line-height: 1; animation: flash-pulse 1.5s ease-in-out infinite; }
-        @keyframes flash-pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:.85} }
-        .flash-sale-text h3 {
-            color: #fff; font-family: 'Barlow Condensed', sans-serif;
-            font-size: 24px; font-weight: 900; margin: 0 0 4px 0;
-            text-transform: uppercase; letter-spacing: .03em;
-        }
-        .flash-sale-text p { color: rgba(255,255,255,.9); font-size: 13px; margin: 0; font-weight: 600; }
-        .flash-sale-timer { display: flex; gap: 10px; }
-        .timer-block {
-            background: rgba(255,255,255,.95); border-radius: 8px;
-            padding: 10px 14px; text-align: center; min-width: 60px;
-        }
-        .timer-value {
-            display: block; font-family: 'Barlow Condensed', sans-serif;
-            font-size: 28px; font-weight: 900; color: var(--red-dark); line-height: 1; margin-bottom: 2px;
-        }
-        .timer-label {
-            display: block; font-size: 10px; color: var(--muted); font-weight: 700;
-            text-transform: uppercase; letter-spacing: .05em;
-        }
-        @media (max-width: 768px) {
-            .flash-sale-banner { flex-direction: column; align-items: flex-start; padding: 16px; }
-            .flash-sale-icon { font-size: 28px; }
-            .flash-sale-text h3 { font-size: 20px; }
-            .flash-sale-text p { font-size: 12px; }
-            .timer-block { min-width: 50px; padding: 8px 10px; }
-            .timer-value { font-size: 24px; }
-            .timer-label { font-size: 9px; }
-        }
-
-{% endblock %}
-
 {% block content %}
-<!-- PAGE BODY -->
-<div class="page-body">
+<div class="mx-auto max-w-[1300px] px-4 py-3.5 sm:px-5">
 
     <!-- HERO -->
-    <div class="hero-banner">
-        <div class="hero-left">
-            <div class="hero-badge">🔥 HOT<small>DEALS</small></div>
-            <div class="hero-text">
-                <h1>Buy Direct from China · Delivered to Zambia</h1>
-                <ul class="hero-points">
-                    <li>35% deposit</li>
-                    <li>Balance on arrival</li>
-                    <li>14–30 day shipping</li>
-                    <li>AI support</li>
+    <div class="relative mb-3.5 flex min-h-[220px] flex-col items-start justify-center gap-4 overflow-hidden rounded-xl bg-gradient-to-r from-red-950 via-brand-red to-orange-600 bg-cover bg-right p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7"
+         style="background-image: linear-gradient(90deg, rgba(150,10,14,.6) 0%, rgba(200,16,22,.35) 45%, rgba(229,20,26,.05) 100%), url('{% static "core/images/china-zed-homepage-hero.jpeg" %}'); background-size: cover; background-position: right center;">
+        <div class="relative z-10 flex flex-col items-start gap-3.5 sm:flex-row sm:items-center">
+            <div class="whitespace-nowrap rounded-lg bg-brand-yellow px-4 py-2.5 text-center font-display text-xl font-black leading-tight text-brand-red-dark sm:text-2xl">
+                <i class="fa-solid fa-fire"></i> HOT<small class="block font-sans text-[11px] font-bold">DEALS</small>
+            </div>
+            <div>
+                <h1 class="font-display text-xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:text-3xl">Buy Direct from China · Delivered to Zambia</h1>
+                <ul class="mt-2.5 flex flex-wrap gap-1.5">
+                    <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">35% deposit</li>
+                    <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">Balance on arrival</li>
+                    <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">14–30 day shipping</li>
+                    <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">AI support</li>
                 </ul>
             </div>
         </div>
-        <div class="hero-chips">
-            <a href="?type=preorder#results" class="hero-chip yellow">🇨🇳 Pre-order Now</a>
-            <a href="?type=local#results" class="hero-chip">🇿🇲 Local Stock</a>
+        <div class="relative z-10 hidden flex-wrap gap-2 sm:flex">
+            <a href="?type=preorder#results" class="whitespace-nowrap rounded-lg bg-brand-yellow px-4 py-2.5 text-xs font-extrabold text-brand-red-dark transition hover:brightness-105">🇨🇳 Pre-order Now</a>
+            <a href="?type=local#results" class="whitespace-nowrap rounded-lg border border-white/30 bg-white/20 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-white/30">🇿🇲 Local Stock</a>
             {% if not request.user.is_authenticated %}
-                <a href="{% url 'register' %}" class="hero-chip">📝 Register Free</a>
+                <a href="{% url 'register' %}" class="whitespace-nowrap rounded-lg border border-white/30 bg-white/20 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-white/30"><i class="fa-solid fa-user-plus"></i> Register Free</a>
             {% endif %}
         </div>
     </div>
 
-{% include "core/includes/_ad_carousel.html" %}
-
-    
-    <!-- FLASH SALE TIMER -->
-    <div class="flash-sale-banner" id="flashSaleBanner">
-        <div class="flash-sale-left">
-            <span class="flash-sale-icon">⚡</span>
-            <div class="flash-sale-text">
-                <h3>Flash Sale Ends Soon</h3>
-                <p>Grab deals before time runs out!</p>
-            </div>
-        </div>
-        <div class="flash-sale-timer" id="flashTimer">
-            <div class="timer-block"><span class="timer-value" id="fsHours">00</span><span class="timer-label">Hours</span></div>
-            <div class="timer-block"><span class="timer-value" id="fsMins">00</span><span class="timer-label">Mins</span></div>
-            <div class="timer-block"><span class="timer-value" id="fsSecs">00</span><span class="timer-label">Secs</span></div>
-        </div>
-    </div>
-
+    {% include "core/includes/_ad_carousel.html" %}
+    {% include "core/components/_flash_sale_banner.html" %}
 
     <!-- SOCIAL PROOF -->
-    <div style="background:#FFF8F0;border:1px solid #FFE0CC;border-radius:var(--card-radius);padding:12px 18px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:13px;color:#5A3E28;">
-        <span style="font-size:20px;">📦</span>
-        <span><strong id="orderCount">1,247</strong> orders delivered this month · <strong id="viewers">38</strong> people browsing now</span>
+    <div class="mb-3.5 flex items-center gap-2.5 rounded-xl border border-orange-100 bg-orange-50/60 px-4.5 py-3 text-[13px] text-amber-900"
+         x-data="{ orders: 1247, viewers: 38 }"
+         x-init="setInterval(() => orders += Math.floor(Math.random()*3), 15000); setInterval(() => { viewers += Math.floor(Math.random()*5)-2; if (viewers<20) viewers=20; if (viewers>80) viewers=80; }, 8000)">
+        <i class="fa-solid fa-box text-xl text-amber-700"></i>
+        <span><strong x-text="orders.toLocaleString()">1,247</strong> orders delivered this month · <strong x-text="viewers">38</strong> people browsing now</span>
     </div>
 
     <!-- TWO-COL -->
-    <div class="two-col">
+    <div class="mb-3.5 grid grid-cols-1 gap-3.5 lg:grid-cols-[190px_1fr]">
 
-        <!-- SIDEBAR -->
-        <div>
-            <div class="sidebar-cats">
-                <div class="sidebar-cat-title">📂 Categories</div>
-                <a href="{% url 'home' %}" class="sidebar-cat-item {% if not category_id and not product_type %}active{% endif %}">
-                    <span class="sidebar-cat-icon">🛍️</span> All Products
-                </a>
-                <a href="?type=local#results" class="sidebar-cat-item {% if product_type == 'local' %}active{% endif %}">
-                    <span class="sidebar-cat-icon">🇿🇲</span> In Zambia
-                </a>
-                <a href="?type=preorder#results" class="sidebar-cat-item {% if product_type == 'preorder' %}active{% endif %}">
-                    <span class="sidebar-cat-icon">🇨🇳</span> Pre-order China
-                </a>
-                <a href="{% url 'request_product' %}" class="sidebar-cat-item">
-                    <span class="sidebar-cat-icon">🔎</span> Request Product
-                </a>
-                <a href="{% url 'faq' %}" class="sidebar-cat-item">
-                    <span class="sidebar-cat-icon">❓</span> FAQ
-                </a>
-                {% for category in categories %}
-                    <a href="?category={{ category.id }}#results" class="sidebar-cat-item {% if category_id == category.id|stringformat:'s' %}active{% endif %}">
-                        <span class="sidebar-cat-icon">›</span> {{ category.name }}
-                    </a>
-                {% endfor %}
-            </div>
+        <!-- SIDEBAR (desktop) -->
+        <div class="hidden lg:block">
+            {% include "core/components/_category_sidebar.html" %}
         </div>
 
         <!-- MAIN COLUMN -->
-        <div>
+        <div class="min-w-0 space-y-4">
+
             <!-- HOT ITEMS -->
             {% if not category_id and not product_type and not query %}
-            <div class="product-panel reveal">
-                <div class="section-head">
-                    <div class="section-head-left">
-                        <span class="section-head-title">🔥 HOT ITEMS</span>
-                        <span class="section-head-sub">Most popular right now</span>
+            <div class="reveal">
+                <div class="mb-2.5 flex items-baseline gap-2.5 border-b border-neutral-100 pb-2.5">
+                    <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl"><i class="fa-solid fa-fire text-brand-red"></i> HOT ITEMS</span>
+                    <span class="text-[11px] text-brand-muted">Most popular right now</span>
+                </div>
+                {% include "core/components/_product_grid.html" with products=featured_products empty_title="No hot deals running right now" empty_note="New arrivals are added weekly — browse everything in stock meanwhile." empty_cta_url="?type=local#results" empty_cta_label="Browse Zambia stock" %}
+            </div>
+
+            <!-- ZAMBIA STOCK -->
+            <div class="reveal">
+                <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-100 pb-2.5">
+                    <div class="flex items-baseline gap-2.5">
+                        <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">🇿🇲 AVAILABLE IN ZAMBIA</span>
+                        <span class="text-[11px] text-brand-muted">Ready stock · Ships immediately</span>
                     </div>
+                    <a href="?type=local#results" class="text-xs font-semibold text-brand-muted transition hover:text-brand-red">View All ›</a>
                 </div>
-                <div class="product-grid-5">
-                    {% for product in featured_products %}
-                        <div class="prod-card">
-                            <a href="{% url 'product_detail' product.slug %}">
-                                <div class="prod-img-box">
-                                    {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
-                                    {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
-                                    {% if product.product_type == "local" %}<span class="badge b-tl b-local">ZM STOCK</span>
-                                    {% else %}<span class="badge b-tl b-china">CHINA</span>{% endif %}
-                                    {% if product.is_featured %}<span class="badge b-tr b-hot">HOT</span>{% endif %}
-                                </div>
-                            </a>
-                            <div class="prod-info">
-                                <a href="{% url 'product_detail' product.slug %}" class="prod-name-link clamp2">{{ product.name }}</a>
-                                <div class="prod-meta-row">
-                                    {% if product.product_type == "local" %}<span class="prod-type-pill local">Zambia stock</span>{% else %}<span class="prod-type-pill china">China pre-order</span>{% endif %}
-                                    {% if product.delivery_range %}<span class="delivery-pill">✈ {{ product.delivery_range }}</span>{% endif %}
-                                </div>
-                                <div class="price-label">Total price</div>
-                                <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                                <div class="price-deposit">35% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
-                                {% if request.user.is_authenticated %}
-                                    {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                                        <button disabled class="btn-cart btn-cart-disabled">Out of Stock</button>
-                                    {% else %}
-                                        <form method="POST" action="{% url 'add_to_cart' product.slug %}">{% csrf_token %}<button type="submit" class="btn-cart">Add to Cart</button></form>
-                                    {% endif %}
-                                {% else %}
-                                    <a href="{% url 'login' %}" class="btn-login">Login to Order</a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% empty %}
-                        <div class="empty-row">
-                            <div class="empty-row-body">
-                                <div class="empty-row-title">No hot deals running right now</div>
-                                <div class="empty-row-note">New arrivals are added weekly — browse everything in stock meanwhile.</div>
-                            </div>
-                            <a href="?type=local#results" class="empty-row-cta">Browse Zambia stock</a>
-                        </div>
-                    {% endfor %}
+                {% include "core/components/_product_grid.html" with products=local_products empty_title="No Zambia stock listed yet" empty_note="You can still pre-order from China, or tell us what you need and we will source it." empty_cta_url=request.path|add:"request-product/" empty_cta_label="Request a product" %}
+            </div>
+
+            <!-- PRE-ORDER -->
+            <div class="reveal">
+                <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-100 pb-2.5">
+                    <div class="flex items-baseline gap-2.5">
+                        <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">🇨🇳 PRE-ORDER FROM CHINA</span>
+                        <span class="text-[11px] text-brand-muted">Pay 35% deposit · Balance on arrival</span>
+                    </div>
+                    <a href="?type=preorder#results" class="text-xs font-semibold text-brand-muted transition hover:text-brand-red">View All ›</a>
                 </div>
+                {% include "core/components/_product_grid.html" with products=preorder_products empty_title="No pre-order items listed yet" empty_note="Tell us the product you want from China and we will quote you a price." %}
             </div>
             {% endif %}
 
-    <!-- ══ ZAMBIA STOCK (hidden when filtered) ══ -->
-    {% if not category_id and not product_type and not query %}
-    <div class="product-panel reveal">
-        <div class="section-head">
-            <div class="section-head-left">
-                <span class="section-head-title">🇿🇲 AVAILABLE IN ZAMBIA</span>
-                <span class="section-head-sub">Ready stock · Ships immediately</span>
-            </div>
-            <a href="?type=local#results" class="section-head-more">View All ›</a>
-        </div>
-        <div class="product-grid-dense">
-            {% for product in local_products %}
-                <div class="prod-card">
-                    <a href="{% url 'product_detail' product.slug %}">
-                        <div class="prod-img-box">
-                            {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
-                            {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
-                            <span class="badge b-tl b-local">STOCK: {{ product.stock_quantity }}</span>
-                        </div>
-                            </a>
-                            <div class="prod-info">
-                                <a href="{% url 'product_detail' product.slug %}" class="prod-name-link clamp2">{{ product.name }}</a>
-                                <div class="prod-meta-row">
-                                    <span class="prod-type-pill local">Zambia stock</span>
-                                    {% if product.delivery_range %}<span class="delivery-pill">✈ {{ product.delivery_range }}</span>{% endif %}
-                                </div>
-                                <div class="price-label">Total price</div>
-                                <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                                <div class="price-deposit">Deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
-                        {% if request.user.is_authenticated %}
-                            <form method="POST" action="{% url 'add_to_cart' product.slug %}">{% csrf_token %}<button type="submit" class="btn-cart">Add to Cart</button></form>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="btn-login">Login to Order</a>
-                        {% endif %}
-                    </div>
+            <!-- RECENTLY VIEWED -->
+            <section id="recentlyViewed" class="hidden">
+                <div class="mb-2.5 flex items-center justify-between">
+                    <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink">Recently Viewed</span>
+                    <button onclick="czClearRecentlyViewed()" class="text-[11px] font-bold text-brand-muted transition hover:text-brand-red">Clear</button>
                 </div>
-            {% empty %}
-                <div class="empty-row">
-                    <div class="empty-row-body">
-                        <div class="empty-row-title">No Zambia stock listed yet</div>
-                        <div class="empty-row-note">You can still pre-order from China, or tell us what you need and we will source it.</div>
-                    </div>
-                    <a href="{% url 'request_product' %}" class="empty-row-cta">Request a product</a>
+                <div class="no-scrollbar flex gap-2.5 overflow-x-auto pb-1" id="rvScroll"></div>
+            </section>
+
+            <!-- RECOMMENDED FOR YOU -->
+            <section id="recommendedSection" class="hidden">
+                <div class="mb-2.5 flex items-center justify-between">
+                    <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink">Recommended For You</span>
+                    <span class="text-[11px] text-brand-muted">Based on what you've viewed</span>
                 </div>
-            {% endfor %}
-        </div>
-    </div>
+                <div id="recommendedGrid"></div>
+            </section>
 
-    <!-- PRE-ORDER FROM CHINA -->
-    <div class="product-panel reveal">
-        <div class="section-head">
-            <div class="section-head-left">
-                <span class="section-head-title">🇨🇳 PRE-ORDER FROM CHINA</span>
-                <span class="section-head-sub">Pay 35% deposit · Balance on arrival</span>
-            </div>
-            <a href="?type=preorder#results" class="section-head-more">View All ›</a>
-        </div>
-        <div class="product-grid-dense">
-            {% for product in preorder_products %}
-                <div class="prod-card">
-                    <a href="{% url 'product_detail' product.slug %}">
-                        <div class="prod-img-box">
-                            {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
-                            {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
-                            <span class="badge b-tl b-china">CHINA</span>
-                        </div>
-                    </a>
-                    <div class="prod-info">
-                        <a href="{% url 'product_detail' product.slug %}" class="prod-name-link clamp2">{{ product.name }}</a>
-                        <div class="prod-meta-row">
-                            <span class="prod-type-pill china">China pre-order</span>
-                            {% if product.delivery_range %}<span class="delivery-pill">✈ {{ product.delivery_range }}</span>{% endif %}
-                        </div>
-                        <div class="price-label">Total price</div>
-                        <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                        <div class="price-deposit">35% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
-                        {% if request.user.is_authenticated %}
-                            <form method="POST" action="{% url 'add_to_cart' product.slug %}">{% csrf_token %}<button type="submit" class="btn-cart">Add to Cart</button></form>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="btn-login">Login to Order</a>
-                        {% endif %}
-                    </div>
-                </div>
-            {% empty %}
-                <div class="empty-row">
-                    <div class="empty-row-body">
-                        <div class="empty-row-title">No pre-order items listed yet</div>
-                        <div class="empty-row-note">Tell us the product you want from China and we will quote you a price.</div>
-                    </div>
-                    <a href="{% url 'request_product' %}" class="empty-row-cta">Request a product</a>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Recently Viewed (client-side, localStorage) -->
-    <section id="recentlyViewed">
-        <div class="rv-head">
-            <span class="rv-title">Recently Viewed</span>
-            <button class="rv-clear" onclick="czClearRecentlyViewed()">Clear</button>
-        </div>
-        <div class="rv-scroll" id="rvScroll"></div>
-    </section>
-
-    <!-- ══ RESULTS PANEL (always shown, anchor target) ══ -->
-    <div id="results">
-
-        <!-- Active filter context banner -->
-        {% if category_id or product_type or query %}
-        <div class="results-header">
-            <div class="results-header-icon">
-                {% if product_type == 'local' %}🇿🇲{% elif product_type == 'preorder' %}🇨🇳{% elif query %}🔍{% else %}📂{% endif %}
-            </div>
-            <div class="results-header-text">
-                <h3>
-                    {% if query %}Search results for "{{ query }}"{% elif product_type == 'local' %}Zambia Stock — Ready to Ship{% elif product_type == 'preorder' %}Pre-order from China{% elif category_id %}Category: {{ products.0.category.name|default:"Selected Category" }}{% endif %}
-                </h3>
-                <p>{{ products|length }} product{{ products|length|pluralize }} found</p>
-            </div>
-            <a href="{% url 'home' %}" class="results-header-clear">✕ Clear</a>
-        </div>
-        {% endif %}
-
-        <div class="product-panel reveal">
-            <div class="section-head">
-                <div class="section-head-left">
-                    <span class="section-head-title">
-                        {% if category_id or product_type or query %}🔍 RESULTS{% else %}🛍️ ALL PRODUCTS{% endif %}
-                    </span>
-                    <span class="section-head-sub">
-                        {% if category_id or product_type or query %}{{ products|length }} item{{ products|length|pluralize }} found{% else %}Browse everything{% endif %}
-                    </span>
-                </div>
+            <!-- RESULTS -->
+            <div id="results">
                 {% if category_id or product_type or query %}
-                <a href="{% url 'home' %}" class="section-head-more">Reset ✕</a>
+                <div class="reveal mb-3.5 flex items-center gap-3 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4.5 py-3.5">
+                    <div class="text-2xl text-amber-700">{% if product_type == 'local' %}🇿🇲{% elif product_type == 'preorder' %}🇨🇳{% elif query %}<i class="fa-solid fa-magnifying-glass"></i>{% else %}<i class="fa-solid fa-folder-open"></i>{% endif %}</div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-extrabold text-amber-900">
+                            {% if query %}Search results for "{{ query }}"{% elif product_type == 'local' %}Zambia Stock — Ready to Ship{% elif product_type == 'preorder' %}Pre-order from China{% elif category_id %}Category: {{ products.0.category.name|default:"Selected Category" }}{% endif %}
+                        </h3>
+                        <p class="mt-0.5 text-xs text-amber-700">{{ products|length }} product{{ products|length|pluralize }} found</p>
+                    </div>
+                    <a href="{% url 'home' %}" class="whitespace-nowrap rounded-full border border-amber-300 bg-white px-3.5 py-1.5 text-xs font-bold text-amber-800 transition hover:bg-brand-red hover:text-white hover:border-brand-red"><i class="fa-solid fa-xmark"></i> Clear</a>
+                </div>
                 {% endif %}
-            </div>
-            <div class="product-grid-dense">
-                {% for product in products %}
-                    <div class="prod-card">
-                        <a href="{% url 'product_detail' product.slug %}">
-                            <div class="prod-img-box">
-                                {% if product.display_image_url %}<img src="{{ product.display_image_url }}" alt="{{ product.name }}" class="prod-card-img" loading="lazy">
-                                {% else %}<div class="prod-no-img-box">No Image</div>{% endif %}
-                                {% if product.category %}<span class="badge b-tl" style="background:rgba(0,0,0,.55);color:#fff;font-size:9px;">{{ product.category.name }}</span>{% endif %}
-                                {% if product.is_featured %}<span class="badge b-tr b-hot">HOT</span>{% endif %}
-                                {% if product.product_type == "local" %}<span class="badge b-bl b-local">STK:{{ product.stock_quantity }}</span>
-                                {% else %}<span class="badge b-bl b-china">PRE-ORDER</span>{% endif %}
-                            </div>
-                        </a>
-                        <div class="prod-info">
-                            <a href="{% url 'product_detail' product.slug %}" class="prod-name-link clamp2">{{ product.name }}</a>
-                            <div class="prod-meta-row">
-                                {% if product.product_type == "local" %}<span class="prod-type-pill local">Zambia stock</span>{% else %}<span class="prod-type-pill china">China pre-order</span>{% endif %}
-                                {% if product.delivery_range %}<span class="delivery-pill">✈ {{ product.delivery_range }}</span>{% endif %}
-                            </div>
-                            <div class="price-label">Total price</div>
-                            <div class="price-row"><span class="price-curr">K</span><span class="price-main">{{ product.selling_price|floatformat:0|intcomma }}</span></div>
-                            <div class="price-deposit">35% deposit: <span>K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
-                            {% if request.user.is_authenticated %}
-                                {% if product.product_type == "local" and product.stock_quantity <= 0 %}
-                                    <button disabled class="btn-cart btn-cart-disabled">Out of Stock</button>
-                                {% else %}
-                                    <form method="POST" action="{% url 'add_to_cart' product.slug %}">{% csrf_token %}<button type="submit" class="btn-cart">Add to Cart</button></form>
-                                {% endif %}
-                            {% else %}
-                                <a href="{% url 'login' %}" class="btn-login">Login to Order</a>
-                            {% endif %}
-                        </div>
+
+                <div class="reveal overflow-hidden rounded-xl">
+                    {% include "core/components/_filter_sort_bar.html" %}
+                    <div class="pt-3.5">
+                        {% include "core/components/_product_grid.html" with products=products empty_title="No results found" empty_note="Try fewer or different keywords, clear the filter, or ask us to source it for you." empty_cta_url=request.path|add:"request-product/" empty_cta_label="Request a product" %}
                     </div>
-                {% empty %}
-                    <div class="empty-row">
-                        <div class="empty-row-body">
-                            {% if query %}
-                                <div class="empty-row-title">No results for “{{ query }}”</div>
-                                <div class="empty-row-note">Try fewer or different keywords — or ask us to source it for you.</div>
-                            {% else %}
-                                <div class="empty-row-title">Nothing matches this filter</div>
-                                <div class="empty-row-note">Clear the filter to see everything, or ask us to source a specific product.</div>
-                            {% endif %}
-                        </div>
-                        <a href="{% url 'request_product' %}" class="empty-row-cta">Request a product</a>
-                    </div>
-                {% endfor %}
+                </div>
             </div>
-        </div>
-    </div>
 
         </div>
     </div>
 
     <!-- HOW IT WORKS -->
-    <div class="how-panel">
-        <div class="section-head">
-            <div class="section-head-left">
-                <span class="section-head-title">HOW IT WORKS</span>
-                <span class="section-head-sub">Order in 4 easy steps</span>
-            </div>
+    <div class="mb-3.5 rounded-xl border border-brand-border bg-white">
+        <div class="border-b border-neutral-100 px-4 py-3">
+            <span class="font-display text-lg font-black tracking-wide text-brand-ink">HOW IT WORKS</span>
+            <span class="ml-2 text-[11px] text-brand-muted">Order in 4 easy steps</span>
         </div>
-        <div class="how-steps">
-            <div class="how-step">
-                <div class="how-step-num">1</div>
-                <div class="how-step-info"><h4>Browse & Add to Cart</h4><p>Find products from China or local Zambia stock. Add multiple items, checkout once.</p></div>
+        <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="flex items-start gap-3">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-red font-display text-base font-black text-white">1</div>
+                <div><h4 class="text-[13px] font-extrabold">Browse & Add to Cart</h4><p class="mt-1 text-xs leading-relaxed text-brand-muted">Find products from China or local Zambia stock. Add multiple items, checkout once.</p></div>
             </div>
-            <div class="how-step">
-                <div class="how-step-num">2</div>
-                <div class="how-step-info"><h4>Pay 35% Deposit</h4><p>Secure your order with just 35% upfront. Pay the balance when goods arrive.</p></div>
+            <div class="flex items-start gap-3">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-red font-display text-base font-black text-white">2</div>
+                <div><h4 class="text-[13px] font-extrabold">Pay 35% Deposit</h4><p class="mt-1 text-xs leading-relaxed text-brand-muted">Secure your order with just 35% upfront. Pay the balance when goods arrive.</p></div>
             </div>
-            <div class="how-step">
-                <div class="how-step-num">3</div>
-                <div class="how-step-info"><h4>Ask AI Assistant</h4><p>Track your order in your profile and ask the AI assistant for quick help anytime.</p></div>
+            <div class="flex items-start gap-3">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-red font-display text-base font-black text-white">3</div>
+                <div><h4 class="text-[13px] font-extrabold">Ask AI Assistant</h4><p class="mt-1 text-xs leading-relaxed text-brand-muted">Track your order in your profile and ask the AI assistant for quick help anytime.</p></div>
             </div>
-            <div class="how-step">
-                <div class="how-step-num">4</div>
-                <div class="how-step-info"><h4>Track & Receive</h4><p>Monitor your order in real-time. China orders delivered in 14–30 days.</p></div>
+            <div class="flex items-start gap-3">
+                <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-red font-display text-base font-black text-white">4</div>
+                <div><h4 class="text-[13px] font-extrabold">Track & Receive</h4><p class="mt-1 text-xs leading-relaxed text-brand-muted">Monitor your order in real-time. China orders delivered in 14–30 days.</p></div>
             </div>
         </div>
     </div>
 
     {% if testimonials %}
-    <div class="how-panel">
-        <div class="section-head">
-            <div class="section-head-left">
-                <span class="section-head-title">CUSTOMER REVIEWS</span>
-                <span class="section-head-sub">What buyers are saying</span>
-            </div>
+    <div class="mb-3.5 rounded-xl border border-brand-border bg-white">
+        <div class="border-b border-neutral-100 px-4 py-3">
+            <span class="font-display text-lg font-black tracking-wide text-brand-ink">CUSTOMER REVIEWS</span>
+            <span class="ml-2 text-[11px] text-brand-muted">What buyers are saying</span>
         </div>
-        <div class="testimonial-grid">
+        <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-3">
             {% for review in testimonials %}
-            <div class="testimonial-card">
-                <div class="testimonial-stars">★★★★★</div>
-                <p>{{ review.comment|default:"Great service from ChinaZed." }}</p>
-                <strong>{{ review.user.username }}</strong>
-                <span>{{ review.product.name }}</span>
+            <div class="rounded-lg border border-neutral-100 bg-neutral-50 p-4">
+                <div class="mb-2 space-x-0.5 text-amber-500"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                <p class="mb-2.5 text-xs leading-relaxed text-neutral-600">{{ review.comment|default:"Great service from ChinaZed." }}</p>
+                <strong class="block text-xs text-brand-ink">{{ review.user.username }}</strong>
+                <span class="text-[11px] text-brand-muted">{{ review.product.name }}</span>
             </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
 
-</div><!-- /page-body -->
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -788,29 +194,43 @@
             if (!wrap || !scroll || !list.length) return;
             scroll.innerHTML = list.map(function (p) {
                 var media = p.img
-                    ? '<img class="rv-img" loading="lazy" src="' + p.img + '" alt="">'
-                    : '<div class="rv-noimg">📦</div>';
+                    ? '<img class="h-[118px] w-full object-cover bg-neutral-100" loading="lazy" src="' + p.img + '" alt="">'
+                    : '<div class="grid h-[118px] w-full place-items-center bg-neutral-100 text-2xl text-neutral-400"><i class="fa-solid fa-box-open"></i></div>';
                 var name = (p.name || '').replace(/</g, '&lt;');
-                return '<a class="rv-card" href="' + p.url + '">' + media +
-                       '<div class="rv-info"><div class="rv-name">' + name + '</div>' +
-                       '<div class="rv-price">' + (p.price || '') + '</div></div></a>';
+                return '<a class="block w-[118px] flex-none overflow-hidden rounded-lg border border-neutral-200 bg-white transition hover:shadow-lg" href="' + p.url + '">' + media +
+                       '<div class="p-2"><div class="mb-1 h-[30px] overflow-hidden text-[11px] leading-tight text-brand-ink">' + name + '</div>' +
+                       '<div class="font-display text-sm font-black text-brand-orange">' + (p.price || '') + '</div></div></a>';
             }).join('');
-            wrap.style.display = 'block';
+            wrap.classList.remove('hidden');
         } catch (e) {}
     }
     function czClearRecentlyViewed() {
         try { localStorage.removeItem('czRecentlyViewed'); } catch (e) {}
         var wrap = document.getElementById('recentlyViewed');
-        if (wrap) wrap.style.display = 'none';
+        if (wrap) wrap.classList.add('hidden');
     }
     czRenderRecentlyViewed();
+
+    // ── Recommended For You (based on recently viewed categories) ──
+    (function () {
+        try {
+            var list = JSON.parse(localStorage.getItem('czRecentlyViewed') || '[]');
+            var categoryIds = [...new Set(list.map(function (p) { return p.category_id; }).filter(Boolean))].slice(0, 5);
+            if (!categoryIds.length) return;
+            var section = document.getElementById('recommendedSection');
+            var grid = document.getElementById('recommendedGrid');
+            if (!section || !grid || typeof htmx === 'undefined') return;
+            section.classList.remove('hidden');
+            htmx.ajax('GET', '{% url "home_recommendations" %}?categories=' + categoryIds.join(','), { target: '#recommendedGrid', swap: 'innerHTML' });
+        } catch (e) {}
+    })();
 
     // ── SCROLL TO RESULTS ──
     function scrollToResults(delay) {
         var el = document.getElementById('results');
         if (!el) return;
         setTimeout(function () {
-            var offset = 140; // header height
+            var offset = 140;
             var top = el.getBoundingClientRect().top + window.pageYOffset - offset;
             window.scrollTo({ top: top, behavior: 'smooth' });
         }, delay || 200);
@@ -819,20 +239,10 @@
     document.addEventListener('DOMContentLoaded', function () {
         var search = window.location.search;
         var hash = window.location.hash;
-
-        var hasFilter = search.includes('q=') ||
-                        search.includes('category=') ||
-                        search.includes('type=');
+        var hasFilter = search.includes('q=') || search.includes('category=') || search.includes('type=');
 
         if (hasFilter || hash === '#results') {
             scrollToResults(280);
-        }
-
-        var catSel = document.getElementById('searchCatSelect');
-        if (catSel) {
-            catSel.addEventListener('change', function () {
-                document.getElementById('searchForm').submit();
-            });
         }
 
         document.querySelectorAll('a[href*="#results"]').forEach(function (link) {
@@ -844,57 +254,6 @@
             sessionStorage.removeItem('czScrollResults');
             scrollToResults(300);
         }
-
-    // ── FLASH SALE COUNTDOWN ──
-    (function () {
-        var STORAGE_KEY = 'czFlashEnd';
-        var DURATION_HOURS = 24;
-        var now = Date.now();
-        var endTime = parseInt(localStorage.getItem(STORAGE_KEY), 10);
-        if (!endTime || endTime <= now) {
-            endTime = now + DURATION_HOURS * 60 * 60 * 1000;
-            localStorage.setItem(STORAGE_KEY, String(endTime));
-        }
-        function updateTimer() {
-            var diff = Math.max(0, endTime - Date.now());
-            var h = Math.floor(diff / 3600000);
-            var m = Math.floor((diff % 3600000) / 60000);
-            var s = Math.floor((diff % 60000) / 1000);
-            var el;
-            el = document.getElementById('fsHours'); if (el) el.textContent = String(h).padStart(2, '0');
-            el = document.getElementById('fsMins'); if (el) el.textContent = String(m).padStart(2, '0');
-            el = document.getElementById('fsSecs'); if (el) el.textContent = String(s).padStart(2, '0');
-            if (diff <= 0) {
-                endTime = Date.now() + DURATION_HOURS * 60 * 60 * 1000;
-                localStorage.setItem(STORAGE_KEY, String(endTime));
-            }
-            requestAnimationFrame(function () { setTimeout(updateTimer, 250); });
-        }
-        updateTimer();
-    })();
     });
-
-    // ── SCROLL REVEAL ──
-    (function () {
-        var obs = new IntersectionObserver(function (entries) {
-            entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.reveal').forEach(function (el) { obs.observe(el); });
-    })();
-
-    // ── SOCIAL PROOF COUNTER ──
-    (function () {
-        var base = 1247;
-        var el = document.getElementById('orderCount');
-        if (el) {
-            setInterval(function () { base += Math.floor(Math.random() * 3); el.textContent = base.toLocaleString(); }, 15000);
-        }
-        var vBase = 38;
-        var vEl = document.getElementById('viewers');
-        if (vEl) {
-            setInterval(function () { vBase += Math.floor(Math.random() * 5) - 2; if (vBase < 20) vBase = 20; if (vBase > 80) vBase = 80; vEl.textContent = vBase; }, 8000);
-        }
-    })();
 </script>
 {% endblock %}
-

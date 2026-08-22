@@ -2,185 +2,90 @@
 
 {% block title %}About ChinaZed · 中赞商城{% endblock %}
 
-{% block extra_style %}
-        .about-kicker {
-            font-size: 11px; font-weight: 900; letter-spacing: .12em;
-            color: var(--gold); text-transform: uppercase; margin-bottom: 8px;
-        }
-
-        /* TRUST STRIP */
-        .about-trust {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--card-radius); display: grid;
-            grid-template-columns: repeat(4, 1fr); margin-bottom: 14px; overflow: hidden;
-        }
-        .about-trust-item { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-right: 1px solid var(--border); }
-        .about-trust-item:last-child { border-right: none; }
-        .about-trust-icon {
-            flex-shrink: 0; min-width: 46px; height: 46px; padding: 0 8px;
-            border-radius: 10px; background: #FFF0F0; color: var(--red);
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 17px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .about-trust-text h3 { font-size: 12px; font-weight: 800; color: var(--ink); margin-bottom: 2px; }
-        .about-trust-text p { font-size: 11px; color: var(--muted); line-height: 1.6; }
-
-        /* REQUEST PANEL */
-        .about-request {
-            background: linear-gradient(135deg, #111 0%, #242424 48%, #4A0B0D 100%);
-            border: 1px solid #2b2b2b; border-radius: var(--card-radius);
-            color: #fff; margin-bottom: 14px; display: grid;
-            grid-template-columns: 1.25fr .75fr; overflow: hidden;
-        }
-        .about-request-copy { padding: 24px 28px; }
-        .about-request-copy h2 {
-            font-family: 'Barlow Condensed', sans-serif; font-size: 28px;
-            font-weight: 900; line-height: 1.1; margin-bottom: 8px;
-        }
-        .about-request-copy p { color: rgba(255,255,255,.78); line-height: 1.75; font-size: 13px; }
-        .about-request-sites { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-        .about-request-sites span {
-            background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18);
-            border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 800;
-        }
-        .about-request-action {
-            background: rgba(255,255,255,.06); padding: 24px; display: flex;
-            flex-direction: column; justify-content: center; gap: 10px;
-            border-left: 1px solid rgba(255,255,255,.08);
-        }
-        .about-request-action .cta {
-            display: inline-flex; align-items: center; justify-content: center;
-            background: var(--yellow); color: var(--red-dark); border-radius: 7px;
-            padding: 13px 16px; font-weight: 900; font-size: 13px; transition: background .15s;
-        }
-        .about-request-action .cta:hover { background: #ffe94d; }
-        .about-request-note { color: rgba(255,255,255,.62); font-size: 11px; line-height: 1.6; }
-
-        /* CLARITY */
-        .about-panel {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--card-radius); overflow: hidden; margin-bottom: 14px;
-        }
-        .about-panel-head {
-            padding: 14px 18px 12px; border-bottom: 1px solid #F0F0F0;
-            background: linear-gradient(to right, #FFFAF9, #fff);
-            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-        }
-        .about-panel-head h2 {
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 20px; color: var(--red); letter-spacing: .5px;
-        }
-        .about-panel-head p { font-size: 11px; color: var(--muted); }
-        .about-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
-        .about-card { padding: 18px; border-right: 1px solid #F0F0F0; border-bottom: 1px solid #F0F0F0; }
-        .about-card:nth-child(2n) { border-right: none; }
-        .about-card:nth-last-child(-n+2) { border-bottom: none; }
-        .about-card h3 { font-size: 13px; font-weight: 900; margin-bottom: 6px; color: var(--ink); }
-        .about-card p { font-size: 12px; color: var(--muted); line-height: 1.75; }
-
-        @media (max-width: 900px) {
-            .about-trust { grid-template-columns: repeat(2, 1fr); }
-            .about-trust-item:nth-child(2n) { border-right: none; }
-            .about-trust-item:nth-child(n+3) { border-top: 1px solid var(--border); }
-            .about-request { grid-template-columns: 1fr; }
-            .about-request-action { border-left: none; border-top: 1px solid rgba(255,255,255,.08); }
-        }
-        @media (max-width: 640px) {
-            .about-trust { grid-template-columns: 1fr; }
-            .about-trust-item { border-right: none; border-top: 1px solid var(--border); }
-            .about-trust-item:first-child { border-top: none; }
-            .about-request-copy, .about-request-action { padding: 18px; }
-            .about-request-copy h2 { font-size: 23px; }
-            .about-grid { grid-template-columns: 1fr; }
-            .about-card { border-right: none; }
-            .about-card:nth-last-child(2) { border-bottom: 1px solid #F0F0F0; }
-        }
-{% endblock %}
-
 {% block content %}
-<div class="page-body">
+<div class="mx-auto max-w-[1300px] px-4 py-3.5 sm:px-5">
 
     <!-- HERO -->
-    <div class="doc-hero">
-        <div class="about-kicker">About ChinaZed</div>
-        <h1>Buy from China with local Zambia support.</h1>
-        <p>ChinaZed helps customers in Zambia pre-order products from China, understand payment steps clearly, and get local help from quote to delivery.</p>
+    <div class="mb-3.5 rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 p-6 text-white sm:p-7">
+        <div class="mb-2 text-[11px] font-black uppercase tracking-[0.12em] text-brand-gold">About ChinaZed</div>
+        <h1 class="font-display text-3xl font-black leading-tight sm:text-4xl">Buy from China with local Zambia support.</h1>
+        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-white/75">ChinaZed helps customers in Zambia pre-order products from China, understand payment steps clearly, and get local help from quote to delivery.</p>
     </div>
 
     <!-- TRUST STRIP -->
-    <div class="about-trust">
-        <div class="about-trust-item">
-            <div class="about-trust-icon">35%</div>
-            <div class="about-trust-text">
-                <h3>35% deposit only</h3>
-                <p>Secure China pre-orders without paying the full amount upfront.</p>
+    <div class="mb-3.5 grid grid-cols-1 divide-y divide-brand-border rounded-xl border border-brand-border bg-white sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+        <div class="flex items-center gap-3 p-4">
+            <div class="grid h-[46px] min-w-[46px] shrink-0 place-items-center rounded-lg bg-red-50 px-2 font-display text-lg font-black text-brand-red">35%</div>
+            <div>
+                <h3 class="text-xs font-extrabold text-brand-ink">35% deposit only</h3>
+                <p class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Secure China pre-orders without paying the full amount upfront.</p>
             </div>
         </div>
-        <div class="about-trust-item">
-            <div class="about-trust-icon">✓</div>
-            <div class="about-trust-text">
-                <h3>AI assistant support</h3>
-                <p>Orders are confirmed before sourcing and shipping begins.</p>
+        <div class="flex items-center gap-3 p-4">
+            <div class="grid h-[46px] min-w-[46px] shrink-0 place-items-center rounded-lg bg-red-50 text-lg text-brand-red"><i class="fa-solid fa-robot"></i></div>
+            <div>
+                <h3 class="text-xs font-extrabold text-brand-ink">AI assistant support</h3>
+                <p class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Orders are confirmed before sourcing and shipping begins.</p>
             </div>
         </div>
-        <div class="about-trust-item">
-            <div class="about-trust-icon">14-30</div>
-            <div class="about-trust-text">
-                <h3>14-30 day delivery</h3>
-                <p>Clear estimated delivery window for China pre-orders.</p>
+        <div class="flex items-center gap-3 p-4">
+            <div class="grid h-[46px] min-w-[46px] shrink-0 place-items-center rounded-lg bg-red-50 px-2 font-display text-lg font-black text-brand-red">14-30</div>
+            <div>
+                <h3 class="text-xs font-extrabold text-brand-ink">14-30 day delivery</h3>
+                <p class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Clear estimated delivery window for China pre-orders.</p>
             </div>
         </div>
-        <div class="about-trust-item">
-            <div class="about-trust-icon">🇿🇲</div>
-            <div class="about-trust-text">
-                <h3>Local Zambia support</h3>
-                <p>Get local help with order updates, pickup, and delivery.</p>
+        <div class="flex items-center gap-3 p-4">
+            <div class="grid h-[46px] min-w-[46px] shrink-0 place-items-center rounded-lg bg-red-50 text-lg">🇿🇲</div>
+            <div>
+                <h3 class="text-xs font-extrabold text-brand-ink">Local Zambia support</h3>
+                <p class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Get local help with order updates, pickup, and delivery.</p>
             </div>
         </div>
     </div>
 
     <!-- REQUEST PANEL -->
-    <div class="about-request">
-        <div class="about-request-copy">
-            <div class="about-kicker">Request any product from China</div>
-            <h2>Send us a product link and we will quote the Zambia price.</h2>
-            <p>Found something online but it is not listed yet? Share a product link from Alibaba, Taobao, Temu, 1688, Shein, or another China supplier. We will check availability, estimate shipping, and prepare a clear landed price in kwacha.</p>
-            <div class="about-request-sites">
-                <span>Alibaba</span>
-                <span>Taobao</span>
-                <span>Temu</span>
-                <span>1688</span>
-                <span>Shein</span>
+    <div class="mb-3.5 grid grid-cols-1 overflow-hidden rounded-xl border border-neutral-800 bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 text-white lg:grid-cols-[1.25fr_.75fr]">
+        <div class="p-6 sm:p-7">
+            <div class="mb-2 text-[11px] font-black uppercase tracking-[0.12em] text-brand-gold">Request any product from China</div>
+            <h2 class="font-display text-2xl font-black leading-tight sm:text-3xl">Send us a product link and we will quote the Zambia price.</h2>
+            <p class="mt-2 text-sm leading-relaxed text-white/75">Found something online but it is not listed yet? Share a product link from Alibaba, Taobao, Temu, 1688, Shein, or another China supplier. We will check availability, estimate shipping, and prepare a clear landed price in kwacha.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold">Alibaba</span>
+                <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold">Taobao</span>
+                <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold">Temu</span>
+                <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold">1688</span>
+                <span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold">Shein</span>
             </div>
         </div>
-        <div class="about-request-action">
-            <a href="{% url 'request_product' %}" class="cta">Request a product quote</a>
-            <div class="about-request-note">This keeps product requests linked to your profile, so quotes and order updates are easier to track.</div>
+        <div class="flex flex-col justify-center gap-2.5 border-t border-white/10 bg-white/5 p-6 lg:border-l lg:border-t-0">
+            <a href="{% url 'request_product' %}" class="inline-flex items-center justify-center rounded-lg bg-brand-yellow px-4 py-3.5 text-sm font-black text-brand-red-dark transition hover:brightness-105">Request a product quote</a>
+            <div class="text-[11px] leading-relaxed text-white/60">This keeps product requests linked to your profile, so quotes and order updates are easier to track.</div>
         </div>
     </div>
 
     <!-- CLARITY -->
-    <div class="about-panel">
-        <div class="about-panel-head">
-            <h2>BUY WITH CLARITY</h2>
-            <p>What happens after you order</p>
+    <div class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex flex-wrap items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3.5">
+            <h2 class="font-display text-xl font-black tracking-wide text-brand-ink">BUY WITH CLARITY</h2>
+            <p class="text-[11px] text-brand-muted">What happens after you order</p>
         </div>
-        <div class="about-grid">
-            <div class="about-card">
-                <h3>How payment works</h3>
-                <p>Pre-order items start with a 35% deposit. Local stock can be paid for when checking out or as arranged after confirmation.</p>
+        <div class="grid grid-cols-1 divide-y divide-neutral-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+            <div class="p-5">
+                <h3 class="mb-1.5 text-[13px] font-black text-brand-ink">How payment works</h3>
+                <p class="text-xs leading-relaxed text-brand-muted">Pre-order items start with a 35% deposit. Local stock can be paid for when checking out or as arranged after confirmation.</p>
             </div>
-            <div class="about-card">
-                <h3>When balance is paid</h3>
-                <p>The remaining balance is paid when your China order arrives and is ready for pickup or local delivery.</p>
+            <div class="p-5">
+                <h3 class="mb-1.5 text-[13px] font-black text-brand-ink">When balance is paid</h3>
+                <p class="text-xs leading-relaxed text-brand-muted">The remaining balance is paid when your China order arrives and is ready for pickup or local delivery.</p>
             </div>
-            <div class="about-card">
-                <h3>If an item is unavailable</h3>
-                <p>We confirm availability before final sourcing. If a product is not available, we help find an alternative or adjust the order.</p>
+            <div class="border-t border-neutral-100 p-5 sm:border-t">
+                <h3 class="mb-1.5 text-[13px] font-black text-brand-ink">If an item is unavailable</h3>
+                <p class="text-xs leading-relaxed text-brand-muted">We confirm availability before final sourcing. If a product is not available, we help find an alternative or adjust the order.</p>
             </div>
-            <div class="about-card">
-                <h3>Refunds and changes</h3>
-                <p>If an order cannot be fulfilled after confirmation, your deposit can be moved to another item or handled according to the <a href="{% url 'order_policy' %}" style="color:var(--red);font-weight:700;">order policy</a>.</p>
+            <div class="border-t border-neutral-100 p-5 sm:border-t">
+                <h3 class="mb-1.5 text-[13px] font-black text-brand-ink">Refunds and changes</h3>
+                <p class="text-xs leading-relaxed text-brand-muted">If an order cannot be fulfilled after confirmation, your deposit can be moved to another item or handled according to the <a href="{% url 'order_policy' %}" class="font-bold text-brand-red hover:underline">order policy</a>.</p>
             </div>
         </div>
     </div>

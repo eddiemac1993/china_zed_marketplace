@@ -25,6 +25,7 @@ from .forms import (
     PaymentProofForm,
 )
 from .marketplace_importer import ImportFailure, import_marketplace_product
+from .utils import with_display_annotations, apply_sort
 from .models import (
     Product,
     ProductReview,
@@ -260,25 +261,26 @@ def home(request):
     query = request.GET.get("q", "").strip()
     category_id = request.GET.get("category", "").strip()
     product_type = request.GET.get("type", "").strip()
+    sort = request.GET.get("sort", "").strip()
 
     products = Product.objects.filter(is_available=True).order_by("-created_at")
     categories = Category.objects.all().order_by("name")
 
-    featured_products = Product.objects.filter(
+    featured_products = with_display_annotations(Product.objects.filter(
         is_available=True,
         is_featured=True
-    ).order_by("-created_at")[:8]
+    )).order_by("-created_at")[:8]
 
-    local_products = Product.objects.filter(
+    local_products = with_display_annotations(Product.objects.filter(
         is_available=True,
         product_type="local",
         stock_quantity__gt=0
-    ).order_by("-created_at")[:10]
+    )).order_by("-created_at")[:10]
 
-    preorder_products = Product.objects.filter(
+    preorder_products = with_display_annotations(Product.objects.filter(
         is_available=True,
         product_type="preorder"
-    ).order_by("-created_at")[:10]
+    )).order_by("-created_at")[:10]
 
     testimonials = ProductReview.objects.filter(
         is_approved=True
@@ -293,6 +295,9 @@ def home(request):
     if product_type in ["local", "preorder"]:
         products = products.filter(product_type=product_type)
 
+    products = with_display_annotations(products)
+    products = apply_sort(products, sort) if sort else products.order_by("-created_at")
+
     cart_count = 0
     if request.user.is_authenticated:
         cart_count = get_user_cart(request.user).total_items()
@@ -303,11 +308,42 @@ def home(request):
         "query": query,
         "category_id": category_id,
         "product_type": product_type,
+        "sort": sort,
         "featured_products": featured_products,
         "local_products": local_products,
         "preorder_products": preorder_products,
         "testimonials": testimonials,
         "cart_count": cart_count,
+    })
+
+
+@ratelimit(key="ip", rate="60/m", method="GET", block=True)
+def search_suggestions_view(request):
+    query = request.GET.get("q", "").strip()
+    suggestions = []
+    if len(query) >= 2:
+        suggestions = Product.objects.filter(
+            is_available=True, name__icontains=query
+        ).order_by("-is_featured", "-created_at")[:6]
+
+    return render(request, "core/components/_search_suggestions.html", {
+        "suggestions": suggestions,
+        "query": query,
+    })
+
+
+def home_recommendations_view(request):
+    raw_ids = request.GET.get("categories", "")
+    category_ids = [c for c in raw_ids.split(",") if c.strip().isdigit()]
+
+    products = []
+    if category_ids:
+        products = with_display_annotations(Product.objects.filter(
+            is_available=True, category_id__in=category_ids
+        )).order_by("-is_featured", "-created_at")[:10]
+
+    return render(request, "core/components/_product_grid.html", {
+        "products": products,
     })
 
 
@@ -598,7 +634,11 @@ def cart_view(request):
     cart = get_user_cart(request.user)
     cart_items = cart.items.select_related("product", "product__category")
 
-    return render(request, "core/cart.html", {
+    template = "core/cart.html"
+    if request.headers.get("HX-Request"):
+        template = "core/components/_cart_drawer_body.html"
+
+    return render(request, template, {
         "cart": cart,
         "cart_items": cart_items,
         "cart_count": cart.total_items(),

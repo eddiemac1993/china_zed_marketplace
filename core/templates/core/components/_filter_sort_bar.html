@@ -1,0 +1,24 @@
+<div class="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4 py-3 sm:px-4.5">
+    <div class="flex flex-wrap items-center gap-2.5">
+        <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">
+            {% if category_id or product_type or query %}<i class="fa-solid fa-magnifying-glass text-base"></i> RESULTS{% else %}<i class="fa-solid fa-bag-shopping text-base"></i> ALL PRODUCTS{% endif %}
+        </span>
+        <span class="text-[11px] text-brand-muted">{{ products|length }} item{{ products|length|pluralize }} found</span>
+    </div>
+    <form method="GET" action="{% url 'home' %}" class="flex items-center gap-2">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+        {% if category_id %}<input type="hidden" name="category" value="{{ category_id }}">{% endif %}
+        {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
+        <label class="text-[11px] font-semibold text-brand-muted" for="sortSelect">Sort</label>
+        <select id="sortSelect" name="sort" onchange="this.form.submit()"
+                class="rounded-md border border-brand-border bg-white px-2.5 py-1.5 text-xs font-semibold text-brand-ink outline-none focus:border-brand-red">
+            <option value="newest" {% if sort == "newest" or not sort %}selected{% endif %}>Newest</option>
+            <option value="popular" {% if sort == "popular" %}selected{% endif %}>Most Popular</option>
+            <option value="price_low" {% if sort == "price_low" %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_high" {% if sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
+        </select>
+        {% if category_id or product_type or query or sort %}
+        <a href="{% url 'home' %}" class="rounded-md border border-brand-border px-2.5 py-1.5 text-[11px] font-bold text-brand-muted transition hover:border-brand-red hover:text-brand-red">Reset <i class="fa-solid fa-xmark"></i></a>
+        {% endif %}
+    </form>
+</div>

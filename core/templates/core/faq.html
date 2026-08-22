@@ -3,41 +3,57 @@
 {% block title %}FAQ · ChinaZed 中赞商城{% endblock %}
 
 {% block content %}
-<div class="page-body">
-    <div class="doc-wrap">
+<div class="mx-auto max-w-[900px] px-4 py-3.5 sm:px-5">
 
-        <div class="doc-hero">
-            <h1>Frequently Asked Questions</h1>
-            <p>Clear answers about deposits, delivery, product requests, balance payments, and order changes.</p>
-        </div>
-
-        <div class="doc-list">
-            <div class="doc-item">
-                <h2>Why is the deposit 35%?</h2>
-                <p>The 35% deposit confirms your order and helps secure the product from the supplier before shipping begins. The balance is paid when the goods arrive and are ready for pickup or delivery.</p>
-            </div>
-            <div class="doc-item">
-                <h2>How long does shipping take?</h2>
-                <p>China pre-orders usually show a 14-30 day delivery window. Some items can take longer because of supplier delays, shipping schedules, customs, or holidays.</p>
-            </div>
-            <div class="doc-item">
-                <h2>Can I send my own product link?</h2>
-                <p>Yes. Use the <a href="{% url 'request_product' %}" style="color:var(--red);font-weight:700;">product request form</a> to send links from Alibaba, Taobao, Temu, 1688, Shein, or another supplier. We will check availability and prepare a Zambia price quote.</p>
-            </div>
-            <div class="doc-item">
-                <h2>What if my item is unavailable?</h2>
-                <p>We confirm availability before final sourcing. If the item is unavailable, we can help find an alternative, adjust the order, or handle the deposit according to the <a href="{% url 'order_policy' %}" style="color:var(--red);font-weight:700;">order policy</a>.</p>
-            </div>
-            <div class="doc-item">
-                <h2>When do I pay the balance?</h2>
-                <p>The balance is paid when your China order arrives in Zambia and is ready for pickup or local delivery.</p>
-            </div>
-            <div class="doc-item">
-                <h2>Why must I verify my email?</h2>
-                <p>Email verification prevents fake accounts and helps make sure order updates, activation links, and receipts go to the right customer.</p>
-            </div>
-        </div>
-
+    <div class="mb-3.5 rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 p-6 text-white sm:p-7">
+        <h1 class="font-display text-3xl font-black leading-tight sm:text-4xl">Frequently Asked Questions</h1>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed text-white/75">Clear answers about deposits, delivery, product requests, balance payments, and order changes.</p>
     </div>
+
+    <div class="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white" x-data="{ open: 0 }">
+        <div class="px-5 py-4">
+            <button type="button" class="flex w-full items-center justify-between gap-3 text-left" @click="open = open === 1 ? null : 1">
+                <h2 class="text-sm font-extrabold text-brand-red">Why is the deposit 35%?</h2>
+                <i class="fa-solid fa-chevron-down shrink-0 text-brand-muted transition-transform" :class="open === 1 ? 'rotate-180' : ''"></i>
+            </button>
+            <p class="mt-2.5 text-sm leading-relaxed text-neutral-600" x-show="open === 1" x-collapse>The 35% deposit confirms your order and helps secure the product from the supplier before shipping begins. The balance is paid when the goods arrive and are ready for pickup or delivery.</p>
+        </div>
+        <div class="px-5 py-4">
+            <button type="button" class="flex w-full items-center justify-between gap-3 text-left" @click="open = open === 2 ? null : 2">
+                <h2 class="text-sm font-extrabold text-brand-red">How long does shipping take?</h2>
+                <i class="fa-solid fa-chevron-down shrink-0 text-brand-muted transition-transform" :class="open === 2 ? 'rotate-180' : ''"></i>
+            </button>
+            <p class="mt-2.5 text-sm leading-relaxed text-neutral-600" x-show="open === 2" x-collapse>China pre-orders usually show a 14-30 day delivery window. Some items can take longer because of supplier delays, shipping schedules, customs, or holidays.</p>
+        </div>
+        <div class="px-5 py-4">
+            <button type="button" class="flex w-full items-center justify-between gap-3 text-left" @click="open = open === 3 ? null : 3">
+                <h2 class="text-sm font-extrabold text-brand-red">Can I send my own product link?</h2>
+                <i class="fa-solid fa-chevron-down shrink-0 text-brand-muted transition-transform" :class="open === 3 ? 'rotate-180' : ''"></i>
+            </button>
+            <p class="mt-2.5 text-sm leading-relaxed text-neutral-600" x-show="open === 3" x-collapse>Yes. Use the <a href="{% url 'request_product' %}" class="font-bold text-brand-red hover:underline">product request form</a> to send links from Alibaba, Taobao, Temu, 1688, Shein, or another supplier. We will check availability and prepare a Zambia price quote.</p>
+        </div>
+        <div class="px-5 py-4">
+            <button type="button" class="flex w-full items-center justify-between gap-3 text-left" @click="open = open === 4 ? null : 4">
+                <h2 class="text-sm font-extrabold text-brand-red">What if my item is unavailable?</h2>
+                <i class="fa-solid fa-chevron-down shrink-0 text-brand-muted transition-transform" :class="open === 4 ? 'rotate-180' : ''"></i>
+            </button>
+            <p class="mt-2.5 text-sm leading-relaxed text-neutral-600" x-show="open === 4" x-collapse>We confirm availability before final sourcing. If the item is unavailable, we can help find an alternative, adjust the order, or handle the deposit according to the <a href="{% url 'order_policy' %}" class="font-bold text-brand-red hover:underline">order policy</a>.</p>
+        </div>
+        <div class="px-5 py-4">
+            <button type="button" class="flex w-full items-center justify-between gap-3 text-left" @click="open = open === 5 ? null : 5">
+                <h2 class="text-sm font-extrabold text-brand-red">When do I pay the balance?</h2>
+                <i class="fa-solid fa-chevron-down shrink-0 text-brand-muted transition-transform" :class="open === 5 ? 'rotate-180' : ''"></i>
+            </button>
+            <p class="mt-2.5 text-sm leading-relaxed text-neutral-600" x-show="open === 5" x-collapse>The balance is paid when your China order arrives in Zambia and is ready for pickup or local delivery.</p>
+        </div>
+        <div class="px-5 py-4">
+            <button type="button" class="flex w-full items-center justify-between gap-3 text-left" @click="open = open === 6 ? null : 6">
+                <h2 class="text-sm font-extrabold text-brand-red">Why must I verify my email?</h2>
+                <i class="fa-solid fa-chevron-down shrink-0 text-brand-muted transition-transform" :class="open === 6 ? 'rotate-180' : ''"></i>
+            </button>
+            <p class="mt-2.5 text-sm leading-relaxed text-neutral-600" x-show="open === 6" x-collapse>Email verification prevents fake accounts and helps make sure order updates, activation links, and receipts go to the right customer.</p>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.views.generic import RedirectView
 from django.urls import reverse
 from core.models import Product
+from core.forms import StyledPasswordResetForm, StyledSetPasswordForm
 
 
 
@@ -76,7 +77,8 @@ urlpatterns = [
             email_template_name="core/password_reset_email.txt",
             html_email_template_name="core/password_reset_email.html",
             subject_template_name="core/password_reset_subject.txt",
-            success_url="/password-reset/done/"
+            success_url="/password-reset/done/",
+            form_class=StyledPasswordResetForm,
         ),
         name="password_reset",
     ),
@@ -93,7 +95,8 @@ urlpatterns = [
         "reset/<uidb64>/<token>/",
         auth_views.PasswordResetConfirmView.as_view(
             template_name="core/password_reset_confirm.html",
-            success_url="/reset/done/"
+            success_url="/reset/done/",
+            form_class=StyledSetPasswordForm,
         ),
         name="password_reset_confirm",
     ),

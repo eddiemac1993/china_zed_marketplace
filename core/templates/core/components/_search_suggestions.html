@@ -1,0 +1,19 @@
+{% load humanize %}
+{% if suggestions %}
+    {% for product in suggestions %}
+        <a href="{% url 'product_detail' product.slug %}"
+           class="flex items-center gap-3 px-3 py-2 text-left transition hover:bg-orange-50">
+            <div class="h-10 w-10 shrink-0 overflow-hidden rounded bg-neutral-100">
+                {% if product.display_image_url %}
+                    <img src="{{ product.display_image_url }}" alt="" class="h-full w-full object-cover">
+                {% endif %}
+            </div>
+            <div class="min-w-0 flex-1">
+                <div class="truncate text-xs font-medium text-brand-ink">{{ product.name }}</div>
+                <div class="text-[11px] font-bold text-brand-orange">K{{ product.selling_price|floatformat:0|intcomma }}</div>
+            </div>
+        </a>
+    {% endfor %}
+{% elif query|length >= 2 %}
+    <div class="px-3 py-3 text-xs text-brand-muted">No products match “{{ query }}” yet.</div>
+{% endif %}

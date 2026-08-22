@@ -2,178 +2,101 @@
 
 {% block title %}Become a Supplier · ChinaZed 中赞商城{% endblock %}
 
-{% block extra_style %}
-        .gate-wrap { max-width: 860px; margin: 0 auto; }
-
-        .gate-hero {
-            background: linear-gradient(135deg, #111 0%, #2a2a2a 45%, #4A0B0D 100%);
-            border-radius: var(--card-radius); padding: 30px 28px; color: #fff;
-            margin-bottom: 14px; position: relative; overflow: hidden; text-align: center;
-        }
-        .gate-hero::after {
-            content: '🏪'; position: absolute; right: -10px; bottom: -22px;
-            font-size: 120px; opacity: .08; pointer-events: none;
-        }
-        .gate-badge {
-            display: inline-block; background: var(--yellow); color: var(--red-dark);
-            font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase;
-            padding: 4px 12px; border-radius: 4px; margin-bottom: 12px;
-        }
-        .gate-hero h1 {
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 34px; line-height: 1.05; margin-bottom: 9px;
-        }
-        .gate-hero p {
-            font-size: 13px; color: rgba(255,255,255,.78); line-height: 1.75;
-            max-width: 560px; margin: 0 auto;
-        }
-
-        .gate-card {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--card-radius); overflow: hidden; margin-bottom: 14px;
-        }
-        .gate-card-head {
-            padding: 13px 18px; border-bottom: 1px solid #F0F0F0;
-            background: linear-gradient(to right, #FFFAF9, #fff);
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-            font-size: 18px; color: var(--red); letter-spacing: .4px;
-        }
-        .gate-card-body { padding: 20px 18px; }
-
-        .gate-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .gate-step { text-align: center; }
-        .gate-step-num {
-            width: 38px; height: 38px; border-radius: 50%; background: var(--red); color: #fff;
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 18px;
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
-        }
-        .gate-step h4 { font-size: 13px; font-weight: 900; margin-bottom: 5px; color: var(--ink); }
-        .gate-step p { font-size: 11px; color: var(--muted); line-height: 1.65; }
-
-        .gate-contact {
-            display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 4px;
-        }
-        .gate-btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-            border-radius: 7px; padding: 13px 22px; font-size: 13px; font-weight: 900;
-            transition: all .15s; white-space: nowrap;
-        }
-        .gate-btn.primary { background: var(--red); color: #fff; }
-        .gate-btn.primary:hover { background: var(--red-dark); }
-        .gate-btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
-        .gate-btn.ghost:hover { border-color: var(--red); color: var(--red); }
-
-        .gate-why { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .gate-why-item { display: flex; gap: 10px; }
-        .gate-why-icon { font-size: 19px; flex-shrink: 0; line-height: 1.25; }
-        .gate-why-item h5 { font-size: 12px; font-weight: 900; color: var(--ink); margin-bottom: 3px; }
-        .gate-why-item p { font-size: 11px; color: var(--muted); line-height: 1.65; }
-
-        .gate-note {
-            background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF;
-            border-radius: 7px; padding: 12px 14px; font-size: 12px; line-height: 1.65;
-        }
-
-        @media (max-width: 640px) {
-            .gate-hero { padding: 24px 18px; }
-            .gate-hero h1 { font-size: 26px; }
-            .gate-steps, .gate-why { grid-template-columns: 1fr; gap: 18px; }
-            .gate-btn { width: 100%; }
-        }
-{% endblock %}
-
 {% block content %}
-<div class="page-body">
-    <div class="gate-wrap">
+<div class="mx-auto max-w-[860px] px-4 py-3.5 sm:px-5">
 
-        <div class="gate-hero">
-            <div class="gate-badge">🏪 Supplier Programme</div>
-            <h1>Sell your products on ChinaZed</h1>
-            <p>Our supplier portal is open to approved partners only. Get approved once, then list your products any time — whether you hold stock in Zambia or source from China.</p>
+    <div class="relative mb-3.5 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 p-7 text-center text-white sm:p-9">
+        <i class="fa-solid fa-store pointer-events-none absolute -bottom-5 -right-2 text-[130px] text-white/[0.06]"></i>
+        <div class="relative z-10">
+            <div class="mb-3 inline-block rounded bg-brand-yellow px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-brand-red-dark"><i class="fa-solid fa-store"></i> Supplier Programme</div>
+            <h1 class="font-display text-3xl font-black leading-tight sm:text-4xl">Sell your products on ChinaZed</h1>
+            <p class="mx-auto mt-2.5 max-w-lg text-sm leading-relaxed text-white/80">Our supplier portal is open to approved partners only. Get approved once, then list your products any time — whether you hold stock in Zambia or source from China.</p>
         </div>
-
-        <div class="gate-card">
-            <div class="gate-card-head">HOW TO GET APPROVED</div>
-            <div class="gate-card-body">
-                <div class="gate-steps">
-                    <div class="gate-step">
-                        <div class="gate-step-num">1</div>
-                        <h4>Get in touch</h4>
-                        <p>Message our team on WhatsApp or email and tell us what you supply.</p>
-                    </div>
-                    <div class="gate-step">
-                        <div class="gate-step-num">2</div>
-                        <h4>Quick check</h4>
-                        <p>We confirm your details and the kind of products you can provide.</p>
-                    </div>
-                    <div class="gate-step">
-                        <div class="gate-step-num">3</div>
-                        <h4>Start listing</h4>
-                        <p>We enable the supplier portal on your account and you can post products.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="gate-card">
-            <div class="gate-card-head">GET IN TOUCH</div>
-            <div class="gate-card-body">
-                {% if not request.user.is_authenticated %}
-                    <div class="gate-note" style="margin-bottom:16px;">
-                        💡 Already approved as a supplier? <a href="{% url 'login' %}" style="color:#1E40AF;font-weight:900;text-decoration:underline;">Sign in</a> to reach your supplier portal.
-                    </div>
-                {% else %}
-                    <div class="gate-note" style="margin-bottom:16px;">
-                        💡 You are signed in as <strong>{{ request.user.username }}</strong>. Once our team approves your account, the supplier portal will appear in your profile automatically.
-                    </div>
-                {% endif %}
-
-                <div class="gate-contact">
-                    <a href="https://wa.me/260766491002?text=Hello%20ChinaZed%2C%20I%20would%20like%20to%20become%20an%20approved%20supplier."
-                       class="gate-btn primary" target="_blank" rel="noopener">💬 Chat on WhatsApp</a>
-                    <a href="mailto:chinatozambia.zm@gmail.com?subject=Supplier%20application%20-%20ChinaZed"
-                       class="gate-btn ghost">✉️ Email our team</a>
-                    <a href="{% url 'home' %}" class="gate-btn ghost">← Back to marketplace</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="gate-card">
-            <div class="gate-card-head">WHY SELL WITH US</div>
-            <div class="gate-card-body">
-                <div class="gate-why">
-                    <div class="gate-why-item">
-                        <span class="gate-why-icon">🇿🇲</span>
-                        <div>
-                            <h5>Ready-made buyers</h5>
-                            <p>Reach shoppers across Zambia already searching for products like yours.</p>
-                        </div>
-                    </div>
-                    <div class="gate-why-item">
-                        <span class="gate-why-icon">💰</span>
-                        <div>
-                            <h5>No listing fees</h5>
-                            <p>Submitting products is free. You quote your supply price, we handle the rest.</p>
-                        </div>
-                    </div>
-                    <div class="gate-why-item">
-                        <span class="gate-why-icon">📦</span>
-                        <div>
-                            <h5>We manage the order</h5>
-                            <p>Deposits, buyer questions, and delivery updates are handled by our team.</p>
-                        </div>
-                    </div>
-                    <div class="gate-why-item">
-                        <span class="gate-why-icon">✅</span>
-                        <div>
-                            <h5>Trusted marketplace</h5>
-                            <p>Every product is reviewed, so buyers trust what they order from you.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
+
+    <div class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">HOW TO GET APPROVED</div>
+        <div class="grid grid-cols-1 gap-5 p-5 text-center sm:grid-cols-3">
+            <div>
+                <div class="mx-auto mb-2.5 grid h-9 w-9 place-items-center rounded-full bg-brand-red font-display text-lg font-black text-white">1</div>
+                <h4 class="mb-1 text-[13px] font-black text-brand-ink">Get in touch</h4>
+                <p class="text-[11px] leading-relaxed text-brand-muted">Message our team on WhatsApp or email and tell us what you supply.</p>
+            </div>
+            <div>
+                <div class="mx-auto mb-2.5 grid h-9 w-9 place-items-center rounded-full bg-brand-red font-display text-lg font-black text-white">2</div>
+                <h4 class="mb-1 text-[13px] font-black text-brand-ink">Quick check</h4>
+                <p class="text-[11px] leading-relaxed text-brand-muted">We confirm your details and the kind of products you can provide.</p>
+            </div>
+            <div>
+                <div class="mx-auto mb-2.5 grid h-9 w-9 place-items-center rounded-full bg-brand-red font-display text-lg font-black text-white">3</div>
+                <h4 class="mb-1 text-[13px] font-black text-brand-ink">Start listing</h4>
+                <p class="text-[11px] leading-relaxed text-brand-muted">We enable the supplier portal on your account and you can post products.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">GET IN TOUCH</div>
+        <div class="p-5">
+            {% if not request.user.is_authenticated %}
+                <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-900">
+                    <i class="fa-solid fa-circle-info"></i> Already approved as a supplier? <a href="{% url 'login' %}" class="font-black text-blue-800 underline">Sign in</a> to reach your supplier portal.
+                </div>
+            {% else %}
+                <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-900">
+                    <i class="fa-solid fa-circle-info"></i> You are signed in as <strong>{{ request.user.username }}</strong>. Once our team approves your account, the supplier portal will appear in your profile automatically.
+                </div>
+            {% endif %}
+
+            <div class="flex flex-wrap justify-center gap-2.5">
+                <a href="https://wa.me/260766491002?text=Hello%20ChinaZed%2C%20I%20would%20like%20to%20become%20an%20approved%20supplier."
+                   class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-red px-5 py-3 text-sm font-black text-white transition hover:bg-brand-red-dark" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+                <a href="mailto:chinatozambia.zm@gmail.com?subject=Supplier%20application%20-%20ChinaZed"
+                   class="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-border bg-white px-5 py-3 text-sm font-black text-brand-ink transition hover:border-brand-red hover:text-brand-red">
+                    <i class="fa-solid fa-envelope"></i> Email our team
+                </a>
+                <a href="{% url 'home' %}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-border bg-white px-5 py-3 text-sm font-black text-brand-ink transition hover:border-brand-red hover:text-brand-red">
+                    <i class="fa-solid fa-arrow-left"></i> Back to marketplace
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">WHY SELL WITH US</div>
+        <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
+            <div class="flex gap-2.5">
+                <span class="text-lg leading-tight">🇿🇲</span>
+                <div>
+                    <h5 class="mb-0.5 text-xs font-black text-brand-ink">Ready-made buyers</h5>
+                    <p class="text-[11px] leading-relaxed text-brand-muted">Reach shoppers across Zambia already searching for products like yours.</p>
+                </div>
+            </div>
+            <div class="flex gap-2.5">
+                <i class="fa-solid fa-sack-dollar mt-0.5 text-lg leading-tight text-brand-orange"></i>
+                <div>
+                    <h5 class="mb-0.5 text-xs font-black text-brand-ink">No listing fees</h5>
+                    <p class="text-[11px] leading-relaxed text-brand-muted">Submitting products is free. You quote your supply price, we handle the rest.</p>
+                </div>
+            </div>
+            <div class="flex gap-2.5">
+                <i class="fa-solid fa-box mt-0.5 text-lg leading-tight text-brand-orange"></i>
+                <div>
+                    <h5 class="mb-0.5 text-xs font-black text-brand-ink">We manage the order</h5>
+                    <p class="text-[11px] leading-relaxed text-brand-muted">Deposits, buyer questions, and delivery updates are handled by our team.</p>
+                </div>
+            </div>
+            <div class="flex gap-2.5">
+                <i class="fa-solid fa-circle-check mt-0.5 text-lg leading-tight text-brand-green"></i>
+                <div>
+                    <h5 class="mb-0.5 text-xs font-black text-brand-ink">Trusted marketplace</h5>
+                    <p class="text-[11px] leading-relaxed text-brand-muted">Every product is reviewed, so buyers trust what they order from you.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

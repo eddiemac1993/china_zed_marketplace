@@ -1,0 +1,24 @@
+<div x-show="cartOpen" x-cloak class="fixed inset-0 z-[1000]" aria-hidden="true">
+    <div class="absolute inset-0 bg-black/50"
+         x-show="cartOpen" x-transition:enter="transition-opacity ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @click="cartOpen = false"></div>
+
+    <div class="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col bg-white shadow-2xl"
+         x-show="cartOpen"
+         x-transition:enter="transition ease-out duration-250" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+         @keydown.escape.window="cartOpen = false">
+        <div class="flex items-center justify-between border-b border-brand-border px-4 py-3">
+            <h2 class="font-display text-lg font-black tracking-wide text-brand-red">MY CART</h2>
+            <button type="button" @click="cartOpen = false" aria-label="Close cart" class="grid h-9 w-9 place-items-center rounded-full text-lg text-brand-muted transition hover:bg-neutral-100"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex flex-1 flex-col"
+             hx-get="{% url 'cart' %}"
+             hx-trigger="cartDrawerOpen from:body"
+             hx-target="this"
+             hx-swap="innerHTML">
+            <div class="flex flex-1 items-center justify-center text-xs text-brand-muted">Loading cart…</div>
+        </div>
+    </div>
+</div>

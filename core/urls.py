@@ -14,6 +14,8 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     path("assistant/", views.assistant_view, name="assistant"),
     path("assistant/chat/", views.assistant_chat_view, name="assistant_chat"),
+    path("search/suggestions/", views.search_suggestions_view, name="search_suggestions"),
+    path("recommendations/", views.home_recommendations_view, name="home_recommendations"),
 
     # Auth
     path("register/", views.register_view, name="register"),

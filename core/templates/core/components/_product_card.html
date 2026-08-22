@@ -1,0 +1,71 @@
+{% load humanize %}
+<div class="group relative flex flex-col overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm transition hover:-translate-y-1 hover:border-brand-orange hover:shadow-lg">
+    <a href="{% url 'product_detail' product.slug %}" class="relative block aspect-square overflow-hidden bg-neutral-100">
+        {% if product.display_image_url %}
+            <img src="{{ product.display_image_url }}" alt="{{ product.name }}" loading="lazy"
+                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+        {% else %}
+            <div class="flex h-full w-full flex-col items-center justify-center gap-1 text-neutral-400">
+                <i class="fa-solid fa-box-open text-3xl"></i>
+                <span class="text-xs">No Image</span>
+            </div>
+        {% endif %}
+
+        {% if product.product_type == "local" %}
+            <span class="absolute left-2 top-2 rounded-full bg-brand-green px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">🇿🇲 ZM Stock</span>
+        {% else %}
+            <span class="absolute left-2 top-2 rounded-full bg-brand-blue px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">🇨🇳 China</span>
+        {% endif %}
+        {% if product.is_featured %}
+            <span class="absolute right-2 top-2 rounded-full bg-gradient-to-r from-brand-red to-brand-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow"><i class="fa-solid fa-fire"></i> Hot</span>
+        {% endif %}
+    </a>
+
+    <div class="flex flex-1 flex-col gap-1.5 p-2.5">
+        <a href="{% url 'product_detail' product.slug %}" class="line-clamp-2 min-h-[2.5em] text-[13px] leading-snug text-brand-ink transition hover:text-brand-orange">
+            {{ product.name }}
+        </a>
+
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-brand-muted">
+            {% if product.rating_count %}
+                <span class="inline-flex items-center gap-1 font-bold text-brand-gold-dark">
+                    <i class="fa-solid fa-star"></i>
+                    {{ product.rating_avg|floatformat:1 }}
+                </span>
+            {% endif %}
+            {% if product.sold_count %}
+                <span>{{ product.sold_count|intcomma }}+ sold</span>
+            {% endif %}
+            {% if product.delivery_range %}
+                <span class="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 font-semibold text-brand-orange"><i class="fa-solid fa-plane"></i> {{ product.delivery_range }}</span>
+            {% endif %}
+        </div>
+
+        <div class="mt-auto">
+            {% if product.rmb_display %}
+                <div class="text-[10px] text-brand-muted">¥{{ product.rmb_display|intcomma }} <span class="text-neutral-300">·</span> origin price</div>
+            {% endif %}
+            <div class="flex items-baseline gap-1">
+                <span class="text-xs font-bold text-brand-orange">K</span>
+                <span class="font-display text-xl font-black leading-none text-brand-orange">{{ product.selling_price|floatformat:0|intcomma }}</span>
+            </div>
+            <div class="text-[10px] text-brand-muted">35% deposit: <span class="font-semibold text-brand-orange">K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
+        </div>
+
+        {% if request.user.is_authenticated %}
+            {% if product.product_type == "local" and product.stock_quantity <= 0 %}
+                <button disabled class="mt-1.5 w-full cursor-not-allowed rounded-md bg-neutral-200 py-2 text-xs font-bold text-neutral-500">Out of Stock</button>
+            {% else %}
+                <form method="POST" action="{% url 'add_to_cart' product.slug %}" class="mt-1.5">
+                    {% csrf_token %}
+                    <button type="submit" class="flex w-full items-center justify-center gap-1.5 rounded-md bg-brand-red py-2 text-xs font-bold text-white transition hover:bg-brand-red-dark active:scale-[0.98]">
+                        <i class="fa-solid fa-cart-plus"></i>
+                        Add to Cart
+                    </button>
+                </form>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'login' %}" class="mt-1.5 block w-full rounded-md bg-brand-orange py-2 text-center text-xs font-bold text-white transition hover:bg-brand-orange-light">Login to Order</a>
+        {% endif %}
+    </div>
+</div>

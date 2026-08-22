@@ -2,135 +2,104 @@
 
 {% block title %}Order Policy · ChinaZed 中赞商城{% endblock %}
 
-{% block extra_style %}
-        .policy-intro {
-            background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF;
-            border-radius: var(--card-radius); padding: 14px 16px;
-            font-size: 13px; line-height: 1.7; margin-bottom: 14px;
-        }
-        .policy-card {
-            background: var(--white); border: 1px solid var(--border);
-            border-radius: var(--card-radius); overflow: hidden; margin-bottom: 12px;
-        }
-        .policy-head {
-            padding: 12px 18px; border-bottom: 1px solid #F0F0F0;
-            background: linear-gradient(to right, #FFFAF9, #fff);
-            display: flex; align-items: center; gap: 10px;
-        }
-        .policy-num {
-            width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: #fff;
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 14px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .policy-title { font-size: 14px; font-weight: 900; color: var(--ink); }
-        .policy-body { padding: 16px 18px; }
-        .policy-body p { font-size: 13px; color: #555; line-height: 1.8; margin-bottom: 9px; }
-        .policy-body p:last-child { margin-bottom: 0; }
-        .policy-body ul { padding-left: 20px; margin: 6px 0 0; }
-        .policy-body li { font-size: 13px; color: #555; line-height: 1.8; margin-bottom: 4px; }
-
-        .status-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
-        .status-chip {
-            background: #F7F7F7; border: 1px solid var(--border); border-radius: 999px;
-            padding: 6px 12px; font-size: 11px; font-weight: 700; color: #555;
-        }
-
-        .policy-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-        .policy-btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 7px; padding: 13px 22px; font-size: 13px; font-weight: 900; transition: all .15s;
-        }
-        .policy-btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
-        .policy-btn.ghost:hover { border-color: var(--red); color: var(--red); }
-        .policy-btn.ai { background: linear-gradient(135deg, var(--red), var(--orange)); color: #fff; }
-        .policy-btn.ai:hover { filter: brightness(1.06); }
-
-        @media (max-width: 640px) {
-            .policy-btn { width: 100%; }
-        }
-{% endblock %}
-
 {% block content %}
-<div class="page-body">
-    <div class="doc-wrap">
+<div class="mx-auto max-w-[900px] px-4 py-3.5 sm:px-5">
 
-        <div class="doc-hero">
-            <h1>Order Policy</h1>
-            <p>How our China-to-Zambia ordering system works — deposits, refunds, delivery times, and tracking.</p>
-        </div>
-
-        <div class="policy-intro">
-            📋 Please read and understand how ordering works before placing an order.
-        </div>
-
-        <div class="policy-card">
-            <div class="policy-head"><span class="policy-num">1</span><span class="policy-title">Order Confirmation</span></div>
-            <div class="policy-body">
-                <p>After placing an order on the website, ChinaZed staff reviews the order details before processing to ensure accuracy and availability.</p>
-            </div>
-        </div>
-
-        <div class="policy-card">
-            <div class="policy-head"><span class="policy-num">2</span><span class="policy-title">Deposit Requirement</span></div>
-            <div class="policy-body">
-                <p>A <strong>35% deposit</strong> is required to process any order. This confirms commitment and allows us to secure the item from China.</p>
-                <p>The remaining <strong>65% balance</strong> is paid after the goods arrive in Zambia.</p>
-            </div>
-        </div>
-
-        <div class="policy-card">
-            <div class="policy-head"><span class="policy-num">3</span><span class="policy-title">Refund Policy</span></div>
-            <div class="policy-body">
-                <ul>
-                    <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
-                    <li>Refund applies if the supplier fails to fulfill the order.</li>
-                    <li>Refund applies if the product becomes unavailable before purchase.</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="policy-card">
-            <div class="policy-head"><span class="policy-num">4</span><span class="policy-title">Delivery Timeline</span></div>
-            <div class="policy-body">
-                <p>Each product has an estimated delivery range displayed on the website. Delivery times may vary due to:</p>
-                <ul>
-                    <li>Shipping delays</li>
-                    <li>Customs clearance</li>
-                    <li>Supplier processing time</li>
-                    <li>Logistics and transport conditions</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="policy-card">
-            <div class="policy-head"><span class="policy-num">5</span><span class="policy-title">Order Tracking</span></div>
-            <div class="policy-body">
-                <p>Log in to your profile to track order progress through these stages:</p>
-                <div class="status-chips">
-                    <span class="status-chip">Confirmed</span>
-                    <span class="status-chip">Purchased</span>
-                    <span class="status-chip">Shipped</span>
-                    <span class="status-chip">In Transit</span>
-                    <span class="status-chip">Arrived in Zambia</span>
-                    <span class="status-chip">Ready for Collection</span>
-                    <span class="status-chip">Successful</span>
-                    <span class="status-chip">Delayed</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="policy-card">
-            <div class="policy-head"><span class="policy-num">6</span><span class="policy-title">Receipts</span></div>
-            <div class="policy-body">
-                <p>You can generate a receipt once the goods have arrived in Zambia, or when the order is ready for collection or delivery.</p>
-            </div>
-        </div>
-
-        <div class="policy-cta">
-            <a href="{% url 'home' %}" class="policy-btn ghost">← Back to Home</a>
-            <a href="{% url 'assistant' %}" class="policy-btn ai">💬 Ask the AI Assistant</a>
-        </div>
-
+    <div class="mb-3.5 rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 p-6 text-white sm:p-7">
+        <h1 class="font-display text-3xl font-black leading-tight sm:text-4xl">Order Policy</h1>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed text-white/75">How our China-to-Zambia ordering system works — deposits, refunds, delivery times, and tracking.</p>
     </div>
+
+    <div class="mb-3.5 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5 text-sm leading-relaxed text-blue-900">
+        <i class="fa-solid fa-clipboard-list mt-0.5"></i>
+        <span>Please read and understand how ordering works before placing an order.</span>
+    </div>
+
+    <div class="mb-3 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red font-display text-sm font-black text-white">1</span>
+            <span class="text-sm font-black text-brand-ink">Order Confirmation</span>
+        </div>
+        <div class="p-4.5">
+            <p class="text-sm leading-relaxed text-neutral-600">After placing an order on the website, ChinaZed staff reviews the order details before processing to ensure accuracy and availability.</p>
+        </div>
+    </div>
+
+    <div class="mb-3 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red font-display text-sm font-black text-white">2</span>
+            <span class="text-sm font-black text-brand-ink">Deposit Requirement</span>
+        </div>
+        <div class="space-y-2 p-4.5">
+            <p class="text-sm leading-relaxed text-neutral-600">A <strong>35% deposit</strong> is required to process any order. This confirms commitment and allows us to secure the item from China.</p>
+            <p class="text-sm leading-relaxed text-neutral-600">The remaining <strong>65% balance</strong> is paid after the goods arrive in Zambia.</p>
+        </div>
+    </div>
+
+    <div class="mb-3 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red font-display text-sm font-black text-white">3</span>
+            <span class="text-sm font-black text-brand-ink">Refund Policy</span>
+        </div>
+        <div class="p-4.5">
+            <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-neutral-600">
+                <li>Deposit is refundable if the item is not delivered within the agreed time.</li>
+                <li>Refund applies if the supplier fails to fulfill the order.</li>
+                <li>Refund applies if the product becomes unavailable before purchase.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="mb-3 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red font-display text-sm font-black text-white">4</span>
+            <span class="text-sm font-black text-brand-ink">Delivery Timeline</span>
+        </div>
+        <div class="p-4.5">
+            <p class="mb-2 text-sm leading-relaxed text-neutral-600">Each product has an estimated delivery range displayed on the website. Delivery times may vary due to:</p>
+            <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-neutral-600">
+                <li>Shipping delays</li>
+                <li>Customs clearance</li>
+                <li>Supplier processing time</li>
+                <li>Logistics and transport conditions</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="mb-3 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red font-display text-sm font-black text-white">5</span>
+            <span class="text-sm font-black text-brand-ink">Order Tracking</span>
+        </div>
+        <div class="p-4.5">
+            <p class="mb-2.5 text-sm leading-relaxed text-neutral-600">Log in to your profile to track order progress through these stages:</p>
+            <div class="flex flex-wrap gap-1.5">
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Confirmed</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Purchased</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Shipped</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">In Transit</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Arrived in Zambia</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Ready for Collection</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Successful</span>
+                <span class="rounded-full border border-brand-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-600">Delayed</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4 overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="flex items-center gap-2.5 border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3">
+            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red font-display text-sm font-black text-white">6</span>
+            <span class="text-sm font-black text-brand-ink">Receipts</span>
+        </div>
+        <div class="p-4.5">
+            <p class="text-sm leading-relaxed text-neutral-600">You can generate a receipt once the goods have arrived in Zambia, or when the order is ready for collection or delivery.</p>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2.5">
+        <a href="{% url 'home' %}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-border bg-white px-5 py-3 text-sm font-black text-brand-ink transition hover:border-brand-red hover:text-brand-red"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+        <a href="{% url 'assistant' %}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-brand-red to-brand-orange px-5 py-3 text-sm font-black text-white transition hover:brightness-105"><i class="fa-solid fa-robot"></i> Ask the AI Assistant</a>
+    </div>
+
 </div>
 {% endblock %}

@@ -1,741 +1,169 @@
-﻿{% load static %}
+{% extends "core/base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account · ChinaZed 中赞商城</title>
+{% block title %}Create Account · ChinaZed 中赞商城{% endblock %}
 
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+{% block content %}
+<div class="mx-auto max-w-[1000px] px-4 py-6 sm:px-5">
+    <div class="grid grid-cols-1 items-start gap-3 lg:grid-cols-[1fr_420px]">
 
-    <style>
-        :root {
-            --red: #E5141A;
-            --red-dark: #B50F14;
-            --red-bright: #FF2D2D;
-            --orange: #FF6600;
-            --orange-light: #FF8C00;
-            --gold: #FFC107;
-            --gold-dark: #E6A800;
-            --yellow: #FFE500;
-            --bg: #F2F2F2;
-            --white: #FFFFFF;
-            --ink: #1A1A1A;
-            --muted: #888;
-            --border: #E0E0E0;
-            --card-radius: 8px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 13px;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-        }
-
-        a { text-decoration: none; color: inherit; }
-
-        /* ── UTILITY BAR ── */
-        .utility-bar {
-            background: #1a1a1a;
-            color: #999;
-            font-size: 11px;
-            padding: 6px 0;
-        }
-        .utility-bar-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .utility-bar-brand { font-weight: 600; color: #bbb; letter-spacing: .03em; }
-        .utility-bar-links { display: flex; align-items: center; }
-        .utility-bar a { color: #888; transition: color .15s; padding: 0 8px; border-right: 1px solid #333; }
-        .utility-bar a:last-child { border-right: none; }
-        .utility-bar a:hover { color: #fff; }
-        .utility-bar a.highlight { color: var(--gold); font-weight: 600; }
-
-        /* ── HEADER ── */
-        .main-header {
-            background: var(--red);
-            box-shadow: 0 2px 12px rgba(0,0,0,.25);
-        }
-        .header-top {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-        .site-logo {
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            text-decoration: none;
-        }
-        .logo-main {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 28px;
-            color: #fff;
-            letter-spacing: -1px;
-            line-height: 1;
-        }
-        .logo-sub {
-            font-size: 9px;
-            color: rgba(255,255,255,0.65);
-            letter-spacing: 0.1em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .header-spacer { flex: 1; }
-        .hdr-back {
-            color: rgba(255,255,255,.85);
-            font-size: 12px;
-            font-weight: 700;
-            padding: 7px 14px;
-            border: 1px solid rgba(255,255,255,.3);
-            border-radius: 4px;
-            transition: background .15s;
-        }
-        .hdr-back:hover { background: rgba(255,255,255,.15); color: #fff; }
-        .hdr-login {
-            background: var(--yellow);
-            color: var(--red-dark);
-            font-weight: 900;
-            font-size: 13px;
-            padding: 8px 16px;
-            border-radius: 4px;
-            transition: background .15s;
-            font-family: 'Barlow Condensed', sans-serif;
-            letter-spacing: .5px;
-        }
-        .hdr-login:hover { background: #ffe033; }
-
-        /* ── PAGE ── */
-        .page-body {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 20px 16px 40px;
-            display: grid;
-            grid-template-columns: 1fr 420px;
-            gap: 16px;
-            align-items: start;
-        }
-
-        /* ── LEFT PROMO ── */
-        .promo-panel {
-            background: linear-gradient(135deg, #C00E13 0%, #E5141A 40%, #FF4500 75%, #FF6600 100%);
-            border-radius: var(--card-radius);
-            padding: 32px 28px;
-            color: #fff;
-            position: relative;
-            overflow: hidden;
-            align-self: stretch;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .promo-panel::before {
-            content: '';
-            position: absolute;
-            width: 500px; height: 500px;
-            background: rgba(255,255,255,.05);
-            border-radius: 50%;
-            top: -250px; right: 80px;
-            pointer-events: none;
-        }
-        .promo-panel::after {
-            content: '中赞';
-            position: absolute;
-            right: -10px; bottom: -10px;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 140px;
-            color: rgba(255,255,255,.06);
-            line-height: 1;
-            pointer-events: none;
-        }
-        .promo-badge {
-            display: inline-block;
-            background: var(--yellow);
-            color: var(--red-dark);
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 13px;
-            padding: 4px 12px;
-            border-radius: 2px;
-            letter-spacing: .5px;
-            margin-bottom: 16px;
-            width: fit-content;
-        }
-        .promo-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 38px;
-            line-height: 1.05;
-            letter-spacing: -.5px;
-            margin-bottom: 12px;
-            position: relative;
-            z-index: 1;
-        }
-        .promo-desc {
-            font-size: 13px;
-            color: rgba(255,255,255,.8);
-            line-height: 1.7;
-            margin-bottom: 28px;
-            position: relative;
-            z-index: 1;
-        }
-        .promo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            position: relative;
-            z-index: 1;
-        }
-        .promo-tile {
-            background: rgba(255,255,255,.12);
-            border: 1px solid rgba(255,255,255,.2);
-            border-radius: 6px;
-            padding: 14px 12px;
-            text-align: center;
-            transition: background .15s;
-        }
-        .promo-tile:hover { background: rgba(255,255,255,.2); }
-        .promo-tile-icon { font-size: 22px; margin-bottom: 6px; }
-        .promo-tile-label { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
-        .promo-tile-sub { font-size: 10px; color: rgba(255,255,255,.65); }
-        .promo-trust {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,.15);
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            position: relative;
-            z-index: 1;
-        }
-        .promo-trust-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            color: rgba(255,255,255,.8);
-        }
-        .promo-trust-item .pt-icon {
-            font-size: 14px;
-        }
-
-        /* ── REGISTER CARD ── */
-        .register-card {
-            background: var(--white);
-            border-radius: var(--card-radius);
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: var(--red);
-            padding: 20px 24px;
-            text-align: center;
-        }
-        .card-header-title {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 26px;
-            color: #fff;
-            letter-spacing: .5px;
-            line-height: 1;
-        }
-        .card-header-sub {
-            font-size: 12px;
-            color: rgba(255,255,255,.75);
-            margin-top: 4px;
-        }
-
-        .card-body { padding: 24px; }
-
-        /* ERROR BOX */
-        .error-box {
-            background: #FFF0F0;
-            border: 1px solid #FFCDD2;
-            border-left: 3px solid var(--red);
-            color: #B71C1C;
-            padding: 10px 14px;
-            border-radius: 4px;
-            margin-bottom: 18px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* FORM */
-        .form-group { margin-bottom: 14px; }
-        .form-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--ink);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-        }
-        form input {
-            width: 100%;
-            padding: 11px 14px;
-            background: #FAFAFA;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-            color: var(--ink);
-            transition: border-color .15s, box-shadow .15s;
-            outline: none;
-        }
-
-        form input:focus {
-            border-color: var(--red);
-            box-shadow: 0 0 0 3px rgba(229,20,26,.08);
-            background: #fff;
-        }
-        .form-input::placeholder { color: #BBB; }
-
-        .input-hint {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 4px;
-        }
-
-        .password-wrap {
-            position: relative;
-        }
-        .password-wrap input {
-            padding-right: 48px;
-        }
-        .password-toggle {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 34px;
-            height: 34px;
-            border: none;
-            background: transparent;
-            color: #777;
-            cursor: pointer;
-            font-size: 17px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background .15s, color .15s;
-        }
-        .password-toggle:hover {
-            background: #F0F0F0;
-            color: var(--red);
-        }
-
-        .terms-box {
-            background: #FFF8E1;
-            border: 1px solid #FFE082;
-            border-radius: 5px;
-            padding: 12px;
-            margin: 4px 0 14px;
-        }
-        .terms-label {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 12px;
-            color: #555;
-            line-height: 1.55;
-            cursor: pointer;
-        }
-        form input.terms-checkbox {
-            width: 18px;
-            height: 18px;
-            min-width: 18px;
-            margin-top: 2px;
-            accent-color: var(--red);
-            cursor: pointer;
-        }
-        .terms-label a {
-            color: var(--red);
-            font-weight: 900;
-            text-decoration: underline;
-        }
-
-        /* SUBMIT */
-        .btn-submit {
-            display: block;
-            width: 100%;
-            background: var(--red);
-            color: #fff;
-            border: none;
-            padding: 13px 0;
-            font-size: 14px;
-            font-weight: 900;
-            font-family: 'Barlow Condensed', sans-serif;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-transform: uppercase;
-            transition: background .15s, transform .1s;
-            margin-top: 6px;
-        }
-        .btn-submit:hover { background: var(--red-dark); }
-        .btn-submit:active { transform: scale(.99); }
-
-        /* DIVIDER */
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 16px 0;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-        .divider span { font-size: 10px; color: var(--muted); font-weight: 700; white-space: nowrap; }
-
-        /* LOGIN LINK */
-        .login-strip {
-            background: #FFF8E1;
-            border: 1px solid #FFE082;
-            border-radius: 4px;
-            padding: 12px 14px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-        }
-        .login-strip a {
-            color: var(--red);
-            font-weight: 900;
-        }
-        .login-strip a:hover { text-decoration: underline; }
-
-        /* BACK LINK */
-        .back-link {
-            display: block;
-            text-align: center;
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 14px;
-            transition: color .15s;
-        }
-        .back-link:hover { color: var(--red); }
-
-        /* STEPS STRIP */
-        .steps-strip {
-            background: #F9F9F9;
-            border-top: 1px solid var(--border);
-            padding: 14px 24px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        .step-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .step-num {
-            width: 22px;
-            height: 22px;
-            background: var(--red);
-            color: #fff;
-            border-radius: 50%;
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .step-text { font-size: 10px; color: #555; line-height: 1.4; font-weight: 600; }
-
-        /* ── FOOTER ── */
-        .site-footer { background: #1A1A1A; margin-top: 24px; }
-        .footer-bottom {
-            padding: 14px 20px;
-            text-align: center;
-            font-size: 11px;
-            color: #444;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
-        /* ── MOBILE ── */
-        @media (max-width: 800px) {
-            .page-body {
-                grid-template-columns: 1fr;
-                padding: 12px 12px 32px;
-            }
-            .promo-panel { display: none; }
-            .utility-bar { display: none; }
-        }
-
-        @media (max-width: 480px) {
-            .steps-strip { grid-template-columns: 1fr; gap: 6px; }
-            .promo-grid { grid-template-columns: repeat(3, 1fr); }
-            .logo-sub { display: none; }
-        }
-    </style>
-</head>
-<body>
-
-<!-- UTILITY BAR -->
-<div class="utility-bar">
-    <div class="utility-bar-inner">
-        <span class="utility-bar-brand">中赞商城 · China to Zambia Marketplace</span>
-        <div class="utility-bar-links">
-            <a href="{% url 'login' %}">Sign In</a>
-            <a href="{% url 'register' %}" class="highlight">Register Free</a>
-            <a href="{% url 'order_policy' %}">Policy</a>
-        </div>
-    </div>
-</div>
-
-<!-- HEADER -->
-<div class="main-header">
-    <div class="header-top">
-        <a href="{% url 'home' %}" class="site-logo">
-            <div class="logo-main">CHINAZED</div>
-            <div class="logo-sub">中赞商城 · MARKETPLACE</div>
-        </a>
-        <div class="header-spacer"></div>
-        <a href="{% url 'home' %}" class="hdr-back">← Back to Shop</a>
-        <a href="{% url 'login' %}" class="hdr-login">SIGN IN</a>
-    </div>
-</div>
-
-<!-- PAGE -->
-<div class="page-body">
-
-    <!-- LEFT PROMO -->
-    <div class="promo-panel">
-        <div>
-            <div class="promo-badge">🔥 JOIN CHINAZED FREE</div>
-            <h2 class="promo-title">Start ordering<br>from China today.</h2>
-            <p class="promo-desc">
-                Create your free account to browse thousands of products, pay just 35% deposit, and get goods delivered from China directly to Zambia in 14–30 days.
-            </p>
-            <div class="promo-grid">
-                <div class="promo-tile">
-                    <div class="promo-tile-icon">🛍️</div>
-                    <div class="promo-tile-label">Browse</div>
-                    <div class="promo-tile-sub">All products</div>
-                </div>
-                <div class="promo-tile">
-                    <div class="promo-tile-icon">💬</div>
-                    <div class="promo-tile-label">Order</div>
-                    <div class="promo-tile-sub">AI support</div>
-                </div>
-                <div class="promo-tile">
-                    <div class="promo-tile-icon">📦</div>
-                    <div class="promo-tile-label">Track</div>
-                    <div class="promo-tile-sub">From profile</div>
+        <!-- LEFT PROMO -->
+        <div class="relative hidden flex-col justify-between overflow-hidden rounded-xl bg-gradient-to-br from-red-700 via-brand-red to-orange-600 p-8 text-white lg:flex" style="align-self: stretch;">
+            <span class="pointer-events-none absolute bottom-[-10px] right-[-10px] font-display text-[140px] font-black leading-none text-white/[0.06]">中赞</span>
+            <div class="relative z-10">
+                <div class="mb-4 inline-block w-fit rounded bg-brand-yellow px-3 py-1 font-display text-[13px] font-black tracking-wide text-brand-red-dark"><i class="fa-solid fa-fire"></i> JOIN CHINAZED FREE</div>
+                <h2 class="mb-3 font-display text-[38px] font-black leading-[1.05] tracking-tight">Start ordering<br>from China today.</h2>
+                <p class="mb-7 text-[13px] leading-relaxed text-white/80">Create your free account to browse thousands of products, pay just 35% deposit, and get goods delivered from China directly to Zambia in 14–30 days.</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="rounded-md border border-white/20 bg-white/10 px-3 py-3.5 text-center transition hover:bg-white/20">
+                        <i class="fa-solid fa-bag-shopping mb-1.5 block text-xl"></i>
+                        <div class="text-xs font-bold">Browse</div>
+                        <div class="text-[10px] text-white/65">All products</div>
+                    </div>
+                    <div class="rounded-md border border-white/20 bg-white/10 px-3 py-3.5 text-center transition hover:bg-white/20">
+                        <i class="fa-solid fa-comments mb-1.5 block text-xl"></i>
+                        <div class="text-xs font-bold">Order</div>
+                        <div class="text-[10px] text-white/65">AI support</div>
+                    </div>
+                    <div class="rounded-md border border-white/20 bg-white/10 px-3 py-3.5 text-center transition hover:bg-white/20">
+                        <i class="fa-solid fa-box mb-1.5 block text-xl"></i>
+                        <div class="text-xs font-bold">Track</div>
+                        <div class="text-[10px] text-white/65">From profile</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="promo-trust">
-            <div class="promo-trust-item">
-                <span class="pt-icon">💰</span>
-                <span>35% deposit only</span>
-            </div>
-            <div class="promo-trust-item">
-                <span class="pt-icon">✈️</span>
-                <span>14–30 day delivery</span>
-            </div>
-            <div class="promo-trust-item">
-                <span class="pt-icon">🔒</span>
-                <span>Secure &amp; trusted</span>
-            </div>
-            <div class="promo-trust-item">
-                <span class="pt-icon">🇿🇲</span>
-                <span>Local Zambia stock too</span>
+            <div class="relative z-10 mt-5 flex flex-wrap gap-4 border-t border-white/15 pt-5">
+                <div class="flex items-center gap-1.5 text-[11px] text-white/80"><i class="fa-solid fa-sack-dollar"></i> 35% deposit only</div>
+                <div class="flex items-center gap-1.5 text-[11px] text-white/80"><i class="fa-solid fa-plane"></i> 14–30 day delivery</div>
+                <div class="flex items-center gap-1.5 text-[11px] text-white/80"><i class="fa-solid fa-lock"></i> Secure &amp; trusted</div>
+                <div class="flex items-center gap-1.5 text-[11px] text-white/80">🇿🇲 Local Zambia stock too</div>
             </div>
         </div>
-    </div>
 
-    <!-- REGISTER CARD -->
-    <div class="register-card">
+        <!-- REGISTER CARD -->
+        <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
 
-        <div class="card-header">
-            <div class="card-header-title">CREATE YOUR ACCOUNT</div>
-            <div class="card-header-sub">Join thousands of buyers ordering from China</div>
-        </div>
-
-        <div class="card-body">
-
-            {% if form.errors %}
-            <div class="error-box">
-                ⚠️ Please fix the errors below and try again.
+            <div class="bg-brand-red px-6 py-5 text-center">
+                <div class="font-display text-[26px] font-black tracking-wide text-white">CREATE YOUR ACCOUNT</div>
+                <div class="mt-1 text-xs text-white/75">Join thousands of buyers ordering from China</div>
             </div>
-            {% endif %}
 
-            <form method="POST" autocomplete="off">
+            <div class="p-6">
 
-                {% csrf_token %}
-                <input type="text" name="website" style="display:none">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="error-box"
-                             style="
-                                background:
-                                {% if message.tags == 'success' %}
-                                    #F0FFF4;
-                                {% else %}
-                                    #FFF0F0;
-                                {% endif %}
-                             ">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+                {% if form.errors %}
+                <div class="mb-4.5 flex items-center gap-2 rounded border-l-[3px] border-brand-red bg-red-50 px-3.5 py-2.5 text-xs text-red-900">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Please fix the errors below and try again.
+                </div>
                 {% endif %}
 
-                <div class="form-group">
-                    <label class="form-label">Username</label>
+                <form method="POST" autocomplete="off">
 
-                    {{ form.username }}
-
-                    {% if form.username.errors %}
-                        <div class="input-hint" style="color:var(--red);">
-                            {{ form.username.errors.0 }}
-                        </div>
-                    {% else %}
-                        <div class="input-hint">
-                            Used to log in — no spaces allowed.
-                        </div>
+                    {% csrf_token %}
+                    <input type="text" name="website" class="hidden">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="mb-4.5 rounded border-l-[3px] px-3.5 py-2.5 text-xs {% if message.tags == 'success' %}border-emerald-500 bg-emerald-50 text-emerald-900{% else %}border-brand-red bg-red-50 text-red-900{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
                     {% endif %}
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-
-                    {{ form.email }}
-
-                    {% if form.email.errors %}
-                        <div class="input-hint" style="color:var(--red);">
-                            {{ form.email.errors.0 }}
-                        </div>
-                    {% else %}
-                        <div class="input-hint">
-                            Your welcome email will be sent here.
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-
-                    <div class="password-wrap">
-                        {{ form.password1 }}
-                        <button type="button" class="password-toggle" data-password-toggle="{{ form.password1.id_for_label }}" aria-label="Show password">👁</button>
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="mt-1 text-[10px] text-brand-red">{{ form.username.errors.0 }}</div>
+                        {% else %}
+                            <div class="mt-1 text-[10px] text-brand-muted">Used to log in — no spaces allowed.</div>
+                        {% endif %}
                     </div>
 
-                    {% if form.password1.errors %}
-                        <div class="input-hint" style="color:var(--red);">
-                            {{ form.password1.errors.0 }}
-                        </div>
-                    {% else %}
-                        <div class="input-hint">
-                            Use letters, numbers, and symbols.
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Confirm Password</label>
-
-                    <div class="password-wrap">
-                        {{ form.password2 }}
-                        <button type="button" class="password-toggle" data-password-toggle="{{ form.password2.id_for_label }}" aria-label="Show confirm password">👁</button>
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="mt-1 text-[10px] text-brand-red">{{ form.email.errors.0 }}</div>
+                        {% else %}
+                            <div class="mt-1 text-[10px] text-brand-muted">Your welcome email will be sent here.</div>
+                        {% endif %}
                     </div>
 
-                    {% if form.password2.errors %}
-                        <div class="input-hint" style="color:var(--red);">
-                            {{ form.password2.errors.0 }}
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Password</label>
+                        <div class="relative">
+                            {{ form.password1 }}
+                            <button type="button" class="absolute right-1.5 top-1/2 grid h-8.5 w-8.5 -translate-y-1/2 place-items-center rounded text-neutral-500 transition hover:bg-neutral-100 hover:text-brand-red" data-password-toggle="{{ form.password1.id_for_label }}" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
                         </div>
-                    {% endif %}
+                        {% if form.password1.errors %}
+                            <div class="mt-1 text-[10px] text-brand-red">{{ form.password1.errors.0 }}</div>
+                        {% else %}
+                            <div class="mt-1 text-[10px] text-brand-muted">Use letters, numbers, and symbols.</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Confirm Password</label>
+                        <div class="relative">
+                            {{ form.password2 }}
+                            <button type="button" class="absolute right-1.5 top-1/2 grid h-8.5 w-8.5 -translate-y-1/2 place-items-center rounded text-neutral-500 transition hover:bg-neutral-100 hover:text-brand-red" data-password-toggle="{{ form.password2.id_for_label }}" aria-label="Show confirm password"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                        {% if form.password2.errors %}
+                            <div class="mt-1 text-[10px] text-brand-red">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="my-1 mb-3.5 rounded-md border border-amber-200 bg-amber-50 p-3">
+                        <label class="flex items-start gap-2.5 text-xs leading-relaxed text-neutral-600" for="{{ form.accept_terms.id_for_label }}">
+                            {{ form.accept_terms }}
+                            <span>I have read and agree to the <a href="{% url 'terms' %}" target="_blank" rel="noopener" class="font-black text-brand-red underline">Terms &amp; Conditions</a> and <a href="{% url 'privacy' %}" target="_blank" rel="noopener" class="font-black text-brand-red underline">Privacy Policy</a>.</span>
+                        </label>
+                        {% if form.accept_terms.errors %}
+                            <div class="mt-1 text-[10px] text-brand-red">{{ form.accept_terms.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="mt-1.5 block w-full rounded bg-brand-red py-3.5 text-center font-display text-sm font-black uppercase tracking-wide text-white transition hover:bg-brand-red-dark active:scale-[0.99]">
+                        Create Account <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="my-4 flex items-center gap-2.5">
+                    <span class="h-px flex-1 bg-brand-border"></span>
+                    <span class="whitespace-nowrap text-[10px] font-bold text-brand-muted">ALREADY HAVE AN ACCOUNT?</span>
+                    <span class="h-px flex-1 bg-brand-border"></span>
                 </div>
 
-                <div class="terms-box">
-                    <label class="terms-label" for="{{ form.accept_terms.id_for_label }}">
-                        {{ form.accept_terms }}
-                        <span>
-                            I have read and agree to the
-                            <a href="{% url 'terms' %}" target="_blank" rel="noopener">Terms &amp; Conditions</a>
-                            and
-                            <a href="{% url 'privacy' %}" target="_blank" rel="noopener">Privacy Policy</a>.
-                        </span>
-                    </label>
-                    {% if form.accept_terms.errors %}
-                        <div class="input-hint" style="color:var(--red);">
-                            {{ form.accept_terms.errors.0 }}
-                        </div>
-                    {% endif %}
+                <div class="rounded border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-center text-xs text-neutral-600">
+                    Sign in to your existing account — <a href="{% url 'login' %}" class="font-black text-brand-red hover:underline">Login here</a>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    CREATE ACCOUNT →
-                </button>
-            </form>
+                <a href="{% url 'home' %}" class="mt-3.5 block text-center text-[11px] text-brand-muted transition hover:text-brand-red">← Back to marketplace</a>
 
-            <div class="divider"><span>ALREADY HAVE AN ACCOUNT?</span></div>
-
-            <div class="login-strip">
-                Sign in to your existing account —
-                <a href="{% url 'login' %}">Login here</a>
             </div>
 
-            <a href="{% url 'home' %}" class="back-link">← Back to marketplace</a>
+            <!-- STEPS STRIP -->
+            <div class="grid grid-cols-1 gap-2 border-t border-brand-border bg-neutral-50 p-3.5 sm:grid-cols-3">
+                <div class="flex items-center gap-2">
+                    <div class="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-red font-display text-[13px] font-black text-white">1</div>
+                    <div class="text-[10px] font-semibold leading-tight text-neutral-600">Register &amp; browse products</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-red font-display text-[13px] font-black text-white">2</div>
+                    <div class="text-[10px] font-semibold leading-tight text-neutral-600">Pay 35% deposit to order</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-red font-display text-[13px] font-black text-white">3</div>
+                    <div class="text-[10px] font-semibold leading-tight text-neutral-600">Receive in 14–30 days</div>
+                </div>
+            </div>
 
-        </div>
-
-        <!-- STEPS STRIP -->
-        <div class="steps-strip">
-            <div class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-text">Register &amp; browse products</div>
-            </div>
-            <div class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-text">Pay 35% deposit to order</div>
-            </div>
-            <div class="step-item">
-                <div class="step-num">3</div>
-                <div class="step-text">Receive in 14–30 days</div>
-            </div>
         </div>
 
     </div>
-
 </div>
+{% endblock %}
 
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="footer-bottom">
-        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
-    </div>
-</footer>
-
+{% block extra_js %}
 <script>
     document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
         button.addEventListener('click', function () {
@@ -744,11 +172,9 @@
 
             var showing = input.type === 'text';
             input.type = showing ? 'password' : 'text';
-            button.textContent = showing ? '👁' : '🙈';
+            button.innerHTML = showing ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
             button.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
         });
     });
 </script>
-
-</body>
-</html>
+{% endblock %}
