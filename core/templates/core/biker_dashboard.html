@@ -1,0 +1,230 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}Biker Dashboard · ChinaZed 中赞商城{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-[1000px] px-4 py-4 sm:px-5">
+
+    <!-- HERO -->
+    <div class="relative mb-3.5 overflow-hidden rounded-xl bg-gradient-to-br from-red-800 via-brand-red to-orange-600 p-6 shadow-lg shadow-red-900/20">
+        <span class="pointer-events-none absolute right-[-10px] top-[-10px] font-display text-7xl font-black text-white/[0.07]">中赞</span>
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <div class="text-[10px] font-bold uppercase tracking-wide text-white/65"><i class="fa-solid {% if biker.vehicle_type == 'motorbike' %}fa-motorcycle{% else %}fa-bicycle{% endif %}"></i> {{ biker.get_vehicle_type_display }} Biker</div>
+                <div class="my-0.5 font-display text-2xl font-black tracking-tight text-white">{{ biker.full_name }}</div>
+                <div class="text-xs text-white/75">Based at {{ biker.home_centre.name }} ({{ biker.home_centre.town }})</div>
+            </div>
+            <div class="flex gap-4 text-right">
+                <div>
+                    <div class="font-display text-2xl font-black text-white">{{ biker.total_deliveries }}</div>
+                    <div class="text-[10px] uppercase tracking-wide text-white/65">Delivered</div>
+                </div>
+                <div>
+                    <div class="font-display text-2xl font-black text-brand-yellow">K{{ total_earned|floatformat:0|intcomma }}</div>
+                    <div class="text-[10px] uppercase tracking-wide text-white/65">Total Earned</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="mb-3.5 flex flex-wrap items-center gap-3.5 rounded-xl border border-brand-border bg-white px-4.5 py-3.5 shadow-sm" id="notifBanner" data-vapid-key="{{ vapid_public_key }}">
+        <i class="fa-solid fa-bell shrink-0 text-2xl text-brand-orange"></i>
+        <div class="min-w-0 flex-1">
+            <strong class="block text-sm font-black text-brand-ink">Get notified about new jobs</strong>
+            <span class="text-[11px] leading-relaxed text-brand-muted" id="notifStatus">Turn on browser notifications so you never miss a delivery job at your centre.</span>
+        </div>
+        <button type="button" class="whitespace-nowrap rounded-lg bg-brand-orange px-3.5 py-2.5 text-xs font-black text-white transition hover:bg-orange-600 disabled:cursor-default disabled:opacity-60" id="notifBtn">Enable Notifications</button>
+    </div>
+
+    <!-- AVAILABLE JOBS -->
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-box"></i> AVAILABLE JOBS AT {{ biker.home_centre.name|upper }}</span>
+        <span class="text-[11px] text-brand-muted">{{ available_jobs|length }} waiting</span>
+    </div>
+    <div class="mb-3.5 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        {% for job in available_jobs %}
+        <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div>
+                <div class="text-[13px] font-black text-brand-ink">Order #{{ job.order_id }}</div>
+                <div class="mt-0.5 text-[11px] text-brand-muted">Staged at {{ job.centre.name }} · {{ job.created_at|timesince }} ago</div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-[10px] text-brand-muted">Your payout</div>
+                    <div class="font-display text-lg font-black text-brand-green">K{{ job.biker_payout_amount|floatformat:0|intcomma }}</div>
+                </div>
+                <form method="POST" action="{% url 'biker_accept_job' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-lg bg-brand-red px-4 py-2.5 text-xs font-black text-white transition hover:bg-brand-red-dark active:scale-[0.98]"><i class="fa-solid fa-check"></i> Accept</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="flex flex-col items-center gap-2 p-8 text-center">
+            <i class="fa-solid fa-box-open text-3xl text-neutral-300"></i>
+            <div class="text-sm font-bold text-brand-ink">No jobs waiting right now</div>
+            <div class="text-xs text-brand-muted">New jobs will appear here as soon as an order reaches {{ biker.home_centre.name }}.</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ACTIVE DELIVERIES -->
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-truck-fast"></i> MY ACTIVE DELIVERIES</span>
+        <span class="text-[11px] text-brand-muted">{{ active_jobs|length }} in progress</span>
+    </div>
+    <div class="mb-3.5 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        {% for job in active_jobs %}
+        <div class="p-4">
+            <div class="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div class="text-[13px] font-black text-brand-ink">Order #{{ job.order_id }}</div>
+                <span class="rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {% if job.status == 'accepted' %}bg-blue-50 text-brand-blue{% else %}bg-amber-50 text-amber-700{% endif %}">{{ job.get_status_display }}</span>
+            </div>
+            <div class="mb-2.5 rounded-lg bg-neutral-50 p-3 text-xs leading-relaxed text-neutral-700">
+                <div><i class="fa-solid fa-house w-4 text-brand-orange"></i> {{ job.order.delivery_address|default:"No address on file" }}</div>
+                <div class="mt-1"><i class="fa-solid fa-phone w-4 text-brand-orange"></i> {{ job.order.customer_phone }}</div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="text-[11px] text-brand-muted">Payout: <span class="font-bold text-brand-green">K{{ job.biker_payout_amount|floatformat:0|intcomma }}</span></div>
+                {% if job.status == "accepted" %}
+                <form method="POST" action="{% url 'biker_mark_picked_up' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-lg bg-brand-blue px-4 py-2 text-xs font-black text-white transition hover:brightness-110"><i class="fa-solid fa-box"></i> Mark Picked Up</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{% url 'biker_mark_delivered' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-lg bg-brand-green px-4 py-2 text-xs font-black text-white transition hover:bg-emerald-700"><i class="fa-solid fa-circle-check"></i> Mark Delivered</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center text-xs text-brand-muted">Nothing in progress. Accept a job above to get started.</div>
+        {% endfor %}
+    </div>
+
+    <!-- COMPLETED -->
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-clipboard-list"></i> COMPLETED</span>
+    </div>
+    <div class="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        {% for job in completed_jobs %}
+        <div class="flex items-center justify-between p-3.5 text-xs">
+            <div>
+                <span class="font-bold text-brand-ink">Order #{{ job.order_id }}</span>
+                <span class="ml-2 text-brand-muted">{{ job.delivered_at|date:"d M Y" }}</span>
+            </div>
+            <span class="font-bold text-brand-green">K{{ job.biker_payout_amount|floatformat:0|intcomma }}</span>
+        </div>
+        {% empty %}
+        <div class="p-6 text-center text-xs text-brand-muted">No completed deliveries yet.</div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var banner = document.getElementById('notifBanner');
+    var btn = document.getElementById('notifBtn');
+    var statusEl = document.getElementById('notifStatus');
+    if (!banner || !btn) return;
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        statusEl.textContent = 'Push notifications are not supported in this browser.';
+        btn.disabled = true;
+        return;
+    }
+
+    function urlB64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var rawData = window.atob(base64);
+        var out = new Uint8Array(rawData.length);
+        for (var i = 0; i < rawData.length; i++) out[i] = rawData.charCodeAt(i);
+        return out;
+    }
+
+    function postSubscription(statusType, subscription) {
+        var browser = (navigator.userAgent.match(/(firefox|edg|chrome|safari|trident)/i) || ['browser'])[0].toLowerCase();
+        return fetch('/webpush/save_information', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status_type: statusType,
+                subscription: subscription.toJSON(),
+                browser: browser,
+                user_agent: navigator.userAgent,
+                group: ''
+            })
+        });
+    }
+
+    function setOn() {
+        btn.textContent = 'Notifications On';
+        btn.classList.remove('bg-brand-orange', 'hover:bg-orange-600');
+        btn.classList.add('bg-neutral-900', 'hover:bg-neutral-700');
+        statusEl.textContent = "You'll be notified about new jobs at your centre.";
+    }
+
+    function setOff() {
+        btn.textContent = 'Enable Notifications';
+        btn.classList.remove('bg-neutral-900', 'hover:bg-neutral-700');
+        btn.classList.add('bg-brand-orange', 'hover:bg-orange-600');
+        statusEl.textContent = "Turn on browser notifications so you never miss a delivery job at your centre.";
+    }
+
+    function refreshState() {
+        navigator.serviceWorker.ready.then(function (reg) {
+            reg.pushManager.getSubscription().then(function (sub) {
+                btn.disabled = false;
+                if (sub) setOn(); else setOff();
+            });
+        });
+    }
+
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        navigator.serviceWorker.ready.then(function (reg) {
+            reg.pushManager.getSubscription().then(function (existing) {
+                if (existing) {
+                    postSubscription('unsubscribe', existing).finally(function () {
+                        existing.unsubscribe().finally(function () {
+                            setOff();
+                            btn.disabled = false;
+                        });
+                    });
+                    return;
+                }
+
+                if (Notification.permission === 'denied') {
+                    statusEl.textContent = 'Notifications are blocked. Enable them in your browser site settings.';
+                    btn.disabled = false;
+                    return;
+                }
+
+                reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlB64ToUint8Array(banner.dataset.vapidKey)
+                }).then(function (sub) {
+                    return postSubscription('subscribe', sub).then(function (r) {
+                        if (r.ok) { setOn(); } else { statusEl.textContent = 'Could not save subscription. Please try again.'; }
+                        btn.disabled = false;
+                    });
+                }).catch(function () {
+                    statusEl.textContent = 'Could not enable notifications. Please try again.';
+                    btn.disabled = false;
+                });
+            });
+        });
+    });
+
+    refreshState();
+})();
+</script>
+{% endblock %}

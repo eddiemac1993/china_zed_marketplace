@@ -35,6 +35,13 @@ def calculate_delivery_fee(subtotal, delivery_method, rate=None):
     return money(Decimal(subtotal or 0) * (percentage / Decimal("100"))), percentage
 
 
+def calculate_biker_payout(delivery_fee, rate=None):
+    if rate is None:
+        rate = ExchangeRate.objects.filter(is_active=True, is_deleted=False).order_by("-updated_at").first()
+    percentage = rate.biker_fee_share_percentage if rate else Decimal("70.00")
+    return money(Decimal(delivery_fee or 0) * (percentage / Decimal("100"))), percentage
+
+
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,6 +63,10 @@ class ExchangeRate(TimeStampedModel):
     direct_delivery_fee_percentage = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal("5.00"),
         help_text="Delivery fee (% of order subtotal) when the order is delivered directly to the customer's address.",
+    )
+    biker_fee_share_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("70.00"),
+        help_text="Share of the delivery fee (%) paid out to the biker who completes a direct delivery.",
     )
     is_active = models.BooleanField(default=True)
 
@@ -79,6 +90,34 @@ class CollectionCentre(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} ({self.town})"
+
+
+class Biker(TimeStampedModel):
+    VEHICLE_CHOICES = [
+        ("motorbike", "Motorbike"),
+        ("bicycle", "Bicycle"),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="biker_profile")
+    full_name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=20)
+    vehicle_type = models.CharField(max_length=20, choices=VEHICLE_CHOICES)
+    home_centre = models.ForeignKey(CollectionCentre, on_delete=models.PROTECT, related_name="bikers")
+    id_number = models.CharField(max_length=50, blank=True, help_text="National ID or driver's licence number, for vetting.")
+
+    is_approved = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True, help_text="Bikers can be paused without losing their history.")
+    approved_at = models.DateTimeField(blank=True, null=True)
+    total_deliveries = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def can_accept_jobs(self):
+        return self.is_approved and self.is_active
+
+    def __str__(self):
+        return f"{self.full_name} ({self.get_vehicle_type_display()}) - {self.home_centre.name}"
 
 
 class Category(TimeStampedModel):
@@ -807,6 +846,69 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product_name}"
+
+
+class OrderCheckpoint(TimeStampedModel):
+    CHECKPOINT_CHOICES = [
+        ("placed", "Order Placed"),
+        ("confirmed", "Confirmed"),
+        ("purchased", "Purchased in China"),
+        ("departed_origin", "Departed China"),
+        ("arrived_origin_port", "Arrived at Origin Port"),
+        ("in_transit", "In Transit (Sea/Air Freight)"),
+        ("arrived_zambia_port", "Arrived in Zambia"),
+        ("arrived_hub", "Arrived at Regional Hub"),
+        ("en_route_destination", "En Route to Destination Town"),
+        ("arrived_centre", "Arrived at Collection Centre"),
+        ("biker_assigned", "Delivery Biker Assigned"),
+        ("out_for_delivery", "Out for Delivery"),
+        ("delivered", "Delivered"),
+        ("ready_for_collection", "Ready for Collection"),
+        ("collected", "Collected by Customer"),
+        ("delayed", "Delayed"),
+        ("other", "Other"),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="checkpoints")
+    checkpoint_type = models.CharField(max_length=30, choices=CHECKPOINT_CHOICES)
+    location_note = models.CharField(max_length=200, blank=True, help_text="e.g. \"Choma Market Centre\"")
+    message = models.TextField(blank=True, help_text="Optional note shown to the customer.")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    notify_customer = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Order #{self.order_id} - {self.get_checkpoint_type_display()}"
+
+
+class DeliveryJob(TimeStampedModel):
+    STATUS_CHOICES = [
+        ("available", "Available"),
+        ("accepted", "Accepted"),
+        ("picked_up", "Picked Up"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="delivery_job")
+    centre = models.ForeignKey(CollectionCentre, on_delete=models.PROTECT, related_name="delivery_jobs")
+    biker = models.ForeignKey(Biker, on_delete=models.SET_NULL, null=True, blank=True, related_name="jobs")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="available")
+
+    biker_fee_percentage_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    biker_payout_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    accepted_at = models.DateTimeField(blank=True, null=True)
+    picked_up_at = models.DateTimeField(blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Job for Order #{self.order_id} ({self.get_status_display()})"
 
 
 class StockMovement(TimeStampedModel):

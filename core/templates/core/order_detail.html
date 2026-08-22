@@ -216,6 +216,40 @@
                     {% endwith %}
                 </div>
             </div>
+
+            <!-- TRACKING LOG -->
+            {% if order.checkpoints.all %}
+            <div class="mt-3.5 overflow-hidden rounded-xl border border-brand-border bg-white">
+                <div class="border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-4.5 py-3.5">
+                    <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-route"></i> TRACKING LOG</span>
+                </div>
+                <div class="p-4.5">
+                    {% for checkpoint in order.checkpoints.all %}
+                    <div class="flex gap-3.5 {% if not forloop.last %}pb-4{% endif %}">
+                        <div class="flex flex-col items-center">
+                            <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-red text-xs text-white">
+                                {% if checkpoint.checkpoint_type == "delivered" or checkpoint.checkpoint_type == "collected" %}<i class="fa-solid fa-circle-check"></i>
+                                {% elif checkpoint.checkpoint_type == "out_for_delivery" or checkpoint.checkpoint_type == "biker_assigned" %}<i class="fa-solid fa-motorcycle"></i>
+                                {% elif checkpoint.checkpoint_type == "arrived_centre" or checkpoint.checkpoint_type == "ready_for_collection" %}<i class="fa-solid fa-shop"></i>
+                                {% elif checkpoint.checkpoint_type == "in_transit" or checkpoint.checkpoint_type == "departed_origin" or checkpoint.checkpoint_type == "en_route_destination" %}<i class="fa-solid fa-plane"></i>
+                                {% elif checkpoint.checkpoint_type == "arrived_origin_port" or checkpoint.checkpoint_type == "arrived_zambia_port" or checkpoint.checkpoint_type == "arrived_hub" %}<i class="fa-solid fa-anchor"></i>
+                                {% elif checkpoint.checkpoint_type == "delayed" %}<i class="fa-solid fa-triangle-exclamation"></i>
+                                {% else %}<i class="fa-solid fa-circle-dot"></i>{% endif %}
+                            </div>
+                            {% if not forloop.last %}<div class="my-1 w-0.5 flex-1 bg-neutral-100"></div>{% endif %}
+                        </div>
+                        <div class="min-w-0 flex-1 {% if not forloop.last %}pb-1{% endif %}">
+                            <div class="flex flex-wrap items-baseline justify-between gap-x-2">
+                                <h4 class="pt-1 text-[13px] font-black text-brand-ink">{{ checkpoint.get_checkpoint_type_display }}{% if checkpoint.location_note %} — {{ checkpoint.location_note }}{% endif %}</h4>
+                                <span class="text-[10px] text-brand-muted">{{ checkpoint.created_at|date:"d M, H:i" }}</span>
+                            </div>
+                            {% if checkpoint.message %}<p class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">{{ checkpoint.message }}</p>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- RIGHT COLUMN -->

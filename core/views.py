@@ -23,6 +23,7 @@ from .forms import (
     SupplierProductRequestForm,
     CustomUserRegistrationForm,
     PaymentProofForm,
+    BikerApplicationForm,
 )
 from .marketplace_importer import ImportFailure, import_marketplace_product
 from .utils import with_display_annotations, apply_sort
@@ -32,10 +33,13 @@ from .models import (
     CustomerProductRequest,
     Order,
     OrderItem,
+    OrderCheckpoint,
     Cart,
     CartItem,
     Category,
     CollectionCentre,
+    Biker,
+    DeliveryJob,
     SupplierProductRequest,
     SupplierProductRequestImage,
     money,
@@ -1236,6 +1240,154 @@ def supplier_submit_product(request):
             "my_submissions": my_submissions,
         }
     )
+
+
+# =========================
+# BIKER DELIVERY NETWORK
+# =========================
+
+def is_approved_biker(user):
+    if not user.is_authenticated:
+        return False
+    biker = getattr(user, "biker_profile", None)
+    return bool(biker and biker.can_accept_jobs())
+
+
+@login_required(login_url="login")
+def become_biker_view(request):
+    existing = getattr(request.user, "biker_profile", None)
+
+    if existing:
+        return render(request, "core/biker_apply.html", {"biker": existing})
+
+    if request.method == "POST":
+        form = BikerApplicationForm(request.POST)
+
+        if form.is_valid():
+            biker = form.save(commit=False)
+            biker.user = request.user
+            biker.save()
+            messages.success(request, "Your biker application was submitted and is awaiting approval.")
+            return redirect("become_biker")
+    else:
+        form = BikerApplicationForm()
+
+    return render(request, "core/biker_apply.html", {"form": form})
+
+
+@login_required(login_url="login")
+def biker_dashboard_view(request):
+    if not is_approved_biker(request.user):
+        return render(request, "core/biker_access_required.html")
+
+    biker = request.user.biker_profile
+
+    available_jobs = DeliveryJob.objects.filter(
+        centre=biker.home_centre, status="available"
+    ).select_related("order", "order__user", "centre").order_by("created_at")
+
+    active_jobs = DeliveryJob.objects.filter(
+        biker=biker, status__in=["accepted", "picked_up"]
+    ).select_related("order", "order__user", "centre").order_by("-accepted_at")
+
+    completed_jobs = DeliveryJob.objects.filter(
+        biker=biker, status="delivered"
+    ).select_related("order", "order__user", "centre").order_by("-delivered_at")[:20]
+
+    total_earned = money(sum((job.biker_payout_amount for job in DeliveryJob.objects.filter(biker=biker, status="delivered")), 0))
+
+    return render(request, "core/biker_dashboard.html", {
+        "biker": biker,
+        "available_jobs": available_jobs,
+        "active_jobs": active_jobs,
+        "completed_jobs": completed_jobs,
+        "total_earned": total_earned,
+        "vapid_public_key": settings.WEBPUSH_SETTINGS["VAPID_PUBLIC_KEY"],
+    })
+
+
+@login_required(login_url="login")
+@require_POST
+def biker_accept_job_view(request, job_id):
+    if not is_approved_biker(request.user):
+        messages.error(request, "You are not an approved biker.")
+        return redirect("home")
+
+    biker = request.user.biker_profile
+    job = get_object_or_404(DeliveryJob, id=job_id, status="available")
+
+    job.biker = biker
+    job.status = "accepted"
+    job.accepted_at = timezone.now()
+    job.save(update_fields=["biker", "status", "accepted_at", "updated_at"])
+
+    OrderCheckpoint.objects.create(
+        order=job.order,
+        checkpoint_type="biker_assigned",
+        location_note=job.centre.name,
+        message=f"A delivery biker has been assigned and will collect your order from {job.centre.name}.",
+        created_by=request.user,
+    )
+
+    messages.success(request, f"Job for Order #{job.order_id} accepted.")
+    return redirect("biker_dashboard")
+
+
+@login_required(login_url="login")
+@require_POST
+def biker_mark_picked_up_view(request, job_id):
+    if not is_approved_biker(request.user):
+        messages.error(request, "You are not an approved biker.")
+        return redirect("home")
+
+    job = get_object_or_404(DeliveryJob, id=job_id, biker=request.user.biker_profile, status="accepted")
+
+    job.status = "picked_up"
+    job.picked_up_at = timezone.now()
+    job.save(update_fields=["status", "picked_up_at", "updated_at"])
+
+    OrderCheckpoint.objects.create(
+        order=job.order,
+        checkpoint_type="out_for_delivery",
+        location_note=job.centre.name,
+        message="Your order has been picked up and is out for delivery.",
+        created_by=request.user,
+    )
+
+    messages.success(request, f"Order #{job.order_id} marked as picked up.")
+    return redirect("biker_dashboard")
+
+
+@login_required(login_url="login")
+@require_POST
+def biker_mark_delivered_view(request, job_id):
+    if not is_approved_biker(request.user):
+        messages.error(request, "You are not an approved biker.")
+        return redirect("home")
+
+    biker = request.user.biker_profile
+    job = get_object_or_404(DeliveryJob, id=job_id, biker=biker, status="picked_up")
+
+    job.status = "delivered"
+    job.delivered_at = timezone.now()
+    job.save(update_fields=["status", "delivered_at", "updated_at"])
+
+    order = job.order
+    order.status = "successful"
+    order.save(update_fields=["status", "updated_at"])
+
+    OrderCheckpoint.objects.create(
+        order=order,
+        checkpoint_type="delivered",
+        location_note=order.delivery_address or job.centre.name,
+        message="Your order has been delivered. Thank you for shopping with ChinaZed.",
+        created_by=request.user,
+    )
+
+    Biker.objects.filter(id=biker.id).update(total_deliveries=biker.total_deliveries + 1)
+
+    messages.success(request, f"Order #{job.order_id} marked as delivered.")
+    return redirect("biker_dashboard")
 
 
 import textwrap

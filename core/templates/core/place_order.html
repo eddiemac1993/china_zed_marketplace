@@ -113,8 +113,11 @@
                 </div>
 
                 {% if has_collection_centres %}
-                <div x-show="deliveryMethod === 'collection'" x-cloak>
-                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">{{ form.collection_centre.label }}</label>
+                <div>
+                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">
+                        <span x-show="deliveryMethod === 'collection'" x-cloak>Collect from which centre?</span>
+                        <span x-show="deliveryMethod === 'direct'" x-cloak>Route through which centre?</span>
+                    </label>
                     {{ form.collection_centre }}
                     {% if form.collection_centre.errors %}<div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.collection_centre.errors|striptags }}</div>{% endif %}
                 </div>

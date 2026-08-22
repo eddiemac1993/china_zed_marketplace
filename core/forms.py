@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre
+from .models import Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 
@@ -343,6 +343,7 @@ class OrderForm(forms.Form):
     collection_centre = forms.ModelChoiceField(
         queryset=CollectionCentre.objects.filter(is_active=True, is_deleted=False),
         required=False,
+        label="Nearest Collection Centre",
         empty_label="Select a collection centre",
         widget=forms.Select(attrs={"class": ORDER_FORM_INPUT_CLASS}),
     )
@@ -374,7 +375,33 @@ class OrderForm(forms.Form):
         if delivery_method == "direct" and not cleaned_data.get("delivery_address"):
             self.add_error("delivery_address", "Please provide the delivery address.")
 
-        if delivery_method == "collection" and not cleaned_data.get("collection_centre"):
+        # A collection centre is required for both delivery methods once any
+        # centre exists — for "direct" orders it's the staging point a biker
+        # dispatches from. Only skip the requirement while the centre list is
+        # still empty, so checkout isn't blocked before any centre is seeded.
+        if self.fields["collection_centre"].queryset.exists() and not cleaned_data.get("collection_centre"):
             self.add_error("collection_centre", "Please select a collection centre.")
 
         return cleaned_data
+
+
+BIKER_FORM_INPUT_CLASS = ORDER_FORM_INPUT_CLASS
+
+
+class BikerApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Biker
+        fields = ["full_name", "phone", "vehicle_type", "home_centre", "id_number"]
+        widgets = {
+            "full_name": forms.TextInput(attrs={"class": BIKER_FORM_INPUT_CLASS, "placeholder": "Full name"}),
+            "phone": forms.TextInput(attrs={"class": BIKER_FORM_INPUT_CLASS, "placeholder": "Example: 0970000000"}),
+            "vehicle_type": forms.Select(attrs={"class": BIKER_FORM_INPUT_CLASS}),
+            "home_centre": forms.Select(attrs={"class": BIKER_FORM_INPUT_CLASS}),
+            "id_number": forms.TextInput(attrs={"class": BIKER_FORM_INPUT_CLASS, "placeholder": "Optional"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["home_centre"].queryset = CollectionCentre.objects.filter(is_active=True, is_deleted=False)
+        self.fields["home_centre"].empty_label = "Select the centre you operate from"
+        self.fields["id_number"].required = False

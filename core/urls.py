@@ -73,6 +73,16 @@ urlpatterns = [
     path("supplier/import-taobao/", views.taobao_import_preview_view, name="taobao_import_preview"),
 
     # =========================
+    # BIKER DELIVERY NETWORK
+    # =========================
+
+    path("become-a-biker/", views.become_biker_view, name="become_biker"),
+    path("biker/dashboard/", views.biker_dashboard_view, name="biker_dashboard"),
+    path("biker/jobs/<int:job_id>/accept/", views.biker_accept_job_view, name="biker_accept_job"),
+    path("biker/jobs/<int:job_id>/picked-up/", views.biker_mark_picked_up_view, name="biker_mark_picked_up"),
+    path("biker/jobs/<int:job_id>/delivered/", views.biker_mark_delivered_view, name="biker_mark_delivered"),
+
+    # =========================
     # POLICY
     # =========================
 

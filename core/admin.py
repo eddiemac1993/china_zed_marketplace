@@ -9,12 +9,15 @@ from .models import (
     ExchangeRate,
     Category,
     CollectionCentre,
+    Biker,
     Product,
     ProductImage,
     Cart,
     CartItem,
     Order,
     OrderItem,
+    OrderCheckpoint,
+    DeliveryJob,
     CustomerProductRequest,
     SupplierProductRequest,
     SupplierProductRequestImage,
@@ -88,6 +91,14 @@ class OrderItemInline(admin.TabularInline):
     )
 
 
+class OrderCheckpointInline(admin.TabularInline):
+    model = OrderCheckpoint
+    extra = 1
+    fields = ("checkpoint_type", "location_note", "message", "notify_customer", "created_at")
+    readonly_fields = ("created_at",)
+    ordering = ("created_at",)
+
+
 class StockMovementInline(admin.TabularInline):
     model = StockMovement
     extra = 0
@@ -128,6 +139,36 @@ class CollectionCentreAdmin(admin.ModelAdmin):
     list_editable = ("is_active",)
     search_fields = ("name", "town", "address")
     readonly_fields = ("created_at", "updated_at")
+
+
+# =========================
+# BIKERS & DELIVERY JOBS
+# =========================
+
+@admin.action(description="Approve selected bikers")
+def approve_bikers(modeladmin, request, queryset):
+    queryset.update(is_approved=True, approved_at=timezone.now())
+
+
+@admin.register(Biker)
+class BikerAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "phone", "vehicle_type", "home_centre", "is_approved", "is_active", "total_deliveries")
+    list_filter = ("is_approved", "is_active", "vehicle_type", "home_centre")
+    list_editable = ("is_active",)
+    search_fields = ("full_name", "phone", "user__username", "user__email")
+    readonly_fields = ("total_deliveries", "approved_at", "created_at", "updated_at")
+    actions = [approve_bikers]
+
+
+@admin.register(DeliveryJob)
+class DeliveryJobAdmin(admin.ModelAdmin):
+    list_display = ("order", "centre", "biker", "status", "biker_payout_amount", "created_at")
+    list_filter = ("status", "centre")
+    search_fields = ("order__id", "biker__full_name")
+    readonly_fields = (
+        "order", "centre", "biker_fee_percentage_used", "biker_payout_amount",
+        "accepted_at", "picked_up_at", "delivered_at", "created_at", "updated_at",
+    )
 
 
 # =========================
@@ -543,7 +584,15 @@ class OrderAdmin(admin.ModelAdmin):
         mark_orders_successful,
     ]
 
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInline, OrderCheckpointInline]
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, OrderCheckpoint) and not instance.pk and not instance.created_by_id:
+                instance.created_by = request.user
+            instance.save()
+        formset.save_m2m()
 
     def order_products(self, obj):
         if not obj or not obj.pk:

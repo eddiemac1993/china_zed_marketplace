@@ -1,0 +1,95 @@
+{% extends "core/base.html" %}
+
+{% block title %}Become a Delivery Biker · ChinaZed 中赞商城{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-[700px] px-4 py-4 sm:px-5">
+
+    <div class="mb-3.5 rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-red-950 p-6 text-white sm:p-7">
+        <div class="mb-2.5 inline-block rounded bg-brand-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-brand-red-dark"><i class="fa-solid fa-motorcycle"></i> Delivery Network</div>
+        <h1 class="font-display text-3xl font-black leading-tight sm:text-4xl">Become a ChinaZed Biker</h1>
+        <p class="mt-2.5 max-w-xl text-sm leading-relaxed text-white/75">Deliver parcels from a collection centre near you — by motorbike or bicycle — and earn a share of every delivery fee.</p>
+    </div>
+
+    {% if biker %}
+        <div class="rounded-xl border border-brand-border bg-white p-6">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="grid h-12 w-12 shrink-0 place-items-center rounded-full {% if biker.is_approved %}bg-emerald-50 text-emerald-600{% else %}bg-amber-50 text-amber-600{% endif %} text-xl">
+                    <i class="fa-solid {% if biker.is_approved %}fa-circle-check{% else %}fa-hourglass-half{% endif %}"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-brand-ink">{{ biker.full_name }}</h2>
+                    <p class="text-xs text-brand-muted">{{ biker.get_vehicle_type_display }} · Based at {{ biker.home_centre.name }} ({{ biker.home_centre.town }})</p>
+                </div>
+            </div>
+
+            {% if biker.is_approved %}
+                {% if biker.is_active %}
+                    <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        <i class="fa-solid fa-circle-check"></i> You're approved and active. You can accept delivery jobs from your dashboard.
+                    </div>
+                    <a href="{% url 'biker_dashboard' %}" class="mt-4 block w-full rounded-lg bg-brand-red py-3 text-center text-sm font-bold text-white transition hover:bg-brand-red-dark">Go to Biker Dashboard</a>
+                {% else %}
+                    <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        <i class="fa-solid fa-pause"></i> Your account is currently paused. Contact ChinaZed support to resume accepting jobs.
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    <i class="fa-solid fa-hourglass-half"></i> Your application is awaiting review. We'll approve you once your details are verified.
+                </div>
+            {% endif %}
+
+            <a href="{% url 'home' %}" class="mt-4 block text-center text-[11px] text-brand-muted transition hover:text-brand-red">← Back to marketplace</a>
+        </div>
+    {% else %}
+        <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
+            <div class="border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">Biker Application</div>
+            <div class="p-5">
+
+                {% if form.non_field_errors %}
+                    <div class="mb-3.5 rounded border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-900">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.full_name.label }}</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.full_name.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.phone.label }}</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.vehicle_type.label }}</label>
+                        {{ form.vehicle_type }}
+                        {% if form.vehicle_type.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.vehicle_type.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3.5">
+                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.home_centre.label }}</label>
+                        {{ form.home_centre }}
+                        {% if form.home_centre.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.home_centre.errors.0 }}</div>{% endif %}
+                        <div class="mt-1 text-[11px] leading-relaxed text-brand-muted">You'll only see delivery jobs that are staged at this centre.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.id_number.label }}</label>
+                        {{ form.id_number }}
+                        <div class="mt-1 text-[11px] leading-relaxed text-brand-muted">Optional, but helps us verify you faster.</div>
+                    </div>
+
+                    <button type="submit" class="block w-full rounded bg-brand-red py-3.5 text-sm font-black text-white transition hover:bg-brand-red-dark">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

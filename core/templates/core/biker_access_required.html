@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+
+{% block title %}Biker Access Required · ChinaZed 中赞商城{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-[600px] px-4 py-8">
+    <div class="rounded-xl border border-brand-border bg-white p-7 text-center">
+        <div class="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-amber-50 text-2xl text-amber-600">
+            <i class="fa-solid fa-motorcycle"></i>
+        </div>
+        <h1 class="mb-2.5 text-2xl font-bold text-brand-ink">Biker access required</h1>
+        <p class="mb-5 text-sm leading-relaxed text-brand-muted">This dashboard is only available to approved ChinaZed delivery bikers. Apply to join the delivery network, or sign in with your biker account if you've already registered.</p>
+        <a href="{% url 'become_biker' %}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-red px-5 py-3 text-sm font-black text-white transition hover:bg-brand-red-dark"><i class="fa-solid fa-motorcycle"></i> Apply to become a biker</a>
+        <a href="{% url 'home' %}" class="mt-4 block text-[11px] text-brand-muted transition hover:text-brand-red">← Back to marketplace</a>
+    </div>
+</div>
+{% endblock %}

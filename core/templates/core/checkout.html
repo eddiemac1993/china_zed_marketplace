@@ -99,12 +99,16 @@
                     {% endif %}
 
                     {% if has_collection_centres %}
-                    <div class="mt-3.5" x-show="deliveryMethod === 'collection'" x-cloak>
-                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">{{ form.collection_centre.label }}</label>
+                    <div class="mt-3.5">
+                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">
+                            <span x-show="deliveryMethod === 'collection'" x-cloak>Which centre would you like to collect from?</span>
+                            <span x-show="deliveryMethod === 'direct'" x-cloak>Which centre should we route your delivery through?</span>
+                        </label>
                         {{ form.collection_centre }}
                         {% if form.collection_centre.errors %}
                             <div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.collection_centre.errors|striptags }}</div>
                         {% endif %}
+                        <div class="mt-1 text-[11px] leading-relaxed text-brand-muted" x-show="deliveryMethod === 'direct'" x-cloak>A biker registered to this centre will deliver to your address once your order arrives there.</div>
                     </div>
                     {% endif %}
 
