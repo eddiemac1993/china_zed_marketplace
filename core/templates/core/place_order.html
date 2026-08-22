@@ -1,9 +1,21 @@
 {% extends "core/base.html" %}
+{% load humanize %}
 
 {% block title %}Confirm Order · ChinaZed 中赞商城{% endblock %}
 
 {% block content %}
-<div class="mx-auto max-w-[1300px] px-4 py-4 sm:px-5">
+<div class="mx-auto max-w-[1300px] px-4 py-4 sm:px-5"
+     x-data="{
+        deliveryMethod: '{{ form.delivery_method.value|default:"collection" }}',
+        subtotal: {{ product.selling_price|default:0 }},
+        collectionFee: {{ collection_fee_estimate|default:0 }},
+        directFee: {{ direct_fee_estimate|default:0 }},
+        get deliveryFee() { return this.deliveryMethod === 'direct' ? this.directFee : this.collectionFee; },
+        get total() { return this.subtotal + this.deliveryFee; },
+        get deposit() { return this.total * 0.35; },
+        get balance() { return this.total - this.deposit; },
+        fmt(n) { return Math.round(n).toLocaleString(); },
+     }">
 
     <div class="mb-5 flex items-center justify-between">
         <h2 class="font-display text-2xl font-black tracking-wide text-brand-ink">Confirm Your Order</h2>
@@ -24,19 +36,27 @@
 
             <h3 class="mb-2 text-lg font-black text-brand-ink">{{ product.name }}</h3>
 
-            <p class="font-display text-3xl font-black text-brand-orange">K{{ product.selling_price|floatformat:2 }}</p>
+            <p class="font-display text-3xl font-black text-brand-orange" x-text="'K' + fmt(total)"></p>
 
             <div class="mt-4 space-y-2 text-sm">
                 <div class="flex justify-between">
+                    <span class="text-brand-muted">Items Subtotal</span>
+                    <span class="font-bold">K{{ product.selling_price|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-brand-muted">Delivery Fee</span>
+                    <span class="font-bold text-brand-orange" x-text="'K' + fmt(deliveryFee)"></span>
+                </div>
+                <div class="flex justify-between border-t border-neutral-100 pt-2">
                     <span class="text-brand-muted">Deposit (35%)</span>
-                    <span class="font-bold">K{{ product.deposit_amount|floatformat:2 }}</span>
+                    <span class="font-bold" x-text="'K' + fmt(deposit)"></span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-brand-muted">Balance</span>
-                    <span class="font-bold">K{{ product.balance_amount|floatformat:2 }}</span>
+                    <span class="font-bold" x-text="'K' + fmt(balance)"></span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-brand-muted">Delivery</span>
+                    <span class="text-brand-muted">Delivery Window</span>
                     <span class="font-bold text-brand-blue">{{ product.delivery_range }}</span>
                 </div>
             </div>
@@ -53,9 +73,57 @@
             <form method="POST" class="space-y-4">
                 {% csrf_token %}
 
+                {% if form.non_field_errors %}
+                    <div class="rounded border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-900">{{ form.non_field_errors }}</div>
+                {% endif %}
+
                 <div>
-                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">Phone Number</label>
+                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">{{ form.customer_phone.label }}</label>
                     {{ form.customer_phone }}
+                    {% if form.customer_phone.errors %}<div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.customer_phone.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">Delivery Method</label>
+                    <div class="grid grid-cols-1 gap-2.5 {% if has_collection_centres %}sm:grid-cols-2{% endif %}">
+                        {% if has_collection_centres %}
+                        <label class="relative block cursor-pointer rounded-lg border-2 p-3 transition"
+                               :class="deliveryMethod === 'collection' ? 'border-brand-red bg-red-50/50' : 'border-brand-border hover:border-brand-red/50'">
+                            <input type="radio" name="delivery_method" value="collection" x-model="deliveryMethod" class="sr-only">
+                            <div class="mb-1 flex items-center justify-between">
+                                <span class="text-xs font-black text-brand-ink"><i class="fa-solid fa-shop text-brand-orange"></i> Collect from Centre</span>
+                                <i class="fa-solid fa-circle-check text-brand-red" x-show="deliveryMethod === 'collection'"></i>
+                            </div>
+                            <p class="text-[11px] text-brand-muted"><span x-text="'K' + fmt(collectionFee)"></span> fee</p>
+                        </label>
+                        {% endif %}
+                        <label class="relative block cursor-pointer rounded-lg border-2 p-3 transition"
+                               :class="deliveryMethod === 'direct' ? 'border-brand-red bg-red-50/50' : 'border-brand-border hover:border-brand-red/50'">
+                            <input type="radio" name="delivery_method" value="direct" x-model="deliveryMethod" class="sr-only">
+                            <div class="mb-1 flex items-center justify-between">
+                                <span class="text-xs font-black text-brand-ink"><i class="fa-solid fa-house text-brand-orange"></i> Direct to Address</span>
+                                <i class="fa-solid fa-circle-check text-brand-red" x-show="deliveryMethod === 'direct'"></i>
+                            </div>
+                            <p class="text-[11px] text-brand-muted"><span x-text="'K' + fmt(directFee)"></span> fee</p>
+                        </label>
+                    </div>
+                    {% if not has_collection_centres %}
+                    <p class="mt-2 text-[11px] text-brand-muted"><i class="fa-solid fa-circle-info"></i> Collection centres are coming soon in your area.</p>
+                    {% endif %}
+                </div>
+
+                {% if has_collection_centres %}
+                <div x-show="deliveryMethod === 'collection'" x-cloak>
+                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">{{ form.collection_centre.label }}</label>
+                    {{ form.collection_centre }}
+                    {% if form.collection_centre.errors %}<div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.collection_centre.errors|striptags }}</div>{% endif %}
+                </div>
+                {% endif %}
+
+                <div x-show="deliveryMethod === 'direct'" {% if has_collection_centres %}x-cloak{% endif %}>
+                    <label class="mb-1.5 block text-sm font-bold text-brand-ink">{{ form.delivery_address.label }}</label>
+                    {{ form.delivery_address }}
+                    {% if form.delivery_address.errors %}<div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.delivery_address.errors|striptags }}</div>{% endif %}
                 </div>
 
                 <div>

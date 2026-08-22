@@ -7,10 +7,32 @@ from datetime import timedelta
 import uuid
 
 DEFAULT_DEPOSIT_PERCENTAGE = Decimal("35.00")
+DEFAULT_COLLECTION_FEE_PERCENTAGE = Decimal("2.00")
+DEFAULT_DIRECT_DELIVERY_FEE_PERCENTAGE = Decimal("5.00")
+
+DELIVERY_METHOD_CHOICES = [
+    ("collection", "Collect from a Centre"),
+    ("direct", "Direct to Address"),
+]
 
 
 def money(value):
     return Decimal(value or 0).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def delivery_fee_percentage(delivery_method, rate=None):
+    """Active % of order subtotal charged for the given delivery method."""
+    if rate is None:
+        rate = ExchangeRate.objects.filter(is_active=True, is_deleted=False).order_by("-updated_at").first()
+
+    if delivery_method == "direct":
+        return rate.direct_delivery_fee_percentage if rate else DEFAULT_DIRECT_DELIVERY_FEE_PERCENTAGE
+    return rate.collection_fee_percentage if rate else DEFAULT_COLLECTION_FEE_PERCENTAGE
+
+
+def calculate_delivery_fee(subtotal, delivery_method, rate=None):
+    percentage = delivery_fee_percentage(delivery_method, rate=rate)
+    return money(Decimal(subtotal or 0) * (percentage / Decimal("100"))), percentage
 
 
 class TimeStampedModel(models.Model):
@@ -27,6 +49,14 @@ class ExchangeRate(TimeStampedModel):
     markup_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("35.00"))
     local_markup_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("80.00"))
     deposit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=DEFAULT_DEPOSIT_PERCENTAGE)
+    collection_fee_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("2.00"),
+        help_text="Delivery fee (% of order subtotal) when the customer collects from a centre.",
+    )
+    direct_delivery_fee_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("5.00"),
+        help_text="Delivery fee (% of order subtotal) when the order is delivered directly to the customer's address.",
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -34,6 +64,21 @@ class ExchangeRate(TimeStampedModel):
 
     def __str__(self):
         return f"1 RMB = K{self.rmb_to_zmw} | Markup {self.markup_percentage}%"
+
+
+class CollectionCentre(TimeStampedModel):
+    name = models.CharField(max_length=150)
+    town = models.CharField(max_length=100)
+    address = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "collection centre"
+        verbose_name_plural = "collection centres"
+        ordering = ["town", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.town})"
 
 
 class Category(TimeStampedModel):
@@ -579,6 +624,14 @@ class Order(TimeStampedModel):
     customer_phone = models.CharField(max_length=20)
     customer_note = models.TextField(blank=True)
 
+    delivery_method = models.CharField(max_length=20, choices=DELIVERY_METHOD_CHOICES, default="collection")
+    collection_centre = models.ForeignKey(
+        CollectionCentre, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders",
+    )
+    delivery_address = models.TextField(blank=True)
+    delivery_fee = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    delivery_fee_percentage_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+
     stock_reduced = models.BooleanField(default=False)
 
     class Meta:
@@ -619,15 +672,22 @@ class Order(TimeStampedModel):
         super().save(*args, **kwargs)
 
     def recalculate_totals(self):
-        total = sum(item.line_total for item in self.items.all())
+        items_total = sum(item.line_total for item in self.items.all())
 
-        self.total_price = money(total)
+        self.total_price = money(items_total) + money(self.delivery_fee)
 
         percentage = self.deposit_percentage_used or DEFAULT_DEPOSIT_PERCENTAGE
         self.deposit_amount = money(self.total_price * (percentage / Decimal("100")))
         self.balance_amount = money(self.total_price - self.deposit_amount)
 
         self.save()
+
+    def delivery_summary(self):
+        if self.delivery_method == "direct":
+            return self.delivery_address or "Direct to address"
+        if self.collection_centre:
+            return f"Collect from {self.collection_centre.name} ({self.collection_centre.town})"
+        return "Collect from centre"
 
     def reduce_local_stock(self):
         if self.stock_reduced:

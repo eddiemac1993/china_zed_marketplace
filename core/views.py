@@ -35,9 +35,11 @@ from .models import (
     Cart,
     CartItem,
     Category,
+    CollectionCentre,
     SupplierProductRequest,
     SupplierProductRequestImage,
     money,
+    calculate_delivery_fee,
 )
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
@@ -707,6 +709,15 @@ def clear_cart_view(request):
     return redirect("cart")
 
 
+def _delivery_form_defaults():
+    """Default the delivery method to 'direct' when no active collection
+    centres exist yet, so checkout is never stuck defaulted to an option
+    nobody can actually complete."""
+    has_centres = CollectionCentre.objects.filter(is_active=True, is_deleted=False).exists()
+    initial = {} if has_centres else {"delivery_method": "direct"}
+    return has_centres, initial
+
+
 @login_required(login_url="login")
 def checkout_cart_view(request):
     cart = get_user_cart(request.user)
@@ -726,14 +737,24 @@ def checkout_cart_view(request):
             )
             return redirect("cart")
 
+    has_collection_centres, initial = _delivery_form_defaults()
+
     if request.method == "POST":
         form = OrderForm(request.POST)
 
         if form.is_valid():
+            delivery_method = form.cleaned_data["delivery_method"]
+            delivery_fee, fee_percentage = calculate_delivery_fee(cart.total_price(), delivery_method)
+
             order = Order.objects.create(
                 user=request.user,
                 customer_phone=form.cleaned_data["customer_phone"],
                 customer_note=form.cleaned_data["customer_note"],
+                delivery_method=delivery_method,
+                collection_centre=form.cleaned_data.get("collection_centre"),
+                delivery_address=form.cleaned_data.get("delivery_address", ""),
+                delivery_fee=delivery_fee,
+                delivery_fee_percentage_used=fee_percentage,
             )
 
             for item in cart_items:
@@ -782,6 +803,9 @@ Order ID: #{order.id}
 Items:
 {item_lines}
 
+Delivery: {order.delivery_summary()}
+Delivery Fee: K{order.delivery_fee}
+
 Total Price: K{order.total_price}
 Deposit Required: K{order.deposit_amount}
 Balance on Arrival: K{order.balance_amount}
@@ -815,6 +839,9 @@ Customer Phone: {order.customer_phone}
 Items:
 {item_lines}
 
+Delivery: {order.delivery_summary()}
+Delivery Fee: K{order.delivery_fee}
+
 Total Price: K{order.total_price}
 Deposit Required: K{order.deposit_amount}
 Balance on Arrival: K{order.balance_amount}
@@ -837,13 +864,21 @@ Order Link:
             return redirect("order_detail", order_id=order.id)
 
     else:
-        form = OrderForm()
+        form = OrderForm(initial=initial)
+
+    collection_fee, direct_fee = (
+        calculate_delivery_fee(cart.total_price(), "collection")[0],
+        calculate_delivery_fee(cart.total_price(), "direct")[0],
+    )
 
     return render(request, "core/checkout.html", {
         "form": form,
         "cart": cart,
         "cart_items": cart_items,
         "cart_count": cart.total_items(),
+        "has_collection_centres": has_collection_centres,
+        "collection_fee_estimate": collection_fee,
+        "direct_fee_estimate": direct_fee,
     })
 
 
@@ -859,14 +894,24 @@ def place_order_view(request, slug):
         messages.error(request, "This product is currently out of stock.")
         return redirect("product_detail", slug=product.slug)
 
+    has_collection_centres, initial = _delivery_form_defaults()
+
     if request.method == "POST":
         form = OrderForm(request.POST)
 
         if form.is_valid():
+            delivery_method = form.cleaned_data["delivery_method"]
+            delivery_fee, fee_percentage = calculate_delivery_fee(product.selling_price(), delivery_method)
+
             order = Order.objects.create(
                 user=request.user,
                 customer_phone=form.cleaned_data["customer_phone"],
                 customer_note=form.cleaned_data["customer_note"],
+                delivery_method=delivery_method,
+                collection_centre=form.cleaned_data.get("collection_centre"),
+                delivery_address=form.cleaned_data.get("delivery_address", ""),
+                delivery_fee=delivery_fee,
+                delivery_fee_percentage_used=fee_percentage,
             )
 
             OrderItem.objects.create(
@@ -909,6 +954,9 @@ Order ID: #{order.id}
 Product: {product.name}
 Quantity: 1
 
+Delivery: {order.delivery_summary()}
+Delivery Fee: K{order.delivery_fee}
+
 Total Price: K{order.total_price}
 Deposit Required: K{order.deposit_amount}
 Balance on Arrival: K{order.balance_amount}
@@ -942,6 +990,9 @@ Customer Phone: {order.customer_phone}
 Items:
 {item_lines}
 
+Delivery: {order.delivery_summary()}
+Delivery Fee: K{order.delivery_fee}
+
 Total Price: K{order.total_price}
 Deposit Required: K{order.deposit_amount}
 Balance on Arrival: K{order.balance_amount}
@@ -964,11 +1015,19 @@ Order Link:
             return redirect("order_detail", order_id=order.id)
 
     else:
-        form = OrderForm()
+        form = OrderForm(initial=initial)
+
+    collection_fee, direct_fee = (
+        calculate_delivery_fee(product.selling_price(), "collection")[0],
+        calculate_delivery_fee(product.selling_price(), "direct")[0],
+    )
 
     return render(request, "core/place_order.html", {
         "form": form,
         "product": product,
+        "has_collection_centres": has_collection_centres,
+        "collection_fee_estimate": collection_fee,
+        "direct_fee_estimate": direct_fee,
     })
 
 

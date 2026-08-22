@@ -8,6 +8,7 @@ from webpush import send_user_notification
 from .models import (
     ExchangeRate,
     Category,
+    CollectionCentre,
     Product,
     ProductImage,
     Cart,
@@ -105,6 +106,8 @@ class ExchangeRateAdmin(admin.ModelAdmin):
         "markup_percentage",
         "local_markup_percentage",
         "deposit_percentage",
+        "collection_fee_percentage",
+        "direct_delivery_fee_percentage",
         "is_active",
         "updated_at",
     )
@@ -112,6 +115,19 @@ class ExchangeRateAdmin(admin.ModelAdmin):
     list_editable = ("is_active",)
     readonly_fields = ("created_at", "updated_at")
     ordering = ("-updated_at",)
+
+
+# =========================
+# COLLECTION CENTRES
+# =========================
+
+@admin.register(CollectionCentre)
+class CollectionCentreAdmin(admin.ModelAdmin):
+    list_display = ("name", "town", "is_active", "updated_at")
+    list_filter = ("is_active", "town", "is_deleted")
+    list_editable = ("is_active",)
+    search_fields = ("name", "town", "address")
+    readonly_fields = ("created_at", "updated_at")
 
 
 # =========================
@@ -382,6 +398,7 @@ class OrderAdmin(admin.ModelAdmin):
         "user",
         "order_products",
         "status",
+        "delivery_method",
         "deposit_confirmed",
         "availability_status",
         "refund_status",
@@ -404,6 +421,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     list_filter = (
         "status",
+        "delivery_method",
         "deposit_confirmed",
         "balance_paid",
         "stock_reduced",
@@ -426,6 +444,8 @@ class OrderAdmin(admin.ModelAdmin):
         "total_price",
         "deposit_amount",
         "balance_amount",
+        "delivery_fee",
+        "delivery_fee_percentage_used",
         "exchange_rate_used",
         "markup_used",
         "deposit_percentage_used",
@@ -457,6 +477,15 @@ class OrderAdmin(admin.ModelAdmin):
                 "deposit_confirmed",
                 "balance_paid",
                 "stock_reduced",
+            )
+        }),
+        ("Delivery Method & Address", {
+            "fields": (
+                "delivery_method",
+                "collection_centre",
+                "delivery_address",
+                "delivery_fee",
+                "delivery_fee_percentage_used",
             )
         }),
         ("Link-import availability check", {

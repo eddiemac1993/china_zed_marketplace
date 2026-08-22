@@ -236,6 +236,19 @@
                         <span class="text-right font-bold text-brand-red">{% if order.is_delayed %}<i class="fa-solid fa-triangle-exclamation"></i> Delayed{% else %}{{ order.get_status_display }}{% endif %}</span>
                     </div>
                     <div class="flex items-start justify-between gap-2.5 border-b border-neutral-100 py-1.5 text-xs last:border-0">
+                        <span class="shrink-0 text-brand-muted">Delivery</span>
+                        <span class="text-right font-bold text-brand-ink">
+                            {% if order.delivery_method == "direct" %}<i class="fa-solid fa-house text-brand-orange"></i> {{ order.delivery_address|default:"Direct to address" }}
+                            {% else %}<i class="fa-solid fa-shop text-brand-orange"></i> {{ order.delivery_summary }}{% endif %}
+                        </span>
+                    </div>
+                    {% if order.delivery_fee %}
+                    <div class="flex items-start justify-between gap-2.5 border-b border-neutral-100 py-1.5 text-xs last:border-0">
+                        <span class="text-brand-muted">Delivery Fee</span>
+                        <span class="text-right font-bold text-brand-ink">K{{ order.delivery_fee|floatformat:0|intcomma }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex items-start justify-between gap-2.5 border-b border-neutral-100 py-1.5 text-xs last:border-0">
                         <span class="text-brand-muted">Est. Arrival</span>
                         <span class="text-right font-bold text-brand-orange">{{ order.estimated_arrival_start }} – {{ order.estimated_arrival_end }}</span>
                     </div>

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Category, CustomerProductRequest, SupplierProductRequest, Order
+from .models import Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 
@@ -321,12 +321,39 @@ class CustomerProductRequestForm(forms.ModelForm):
         }
 
 
+ORDER_FORM_INPUT_CLASS = "w-full rounded border border-brand-border px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-red focus:ring-2 focus:ring-red-100"
+
+
 class OrderForm(forms.Form):
     customer_phone = forms.CharField(
         max_length=20,
-        label="Phone Number",
+        label="Recipient's Phone Number",
         widget=forms.TextInput(attrs={
-            "placeholder": "Example: 0970000000"
+            "placeholder": "Example: 0970000000",
+            "class": ORDER_FORM_INPUT_CLASS,
+        })
+    )
+
+    delivery_method = forms.ChoiceField(
+        choices=[("collection", "Collect from a Centre"), ("direct", "Direct to Address")],
+        initial="collection",
+        widget=forms.RadioSelect,
+    )
+
+    collection_centre = forms.ModelChoiceField(
+        queryset=CollectionCentre.objects.filter(is_active=True, is_deleted=False),
+        required=False,
+        empty_label="Select a collection centre",
+        widget=forms.Select(attrs={"class": ORDER_FORM_INPUT_CLASS}),
+    )
+
+    delivery_address = forms.CharField(
+        required=False,
+        label="Recipient's Delivery Address",
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": "Street address, area/compound, town/city, and any landmark that helps the courier find you",
+            "class": ORDER_FORM_INPUT_CLASS,
         })
     )
 
@@ -335,6 +362,19 @@ class OrderForm(forms.Form):
         label="Order Note",
         widget=forms.Textarea(attrs={
             "rows": 4,
-            "placeholder": "Any colour, size, model or delivery instructions?"
+            "placeholder": "Any colour, size, model or delivery instructions?",
+            "class": ORDER_FORM_INPUT_CLASS,
         })
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        delivery_method = cleaned_data.get("delivery_method")
+
+        if delivery_method == "direct" and not cleaned_data.get("delivery_address"):
+            self.add_error("delivery_address", "Please provide the delivery address.")
+
+        if delivery_method == "collection" and not cleaned_data.get("collection_centre"):
+            self.add_error("collection_centre", "Please select a collection centre.")
+
+        return cleaned_data
