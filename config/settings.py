@@ -196,6 +196,14 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 
+if DEBUG:
+    # Local development is served over plain HTTP, so runserver must not
+    # redirect http://127.0.0.1 to https or set secure-only cookies.
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+
 
 # Background Web Push notifications
 if "webpush" not in INSTALLED_APPS:
