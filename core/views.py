@@ -15,6 +15,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
@@ -429,7 +430,10 @@ class ChinaZedLoginView(LoginView):
 
         if username:
             User = get_user_model()
-            user = User.objects.filter(username__iexact=username, is_active=False).first()
+            user = User.objects.filter(
+                Q(username__iexact=username) | Q(email__iexact=username),
+                is_active=False,
+            ).first()
 
             if user:
                 self.request.session["pending_activation_email"] = user.email

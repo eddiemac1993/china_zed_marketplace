@@ -50,6 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'core',
     "events",
     'django.contrib.humanize',
@@ -64,6 +68,7 @@ MIDDLEWARE = [
     'core.middleware.MobileAppHeadMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -181,6 +186,36 @@ LOGIN_REDIRECT_URL = "profile"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "login"
 COMMUNINITY_AI_ENABLED = os.getenv("COMMUNINITY_AI_ENABLED", "True").lower() in {"1", "true", "yes", "on"}
+
+AUTHENTICATION_BACKENDS = [
+    "core.backends.EmailOrUsernameBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# Google OAuth credentials belong in the environment, never in source control.
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "").strip()
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "").strip()
+GOOGLE_OAUTH_ENABLED = bool(GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET)
+
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+        "OAUTH_PKCE_ENABLED": True,
+        "EMAIL_AUTHENTICATION": True,
+        "EMAIL_AUTHENTICATION_AUTO_CONNECT": True,
+    }
+}
+if GOOGLE_OAUTH_ENABLED:
+    SOCIALACCOUNT_PROVIDERS["google"]["APPS"] = [{
+        "client_id": GOOGLE_OAUTH_CLIENT_ID,
+        "secret": GOOGLE_OAUTH_CLIENT_SECRET,
+        "key": "",
+    }]
 
 # Production transport, cookie, and browser hardening.
 # PythonAnywhere terminates TLS at its proxy, so forwarded HTTPS must be trusted.

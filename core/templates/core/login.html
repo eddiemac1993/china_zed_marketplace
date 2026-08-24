@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load socialaccount %}
 
 {% block title %}Login · ChinaZed 中赞商城{% endblock %}
 
@@ -31,6 +32,14 @@
             <div class="text-center font-display text-3xl font-black leading-none tracking-tight text-brand-red">CHINAZED</div>
             <div class="mb-5 text-center text-[11px] text-brand-muted">中赞商城 · Welcome Back</div>
 
+            {% if google_oauth_enabled %}
+            <form method="post" action="{% provider_login_url 'google' process='login' %}" class="mb-4">
+                {% csrf_token %}
+                <button type="submit" class="flex w-full items-center justify-center gap-3 rounded-full border border-neutral-300 bg-white py-3 text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-50"><i class="fa-brands fa-google text-[#4285f4]"></i> Continue with Google</button>
+            </form>
+            <div class="mb-4 flex items-center gap-2.5"><span class="h-px flex-1 bg-brand-border"></span><span class="text-[10px] font-bold text-brand-muted">OR USE EMAIL</span><span class="h-px flex-1 bg-brand-border"></span></div>
+            {% endif %}
+
             {% if form.errors %}
                 <div class="mb-3.5 rounded border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800">
                     <i class="fa-solid fa-circle-xmark"></i> Invalid username or password. Please try again.
@@ -41,8 +50,8 @@
                 {% csrf_token %}
 
                 <div class="mb-3">
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Username</label>
-                    <input type="text" name="username" autocomplete="username" placeholder="Enter your username" required
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Email or Username</label>
+                    <input type="text" name="username" autocomplete="username" placeholder="Enter your email" required
                            class="w-full rounded border border-brand-border bg-neutral-50 px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-red-100">
                 </div>
 

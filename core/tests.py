@@ -126,7 +126,6 @@ class MarketplaceFlowTests(TestCase):
         response = self.client.post(
             reverse("register"),
             {
-                "username": "verifyme",
                 "email": "verifyme@example.com",
                 "password1": "Str0ngPass!2026",
                 "password2": "Str0ngPass!2026",
@@ -135,7 +134,8 @@ class MarketplaceFlowTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("registration_pending"))
-        user = User.objects.get(username="verifyme")
+        user = User.objects.get(email="verifyme@example.com")
+        self.assertTrue(user.username.startswith("verifyme-"))
         self.assertFalse(user.is_active)
         self.assertEqual(user.email, "verifyme@example.com")
         self.assertEqual(len(mail.outbox), 1)
@@ -150,6 +150,17 @@ class MarketplaceFlowTests(TestCase):
         self.assertRedirects(activation_response, reverse("login"))
         user.refresh_from_db()
         self.assertTrue(user.is_active)
+
+    def test_users_can_log_in_with_email_or_legacy_username(self):
+        user = User.objects.create_user(
+            username="legacybuyer",
+            email="legacy@example.com",
+            password="Str0ngPass!2026",
+        )
+
+        self.assertTrue(self.client.login(username=user.email, password="Str0ngPass!2026"))
+        self.client.logout()
+        self.assertTrue(self.client.login(username=user.username, password="Str0ngPass!2026"))
 
     def test_request_product_requires_login_and_saves_customer_request(self):
         response = self.client.get(reverse("request_product"))

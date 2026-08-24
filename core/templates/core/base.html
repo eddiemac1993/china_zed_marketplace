@@ -167,17 +167,16 @@
 
 {% block floating_actions %}
 <!-- FLOATING ACTIONS -->
-<div class="fixed right-2.5 z-[300] flex flex-col items-end gap-2.5 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-out sm:right-4 lg:bottom-6 print:hidden"
-     x-data="{ tucked: false, lastY: 0, showTop: false }"
-     x-init="lastY = window.scrollY"
-     @scroll.window="let y = window.scrollY; showTop = y > 400; if (Math.abs(y - lastY) > 6) { tucked = y > lastY && y > 220; lastY = y; }"
-     :class="tucked ? 'translate-y-36 opacity-0 pointer-events-none' : ''">
+<div class="fixed right-2.5 z-[6000] flex flex-col items-end gap-2 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] sm:right-4 lg:bottom-6 print:hidden"
+     style="position:fixed;right:10px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:6000"
+     x-data="{ showTop: false }"
+     @scroll.window="showTop = window.scrollY > 400">
     <a href="{% url 'assistant' %}" title="AI Assistant" aria-label="AI Assistant"
        class="flex h-11 w-11 items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-brand-red to-brand-orange text-[13px] font-black text-white shadow-lg shadow-red-900/30 transition hover:-translate-y-0.5 hover:shadow-xl sm:h-[52px] sm:w-auto sm:min-w-[58px] sm:px-4">
         <i class="fa-solid fa-robot"></i><span class="hidden sm:inline">Help</span>
     </a>
     <button type="button" id="installAppBtn" aria-label="Install ChinaZed app"
-            class="hidden min-h-[42px] items-center justify-center gap-1.5 rounded-full bg-neutral-900 px-3.5 text-xs font-bold text-white shadow-lg transition hover:-translate-y-0.5">
+            class="flex min-h-[40px] items-center justify-center gap-1.5 rounded-full bg-neutral-900 px-3 text-[11px] font-bold text-white shadow-lg transition hover:-translate-y-0.5" style="min-height:40px;padding:0 12px">
         <i class="fa-solid fa-arrow-down-to-line"></i><span>Install</span>
     </button>
     <button type="button" @click="window.scrollTo({top:0,behavior:'smooth'})" x-show="showTop" x-transition.opacity aria-label="Back to top"
@@ -226,9 +225,8 @@
             alert('To install ChinaZed, open your browser menu and choose Add to Home screen or Install app.');
         });
 
-        if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()) {
-            showInstallBtn();
-        }
+        if (isStandalone()) hideInstallBtn();
+        else showInstallBtn();
     })();
 </script>
 {% block extra_js %}{% endblock %}

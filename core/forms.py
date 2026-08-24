@@ -2,6 +2,8 @@ from django import forms
 from .models import Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
+import hashlib
+import re
 
 
 class StyledPasswordResetForm(PasswordResetForm):
@@ -50,13 +52,6 @@ class CustomUserRegistrationForm(UserCreationForm):
         })
     )
 
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter username"
-        })
-    )
-
     password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
@@ -83,7 +78,7 @@ class CustomUserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2", "accept_terms"]
+        fields = ["email", "password1", "password2", "accept_terms"]
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
@@ -99,8 +94,17 @@ class CustomUserRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-
         user.email = self.cleaned_data["email"]
+        local_part = user.email.split("@", 1)[0].lower()
+        base = re.sub(r"[^a-z0-9._-]+", "", local_part).strip("._-") or "user"
+        digest = hashlib.sha256(user.email.encode("utf-8")).hexdigest()[:8]
+        username = f"{base[:140]}-{digest}"
+        counter = 1
+        while User.objects.filter(username__iexact=username).exists():
+            suffix = f"-{digest}-{counter}"
+            username = f"{base[:150 - len(suffix)]}{suffix}"
+            counter += 1
+        user.username = username
 
         if commit:
             user.save()

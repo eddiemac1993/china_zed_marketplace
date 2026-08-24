@@ -1,9 +1,16 @@
 {% extends "core/base.html" %}
+{% load socialaccount %}
 
 {% block title %}Create Account · ChinaZed 中赞商城{% endblock %}
 
+{% block extra_style %}
+.register-field .form-control { min-height: 48px; padding-left: 42px; border-radius: 12px; background: #fafafa; }
+.register-field .form-control:focus { background: #fff; }
+.register-field .form-control::placeholder { font-size: 12px; }
+{% endblock %}
+
 {% block content %}
-<div class="mx-auto max-w-[1000px] px-4 py-6 sm:px-5">
+<div class="mx-auto max-w-[1000px] px-2 py-3 sm:px-5 sm:py-6">
     <div class="grid grid-cols-1 items-start gap-3 lg:grid-cols-[1fr_420px]">
 
         <!-- LEFT PROMO -->
@@ -41,14 +48,25 @@
         </div>
 
         <!-- REGISTER CARD -->
-        <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
+        <div class="overflow-hidden rounded-2xl border border-brand-border bg-white shadow-xl shadow-black/5">
 
-            <div class="bg-brand-red px-6 py-5 text-center">
-                <div class="font-display text-[26px] font-black tracking-wide text-white">CREATE YOUR ACCOUNT</div>
-                <div class="mt-1 text-xs text-white/75">Join thousands of buyers ordering from China</div>
+            <div class="bg-gradient-to-br from-brand-red to-brand-orange px-5 py-4 text-center sm:px-6 sm:py-5">
+                <div class="mx-auto mb-2 grid h-11 w-11 place-items-center rounded-full bg-white/20 text-lg text-white ring-1 ring-white/30"><i class="fa-solid fa-user-plus"></i></div>
+                <div class="font-display text-[22px] font-black tracking-wide text-white sm:text-[26px]">CREATE YOUR ACCOUNT</div>
+                <div class="mt-1 text-[11px] text-white/80 sm:text-xs">Free account · Shop China and Zambia stock</div>
             </div>
 
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
+
+                {% if google_oauth_enabled %}
+                <form method="post" action="{% provider_login_url 'google' process='login' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="flex w-full items-center justify-center gap-3 rounded-full border border-neutral-300 bg-white py-3 text-sm font-bold text-neutral-700 shadow-sm transition hover:bg-neutral-50"><i class="fa-brands fa-google text-[#4285f4]"></i> Continue with Google</button>
+                </form>
+                {% else %}
+                <button type="button" disabled class="flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-neutral-200 bg-neutral-50 py-3 text-sm font-bold text-neutral-400" title="Google sign-in needs OAuth credentials"><i class="fa-brands fa-google"></i> Continue with Google</button>
+                {% endif %}
+                <div class="my-4 flex items-center gap-2.5"><span class="h-px flex-1 bg-brand-border"></span><span class="text-[10px] font-bold text-brand-muted">OR SIGN UP WITH EMAIL</span><span class="h-px flex-1 bg-brand-border"></span></div>
 
                 {% if form.errors %}
                 <div class="mb-4.5 flex items-center gap-2 rounded border-l-[3px] border-brand-red bg-red-50 px-3.5 py-2.5 text-xs text-red-900">
@@ -68,29 +86,20 @@
                         {% endfor %}
                     {% endif %}
 
-                    <div class="mb-3.5">
-                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="mt-1 text-[10px] text-brand-red">{{ form.username.errors.0 }}</div>
-                        {% else %}
-                            <div class="mt-1 text-[10px] text-brand-muted">Used to log in — no spaces allowed.</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3.5">
+                    <div class="mb-3">
                         <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Email Address</label>
-                        {{ form.email }}
+                        <div class="register-field relative"><span class="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-sm text-brand-orange"><i class="fa-solid fa-envelope"></i></span>{{ form.email }}</div>
                         {% if form.email.errors %}
                             <div class="mt-1 text-[10px] text-brand-red">{{ form.email.errors.0 }}</div>
                         {% else %}
-                            <div class="mt-1 text-[10px] text-brand-muted">Your welcome email will be sent here.</div>
+                            <div class="mt-1 text-[10px] text-brand-muted">You will use this email to sign in and verify your account.</div>
                         {% endif %}
                     </div>
 
-                    <div class="mb-3.5">
+                    <div class="mb-3">
                         <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Password</label>
-                        <div class="relative">
+                        <div class="register-field relative">
+                            <span class="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-sm text-brand-orange"><i class="fa-solid fa-lock"></i></span>
                             {{ form.password1 }}
                             <button type="button" class="absolute right-1.5 top-1/2 grid h-8.5 w-8.5 -translate-y-1/2 place-items-center rounded text-neutral-500 transition hover:bg-neutral-100 hover:text-brand-red" data-password-toggle="{{ form.password1.id_for_label }}" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
                         </div>
@@ -101,9 +110,10 @@
                         {% endif %}
                     </div>
 
-                    <div class="mb-3.5">
+                    <div class="mb-3">
                         <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Confirm Password</label>
-                        <div class="relative">
+                        <div class="register-field relative">
+                            <span class="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-sm text-brand-orange"><i class="fa-solid fa-shield-halved"></i></span>
                             {{ form.password2 }}
                             <button type="button" class="absolute right-1.5 top-1/2 grid h-8.5 w-8.5 -translate-y-1/2 place-items-center rounded text-neutral-500 transition hover:bg-neutral-100 hover:text-brand-red" data-password-toggle="{{ form.password2.id_for_label }}" aria-label="Show confirm password"><i class="fa-solid fa-eye"></i></button>
                         </div>
@@ -112,7 +122,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="my-1 mb-3.5 rounded-md border border-amber-200 bg-amber-50 p-3">
+                    <div class="my-1 mb-3.5 rounded-xl border border-orange-200 bg-orange-50/70 p-3">
                         <label class="flex items-start gap-2.5 text-xs leading-relaxed text-neutral-600" for="{{ form.accept_terms.id_for_label }}">
                             {{ form.accept_terms }}
                             <span>I have read and agree to the <a href="{% url 'terms' %}" target="_blank" rel="noopener" class="font-black text-brand-red underline">Terms &amp; Conditions</a> and <a href="{% url 'privacy' %}" target="_blank" rel="noopener" class="font-black text-brand-red underline">Privacy Policy</a>.</span>
@@ -122,7 +132,7 @@
                         {% endif %}
                     </div>
 
-                    <button type="submit" class="mt-1.5 block w-full rounded bg-brand-red py-3.5 text-center font-display text-sm font-black uppercase tracking-wide text-white transition hover:bg-brand-red-dark active:scale-[0.99]">
+                    <button type="submit" class="mt-1.5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-red to-brand-orange py-3.5 text-center font-display text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-red-200 transition hover:brightness-105 active:scale-[0.99]">
                         Create Account <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </form>
@@ -133,7 +143,7 @@
                     <span class="h-px flex-1 bg-brand-border"></span>
                 </div>
 
-                <div class="rounded border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-center text-xs text-neutral-600">
+                <div class="rounded-xl border border-orange-200 bg-orange-50/70 px-3.5 py-2.5 text-center text-xs text-neutral-600">
                     Sign in to your existing account — <a href="{% url 'login' %}" class="font-black text-brand-red hover:underline">Login here</a>
                 </div>
 
@@ -142,16 +152,16 @@
             </div>
 
             <!-- STEPS STRIP -->
-            <div class="grid grid-cols-1 gap-2 border-t border-brand-border bg-neutral-50 p-3.5 sm:grid-cols-3">
-                <div class="flex items-center gap-2">
+            <div class="grid grid-cols-3 gap-1 border-t border-brand-border bg-neutral-50 p-3 sm:gap-2 sm:p-3.5">
+                <div class="flex flex-col items-center gap-1 text-center sm:flex-row sm:gap-2 sm:text-left">
                     <div class="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-red font-display text-[13px] font-black text-white">1</div>
                     <div class="text-[10px] font-semibold leading-tight text-neutral-600">Register &amp; browse products</div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col items-center gap-1 text-center sm:flex-row sm:gap-2 sm:text-left">
                     <div class="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-red font-display text-[13px] font-black text-white">2</div>
                     <div class="text-[10px] font-semibold leading-tight text-neutral-600">Pay 35% deposit to order</div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col items-center gap-1 text-center sm:flex-row sm:gap-2 sm:text-left">
                     <div class="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-red font-display text-[13px] font-black text-white">3</div>
                     <div class="text-[10px] font-semibold leading-tight text-neutral-600">Receive in 24–60 days</div>
                 </div>

@@ -4,26 +4,47 @@
 
 {% block floating_actions %}{% endblock %}
 
+{% block extra_style %}
+.assistant-shell { height: calc(100dvh - 220px); min-height: 430px; }
+@media (min-width: 1024px) { .assistant-shell { height: calc(100dvh - 150px); min-height: 520px; } }
+{% endblock %}
+
 {% block content %}
-<div class="mx-auto flex h-[calc(100dvh-150px)] max-w-[920px] flex-col px-3.5 py-3 sm:h-[calc(100dvh-132px)]">
-    <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-brand-border bg-white shadow-lg shadow-black/5">
-        <div class="no-scrollbar flex gap-2 overflow-x-auto border-b border-brand-border p-3">
-            <button type="button" data-question="How does the 35% deposit work?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">35% deposit</button>
-            <button type="button" data-question="How long does delivery from China take?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">Delivery time</button>
-            <button type="button" data-question="How do I request a product from Alibaba or Temu?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">Request product</button>
-            <button type="button" data-question="What happens if my item is unavailable?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">Unavailable item</button>
+<div class="assistant-shell mx-auto flex max-w-[920px] flex-col px-2 py-2 sm:px-4 sm:py-3">
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-brand-border bg-white shadow-xl shadow-black/10">
+        <div class="flex shrink-0 items-center gap-3 bg-gradient-to-r from-brand-red to-brand-orange px-4 py-3 text-white">
+            <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/20 text-lg ring-1 ring-white/30"><i class="fa-solid fa-robot"></i></div>
+            <div class="min-w-0 flex-1">
+                <h1 class="truncate text-sm font-black">ChinaZed Assistant</h1>
+                <div class="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold text-white/80"><span class="h-2 w-2 rounded-full bg-emerald-300"></span> Online · Ready to help</div>
+            </div>
+            <a href="{% url 'home' %}" class="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-sm transition hover:bg-white/25" aria-label="Close assistant"><i class="fa-solid fa-xmark"></i></a>
         </div>
-        <div class="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain p-4" id="messages">
-            <div class="max-w-[82%] rounded-xl rounded-tl-sm bg-neutral-100 px-3.5 py-2.5 text-[13px] leading-relaxed text-brand-ink">Hi, I am the ChinaZed AI assistant. Ask me about deposits, delivery, product requests, order tracking, or balances.</div>
+
+        <div class="no-scrollbar flex shrink-0 gap-2 overflow-x-auto border-b border-orange-100 bg-orange-50/60 px-3 py-2.5">
+            <button type="button" data-question="How does the 35% deposit work?" class="whitespace-nowrap rounded-full border border-orange-200 bg-white px-3 py-1.5 text-[10px] font-bold text-brand-ink shadow-sm transition hover:border-brand-orange hover:text-brand-orange"><i class="fa-solid fa-wallet mr-1 text-brand-orange"></i> 35% deposit</button>
+            <button type="button" data-question="How long does delivery from China take?" class="whitespace-nowrap rounded-full border border-orange-200 bg-white px-3 py-1.5 text-[10px] font-bold text-brand-ink shadow-sm transition hover:border-brand-orange hover:text-brand-orange"><i class="fa-solid fa-truck-fast mr-1 text-brand-orange"></i> Delivery</button>
+            <button type="button" data-question="How do I request a product from Alibaba or Temu?" class="whitespace-nowrap rounded-full border border-orange-200 bg-white px-3 py-1.5 text-[10px] font-bold text-brand-ink shadow-sm transition hover:border-brand-orange hover:text-brand-orange"><i class="fa-solid fa-magnifying-glass mr-1 text-brand-orange"></i> Request item</button>
+            <button type="button" data-question="What happens if my item is unavailable?" class="whitespace-nowrap rounded-full border border-orange-200 bg-white px-3 py-1.5 text-[10px] font-bold text-brand-ink shadow-sm transition hover:border-brand-orange hover:text-brand-orange"><i class="fa-solid fa-circle-question mr-1 text-brand-orange"></i> Availability</button>
         </div>
-        <form class="flex gap-2 border-t border-brand-border bg-neutral-50 p-3" id="chatForm">
+
+        <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain bg-gradient-to-b from-neutral-50 to-white p-3.5 sm:p-4" id="messages">
+            <div class="flex max-w-[88%] items-end gap-2">
+                <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-orange-100 text-[11px] text-brand-orange"><i class="fa-solid fa-robot"></i></span>
+                <div class="rounded-2xl rounded-bl-sm border border-neutral-100 bg-white px-3.5 py-2.5 text-[12px] leading-relaxed text-brand-ink shadow-sm">Hello! I can help with deposits, delivery, product requests, order tracking, and balances. What would you like to know?</div>
+            </div>
+        </div>
+
+        <div class="shrink-0 border-t border-brand-border bg-white px-3 pb-2 pt-3">
+        <form class="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 p-1.5 pl-4 focus-within:border-brand-orange focus-within:bg-white" id="chatForm">
             {% csrf_token %}
             <input id="messageInput" name="message" autocomplete="off" placeholder="Type your question..." value="{{ initial_message }}"
-                   class="flex-1 rounded-lg border border-brand-border px-3.5 py-3 text-sm outline-none focus:border-brand-red">
-            <button type="submit" class="rounded-lg bg-brand-orange px-4.5 text-sm font-black text-white transition hover:bg-orange-600">Send</button>
+                   class="min-w-0 flex-1 border-0 bg-transparent py-2 text-[13px] outline-none placeholder:text-neutral-400">
+            <button type="submit" class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-orange text-sm text-white shadow-md shadow-orange-200 transition hover:bg-orange-600" aria-label="Send message"><i class="fa-solid fa-paper-plane"></i></button>
         </form>
+        <p class="pt-1.5 text-center text-[9px] leading-relaxed text-brand-muted"><i class="fa-solid fa-shield-halved"></i> Staff confirms payments, refunds and final availability.</p>
+        </div>
     </div>
-    <p class="mt-2.5 text-[11px] leading-relaxed text-brand-muted">AI answers are for guidance. Staff confirmation is required for payments, refunds, product availability, and final order changes.</p>
 </div>
 {% endblock %}
 
