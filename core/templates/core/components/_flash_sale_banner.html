@@ -1,4 +1,4 @@
-<div class="reveal mb-3.5 flex flex-col items-start gap-4 rounded-xl bg-gradient-to-br from-brand-orange to-brand-red p-5 shadow-lg shadow-orange-900/20 sm:flex-row sm:items-center sm:justify-between"
+<div class="reveal relative mb-2.5 flex items-center justify-between gap-1.5 overflow-hidden rounded-lg border border-orange-200 bg-gradient-to-r from-orange-50 via-white to-red-50 px-2.5 py-2 shadow-sm sm:mb-3.5 sm:gap-4 sm:rounded-xl sm:border-0 sm:bg-gradient-to-br sm:from-brand-orange sm:to-brand-red sm:p-5 sm:shadow-lg sm:shadow-orange-900/20"
      x-data="{
         hours: '00', mins: '00', secs: '00',
         init() {
@@ -24,25 +24,31 @@
             setInterval(tick, 1000);
         }
      }">
-    <div class="flex items-center gap-3.5">
-        <i class="fa-solid fa-bolt animate-pulse text-4xl leading-none text-white sm:text-4xl"></i>
-        <div>
-            <h3 class="font-display text-xl font-black uppercase tracking-wide text-white sm:text-2xl">Flash Sale Ends Soon</h3>
-            <p class="text-xs font-semibold text-white/90 sm:text-sm">Grab deals before time runs out!</p>
+    <span class="pointer-events-none absolute -left-5 -top-8 h-20 w-20 rounded-full bg-brand-orange/10 sm:hidden"></span>
+    <div class="relative flex min-w-0 items-center gap-2 sm:gap-3.5">
+        <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-orange text-xs text-white shadow-sm shadow-orange-300 sm:h-auto sm:w-auto sm:bg-transparent sm:text-4xl sm:shadow-none"><i class="fa-solid fa-bolt animate-pulse leading-none"></i></span>
+        <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+                <h3 class="whitespace-nowrap font-display text-[13px] font-black uppercase tracking-wide text-brand-ink sm:text-2xl sm:text-white">Flash Deals</h3>
+                <span class="rounded-full bg-brand-red px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wide text-white sm:hidden">Live</span>
+            </div>
+            <p class="text-[8px] font-bold uppercase tracking-wide text-brand-muted sm:text-sm sm:normal-case sm:text-white/90">Ends in</p>
         </div>
     </div>
-    <div class="flex gap-2.5">
-        <div class="min-w-[54px] rounded-lg bg-white/95 px-3 py-2 text-center sm:min-w-[60px]">
-            <span class="block font-display text-2xl font-black leading-none text-brand-red-dark sm:text-3xl" x-text="hours"></span>
-            <span class="block text-[9px] font-bold uppercase tracking-wide text-brand-muted">Hours</span>
+    <div class="relative flex items-center gap-1">
+        <div class="min-w-[38px] rounded-md bg-brand-red px-2 py-1.5 text-center shadow-sm sm:min-w-[60px] sm:rounded-lg sm:bg-white/95 sm:px-3 sm:py-2">
+            <span class="block font-display text-[13px] font-black leading-none text-white sm:text-3xl sm:text-brand-red-dark" x-text="hours"></span>
+            <span class="hidden text-[9px] font-bold uppercase tracking-wide text-brand-muted sm:block">Hours</span>
         </div>
-        <div class="min-w-[54px] rounded-lg bg-white/95 px-3 py-2 text-center sm:min-w-[60px]">
-            <span class="block font-display text-2xl font-black leading-none text-brand-red-dark sm:text-3xl" x-text="mins"></span>
-            <span class="block text-[9px] font-bold uppercase tracking-wide text-brand-muted">Mins</span>
+        <span class="font-black text-brand-red sm:hidden">:</span>
+        <div class="min-w-[38px] rounded-md bg-brand-red px-2 py-1.5 text-center shadow-sm sm:min-w-[60px] sm:rounded-lg sm:bg-white/95 sm:px-3 sm:py-2">
+            <span class="block font-display text-[13px] font-black leading-none text-white sm:text-3xl sm:text-brand-red-dark" x-text="mins"></span>
+            <span class="hidden text-[9px] font-bold uppercase tracking-wide text-brand-muted sm:block">Mins</span>
         </div>
-        <div class="min-w-[54px] rounded-lg bg-white/95 px-3 py-2 text-center sm:min-w-[60px]">
-            <span class="block font-display text-2xl font-black leading-none text-brand-red-dark sm:text-3xl" x-text="secs"></span>
-            <span class="block text-[9px] font-bold uppercase tracking-wide text-brand-muted">Secs</span>
+        <span class="font-black text-brand-red sm:hidden">:</span>
+        <div class="min-w-[38px] rounded-md bg-brand-red px-2 py-1.5 text-center shadow-sm sm:min-w-[60px] sm:rounded-lg sm:bg-white/95 sm:px-3 sm:py-2">
+            <span class="block font-display text-[13px] font-black leading-none text-white sm:text-3xl sm:text-brand-red-dark" x-text="secs"></span>
+            <span class="hidden text-[9px] font-bold uppercase tracking-wide text-brand-muted sm:block">Secs</span>
         </div>
     </div>
 </div>

@@ -1,13 +1,42 @@
-<header class="sticky top-0 z-[200] bg-gradient-to-br from-brand-orange to-red-700 shadow-lg shadow-black/20">
-    <div class="mx-auto grid max-w-[1300px] grid-cols-[auto_auto_1fr_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2.5 sm:px-4 lg:flex lg:flex-nowrap lg:gap-3.5 lg:px-5 lg:py-3">
+<!-- MOBILE MARKETPLACE HEADER -->
+<header class="relative z-[1] bg-white shadow-md lg:hidden" style="z-index:1;background-color:#fff">
+    <div class="flex h-14 items-center justify-between px-4">
+        <a href="{% url 'home' %}" class="font-display text-[28px] font-black leading-none tracking-tight text-brand-orange" style="font-size:28px;font-weight:900;color:#ff5000">ChinaZed</a>
+        <button type="button" @click="menuOpen = true" class="flex items-center gap-1.5 rounded-full px-2.5 py-2 text-xs font-bold text-brand-ink" aria-label="Open menu">
+            <i class="fa-solid fa-location-dot text-brand-orange"></i> Zambia <i class="fa-solid fa-chevron-down text-[9px]"></i>
+        </button>
+    </div>
+
+    <nav class="no-scrollbar flex snap-x snap-mandatory gap-1 overflow-x-auto border-b border-neutral-100 bg-white px-3" style="background-color:#fff">
+        <a href="{% url 'home' %}" class="snap-start whitespace-nowrap border-b-[3px] px-2 py-2 text-[13px] font-black {% if not category_id and not product_type %}border-brand-orange text-brand-ink{% else %}border-transparent text-brand-muted{% endif %}">Recommended</a>
+        <a href="{% url 'home' %}?type=local#results" class="snap-start whitespace-nowrap border-b-[3px] px-2 py-2 text-[13px] font-bold {% if product_type == 'local' %}border-brand-orange text-brand-ink{% else %}border-transparent text-brand-muted{% endif %}">Zambia Stock</a>
+        <a href="{% url 'home' %}?type=preorder#results" class="snap-start whitespace-nowrap border-b-[3px] px-2 py-2 text-[13px] font-bold {% if product_type == 'preorder' %}border-brand-orange text-brand-ink{% else %}border-transparent text-brand-muted{% endif %}">Pre-order</a>
+        {% for category in nav_categories %}<a href="{% url 'home' %}?category={{ category.id }}#results" class="snap-start whitespace-nowrap border-b-[3px] px-2 py-2 text-[13px] font-bold {% if category_id == category.id|stringformat:'s' %}border-brand-orange text-brand-ink{% else %}border-transparent text-brand-muted{% endif %}">{{ category.name }}</a>{% endfor %}
+    </nav>
+
+    <div class="relative px-3 py-2.5" x-data="{ open: false }" @click.outside="open = false">
+        <form method="GET" action="{% url 'home' %}" class="flex h-12 items-center overflow-hidden rounded-full border-2 border-brand-orange bg-white">
+            <input type="text" name="q" value="{{ query|default:'' }}" autocomplete="off" placeholder="Search products" aria-label="Search products"
+                   class="h-full min-w-0 flex-1 border-0 bg-transparent px-4 text-[13px] text-brand-ink outline-none placeholder:text-[13px] placeholder:text-neutral-500"
+                   hx-get="{% url 'search_suggestions' %}" hx-trigger="keyup changed delay:300ms, focus" hx-target="#mobileSearchSuggestions" hx-swap="innerHTML" @focus="open = true" @input="open = true">
+            <button type="submit" class="m-1 flex h-9 w-[74px] shrink-0 items-center justify-center rounded-full bg-brand-orange px-3 text-xs font-bold leading-none text-white" style="font-size:12px">Search</button>
+        </form>
+        <div id="mobileSearchSuggestions" x-show="open" x-cloak class="no-scrollbar absolute left-3 right-3 top-[calc(100%-4px)] max-h-80 overflow-y-auto rounded-xl border border-brand-border bg-white py-1 shadow-2xl"></div>
+    </div>
+
+</header>
+
+<!-- DESKTOP HEADER -->
+<header class="sticky top-0 z-[200] hidden bg-gradient-to-br from-brand-orange to-red-700 shadow-lg shadow-black/20 lg:block">
+    <div class="mx-auto grid max-w-[1300px] grid-cols-[auto_1fr] items-center gap-x-2 gap-y-2 px-3 py-2 sm:px-4 lg:flex lg:flex-nowrap lg:gap-3.5 lg:px-5 lg:py-3" style="grid-template-columns: auto minmax(0, 1fr)">
         <button type="button" @click="menuOpen = true" aria-label="Open menu" aria-expanded="false" :aria-expanded="menuOpen.toString()"
-                class="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white transition hover:bg-white/15 lg:hidden">
+                class="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-brand-orange transition hover:bg-orange-50 lg:hidden">
             <i class="fa-solid fa-bars text-xl"></i>
         </button>
 
         <a href="{% url 'home' %}" class="flex shrink-0 items-center gap-2" aria-label="ChinaZed home">
             <svg class="h-9 w-9 flex-none drop-shadow" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
-            <span class="hidden font-display text-2xl font-black leading-none tracking-tight text-white sm:inline">ChinaZed</span>
+            <span class="font-display text-2xl font-black leading-none tracking-tight text-brand-orange lg:text-white">ChinaZed</span>
         </a>
 
         <!-- SEARCH -->
@@ -33,7 +62,7 @@
         </div>
 
         <!-- ACTIONS -->
-        <div class="col-start-4 ml-auto flex shrink-0 items-center gap-1 lg:col-auto">
+        <div class="ml-auto hidden shrink-0 items-center gap-1 md:flex lg:col-auto">
             {% if request.user.is_authenticated %}
                 <a href="{% url 'profile' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white md:flex">
                     <i class="fa-solid fa-user text-lg"></i>
@@ -53,15 +82,15 @@
     </div>
 
     <!-- CATEGORY NAV -->
-    <nav class="border-t border-white/10 bg-black/20">
+    <nav class="border-t border-neutral-100 bg-white lg:border-white/10 lg:bg-black/20">
         <div class="no-scrollbar mx-auto flex max-w-[1300px] snap-x snap-mandatory gap-0.5 overflow-x-auto px-2 sm:gap-1 sm:px-5">
-            <a href="{% url 'home' %}" class="flex snap-start items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if not category_id and not product_type %}border-brand-yellow text-white{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
-            <a href="{% url 'home' %}?type=local#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if product_type == 'local' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
-            <a href="{% url 'home' %}?type=preorder#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if product_type == 'preorder' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
+            <a href="{% url 'home' %}" class="flex snap-start items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold text-brand-ink transition hover:bg-orange-50 sm:px-3.5 lg:!text-white lg:hover:bg-white/10 {% if not category_id and not product_type %}border-brand-orange lg:border-brand-yellow{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
+            <a href="{% url 'home' %}?type=local#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold text-brand-ink transition hover:bg-orange-50 sm:px-3.5 lg:!text-white lg:hover:bg-white/10 {% if product_type == 'local' %}border-brand-orange lg:border-brand-yellow{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
+            <a href="{% url 'home' %}?type=preorder#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold text-brand-ink transition hover:bg-orange-50 sm:px-3.5 lg:!text-white lg:hover:bg-white/10 {% if product_type == 'preorder' %}border-brand-orange lg:border-brand-yellow{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
             {% for category in nav_categories %}
-                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if category_id == category.id|stringformat:'s' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">{{ category.name }}</a>
+                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold text-brand-ink transition hover:bg-orange-50 sm:px-3.5 lg:!text-white lg:hover:bg-white/10 {% if category_id == category.id|stringformat:'s' %}border-brand-orange lg:border-brand-yellow{% else %}border-transparent{% endif %}">{{ category.name }}</a>
             {% endfor %}
-            <a href="{% url 'communinity:home' %}" class="ml-auto flex items-center gap-1.5 whitespace-nowrap border-b-[3px] border-transparent px-3.5 py-2.5 text-xs font-bold text-brand-yellow transition hover:bg-white/10"><i class="fa-solid fa-comments"></i> Community</a>
+            <a href="{% url 'communinity:home' %}" class="ml-auto flex items-center gap-1.5 whitespace-nowrap border-b-[3px] border-transparent px-3.5 py-2.5 text-xs font-bold text-brand-orange transition hover:bg-orange-50 lg:text-brand-yellow lg:hover:bg-white/10"><i class="fa-solid fa-comments"></i> Community</a>
         </div>
     </nav>
 </header>

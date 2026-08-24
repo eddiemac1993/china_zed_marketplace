@@ -38,7 +38,7 @@
     {% include "core/components/_flash_sale_banner.html" %}
 
     <!-- SOCIAL PROOF -->
-    <div class="mb-3.5 flex items-center gap-2.5 rounded-xl border border-orange-100 bg-orange-50/60 px-4.5 py-3 text-[13px] text-amber-900"
+    <div class="mb-3.5 hidden items-center gap-2.5 rounded-xl border border-orange-100 bg-orange-50/60 px-4.5 py-3 text-[13px] text-amber-900 sm:flex"
          x-data="{ orders: 1247, viewers: 38 }"
          x-init="setInterval(() => orders += Math.floor(Math.random()*3), 15000); setInterval(() => { viewers += Math.floor(Math.random()*5)-2; if (viewers<20) viewers=20; if (viewers>80) viewers=80; }, 8000)">
         <i class="fa-solid fa-box text-xl text-amber-700"></i>
