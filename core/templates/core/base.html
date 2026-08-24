@@ -167,14 +167,14 @@
 
 {% block floating_actions %}
 <!-- FLOATING ACTIONS -->
-<div class="fixed right-4 z-[300] flex flex-col items-end gap-2.5 bottom-[calc(5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-out lg:bottom-6 print:hidden"
+<div class="fixed right-2.5 z-[300] flex flex-col items-end gap-2.5 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-out sm:right-4 lg:bottom-6 print:hidden"
      x-data="{ tucked: false, lastY: 0, showTop: false }"
      x-init="lastY = window.scrollY"
      @scroll.window="let y = window.scrollY; showTop = y > 400; if (Math.abs(y - lastY) > 6) { tucked = y > lastY && y > 220; lastY = y; }"
      :class="tucked ? 'translate-y-36 opacity-0 pointer-events-none' : ''">
     <a href="{% url 'assistant' %}" title="AI Assistant" aria-label="AI Assistant"
-       class="flex h-[52px] min-w-[58px] items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-brand-red to-brand-orange px-4 text-[13px] font-black text-white shadow-lg shadow-red-900/30 transition hover:-translate-y-0.5 hover:shadow-xl">
-        <i class="fa-solid fa-robot"></i><span>Help</span>
+       class="flex h-11 w-11 items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-brand-red to-brand-orange text-[13px] font-black text-white shadow-lg shadow-red-900/30 transition hover:-translate-y-0.5 hover:shadow-xl sm:h-[52px] sm:w-auto sm:min-w-[58px] sm:px-4">
+        <i class="fa-solid fa-robot"></i><span class="hidden sm:inline">Help</span>
     </a>
     <button type="button" id="installAppBtn" aria-label="Install ChinaZed app"
             class="hidden min-h-[42px] items-center justify-center gap-1.5 rounded-full bg-neutral-900 px-3.5 text-xs font-bold text-white shadow-lg transition hover:-translate-y-0.5">

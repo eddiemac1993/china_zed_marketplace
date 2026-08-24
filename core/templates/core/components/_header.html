@@ -1,5 +1,5 @@
 <header class="sticky top-0 z-[200] bg-gradient-to-br from-brand-orange to-red-700 shadow-lg shadow-black/20">
-    <div class="mx-auto flex max-w-[1300px] flex-wrap items-center gap-2 px-2.5 py-2.5 sm:px-4 lg:flex-nowrap lg:gap-3.5 lg:px-5 lg:py-3">
+    <div class="mx-auto grid max-w-[1300px] grid-cols-[auto_auto_1fr_auto] items-center gap-x-2 gap-y-2 px-2.5 py-2.5 sm:px-4 lg:flex lg:flex-nowrap lg:gap-3.5 lg:px-5 lg:py-3">
         <button type="button" @click="menuOpen = true" aria-label="Open menu" aria-expanded="false" :aria-expanded="menuOpen.toString()"
                 class="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white transition hover:bg-white/15 lg:hidden">
             <i class="fa-solid fa-bars text-xl"></i>
@@ -11,7 +11,7 @@
         </a>
 
         <!-- SEARCH -->
-        <div class="relative order-last min-w-0 basis-full lg:order-none lg:flex-1 lg:basis-auto" x-data="{ open: false }" @click.outside="open = false">
+        <div class="relative col-span-full min-w-0 lg:order-none lg:flex-1" x-data="{ open: false }" @click.outside="open = false">
             <form method="GET" action="{% url 'home' %}" class="flex h-11 items-center overflow-hidden rounded-full border-2 border-brand-orange bg-white shadow-lg shadow-black/10 focus-within:border-yellow-300 lg:rounded-xl lg:border-transparent">
                 <input type="text" name="q" value="{{ query|default:'' }}" autocomplete="off"
                        placeholder="Search products from China"
@@ -33,7 +33,7 @@
         </div>
 
         <!-- ACTIONS -->
-        <div class="ml-auto flex shrink-0 items-center gap-1">
+        <div class="col-start-4 ml-auto flex shrink-0 items-center gap-1 lg:col-auto">
             {% if request.user.is_authenticated %}
                 <a href="{% url 'profile' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white md:flex">
                     <i class="fa-solid fa-user text-lg"></i>
