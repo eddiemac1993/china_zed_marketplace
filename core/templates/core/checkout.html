@@ -74,7 +74,7 @@
                         {% if has_collection_centres %}
                         <label class="relative block cursor-pointer rounded-lg border-2 p-3.5 transition"
                                :class="deliveryMethod === 'collection' ? 'border-brand-red bg-red-50/50' : 'border-brand-border hover:border-brand-red/50'">
-                            <input type="radio" name="delivery_method" value="collection" x-model="deliveryMethod" class="sr-only">
+                            <input type="radio" name="delivery_method" value="collection" x-model="deliveryMethod" class="absolute right-3 top-3 h-4 w-4 accent-red-600">
                             <div class="mb-1.5 flex items-center justify-between">
                                 <span class="text-[13px] font-black text-brand-ink"><i class="fa-solid fa-shop text-brand-orange"></i> Collect from a Centre</span>
                                 <i class="fa-solid fa-circle-check text-brand-red" x-show="deliveryMethod === 'collection'"></i>
@@ -85,7 +85,7 @@
 
                         <label class="relative block cursor-pointer rounded-lg border-2 p-3.5 transition"
                                :class="deliveryMethod === 'direct' ? 'border-brand-red bg-red-50/50' : 'border-brand-border hover:border-brand-red/50'">
-                            <input type="radio" name="delivery_method" value="direct" x-model="deliveryMethod" class="sr-only">
+                            <input type="radio" name="delivery_method" value="direct" x-model="deliveryMethod" class="absolute right-3 top-3 h-4 w-4 accent-red-600">
                             <div class="mb-1.5 flex items-center justify-between">
                                 <span class="text-[13px] font-black text-brand-ink"><i class="fa-solid fa-house text-brand-orange"></i> Deliver to My Address</span>
                                 <i class="fa-solid fa-circle-check text-brand-red" x-show="deliveryMethod === 'direct'"></i>

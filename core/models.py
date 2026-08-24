@@ -288,6 +288,21 @@ class Product(TimeStampedModel):
         percentage = rate.deposit_percentage if rate else DEFAULT_DEPOSIT_PERCENTAGE
         return money(self.selling_price() * (percentage / Decimal("100")))
 
+    def is_order_ready(self):
+        """Return whether this listing has enough information to be purchased."""
+        has_image = bool(self.image or self.external_image_url)
+        has_core_details = bool(
+            self.name.strip()
+            and self.description.strip()
+            and self.category_id
+            and self.rmb_price
+            and self.rmb_price > 0
+            and has_image
+        )
+        if self.product_type == "local":
+            return has_core_details and self.stock_quantity > 0
+        return has_core_details
+
     def rmb_display(self):
         try:
             return int(round(float(self.rmb_price)))

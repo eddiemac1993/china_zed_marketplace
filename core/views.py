@@ -29,6 +29,7 @@ from .marketplace_importer import ImportFailure, import_marketplace_product
 from .utils import with_display_annotations, apply_sort
 from .models import (
     Product,
+    ProductImage,
     ProductReview,
     CustomerProductRequest,
     Order,
@@ -584,6 +585,10 @@ def add_to_cart_view(request, slug):
         is_available=True
     )
 
+    if not product.is_order_ready():
+        messages.error(request, "This product is not ready to order yet.")
+        return redirect("product_detail", slug=product.slug)
+
     quantity = 1
 
     if request.method == "POST":
@@ -894,6 +899,10 @@ def place_order_view(request, slug):
         is_available=True
     )
 
+    if not product.is_order_ready():
+        messages.error(request, "This product is not ready to order yet.")
+        return redirect("product_detail", slug=product.slug)
+
     if product.product_type == "local" and product.stock_quantity <= 0:
         messages.error(request, "This product is currently out of stock.")
         return redirect("product_detail", slug=product.slug)
@@ -1173,6 +1182,14 @@ def supplier_submit_product(request):
             if not uploaded_images and request.FILES.get("image"):
                 supplier_request.image = request.FILES.get("image")
 
+            if request.user.is_staff:
+                supplier_request.supplier_name = supplier_request.supplier_name or request.user.get_username()
+                supplier_request.product_name = supplier_request.product_name or "New product"
+                supplier_request.description = supplier_request.description or ""
+                supplier_request.is_reviewed = True
+                supplier_request.is_approved = True
+                supplier_request.admin_note = "Published automatically by an administrator."
+
             supplier_request.save()
 
             # Save locally imported marketplace images.
@@ -1195,6 +1212,33 @@ def supplier_submit_product(request):
                 if index == 0 and not supplier_request.image:
                     supplier_request.image = img
                     supplier_request.save()
+
+            if request.user.is_staff:
+                product_price = supplier_request.local_price if supplier_request.product_type == "local" else supplier_request.rmb_price
+                product = Product.objects.create(
+                    name=supplier_request.product_name,
+                    description=supplier_request.description,
+                    rmb_price=product_price or 0,
+                    category=supplier_request.category,
+                    product_type=supplier_request.product_type,
+                    stock_quantity=supplier_request.stock_quantity,
+                    source_platform=supplier_request.source_platform,
+                    source_link=supplier_request.source_link,
+                    external_image_url=supplier_request.external_image_url,
+                    external_gallery_urls=supplier_request.external_gallery_urls,
+                    supplier_name=supplier_request.supplier_name,
+                    supplier_contact=supplier_request.supplier_contact,
+                    status="draft",
+                    is_available=True,
+                )
+                if supplier_request.image:
+                    product.image = supplier_request.image
+                    product.save(update_fields=["image", "updated_at"])
+                for request_image in supplier_request.images.all():
+                    ProductImage.objects.create(product=product, image=request_image.image, caption=request_image.caption)
+
+                messages.success(request, "Product published. Complete the missing information when ready.")
+                return redirect("product_detail", slug=product.slug)
 
             messages.success(
                 request,

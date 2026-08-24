@@ -1,7 +1,7 @@
 <header class="sticky top-0 z-[200] bg-gradient-to-br from-brand-orange to-red-700 shadow-lg shadow-black/20">
-    <div class="mx-auto flex max-w-[1300px] items-center gap-3.5 px-4 py-3 sm:px-5">
+    <div class="mx-auto flex max-w-[1300px] flex-wrap items-center gap-2 px-3 py-3 sm:flex-nowrap sm:gap-3.5 sm:px-5">
         <button type="button" @click="menuOpen = true" aria-label="Open menu" aria-expanded="false" :aria-expanded="menuOpen.toString()"
-                class="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-white transition hover:bg-white/15 lg:hidden">
+                class="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white transition hover:bg-white/15 lg:hidden">
             <i class="fa-solid fa-bars text-xl"></i>
         </button>
 
@@ -11,7 +11,7 @@
         </a>
 
         <!-- SEARCH -->
-        <div class="relative min-w-0 flex-1" x-data="{ open: false }" @click.outside="open = false">
+        <div class="relative order-last min-w-0 basis-full sm:order-none sm:flex-1 sm:basis-auto" x-data="{ open: false }" @click.outside="open = false">
             <form method="GET" action="{% url 'home' %}" class="flex h-11 items-center overflow-hidden rounded-xl border-2 border-transparent bg-white shadow-lg shadow-black/10 focus-within:border-orange-200">
                 <input type="text" name="q" value="{{ query|default:'' }}" autocomplete="off"
                        placeholder="Search products from China"
@@ -55,11 +55,11 @@
     <!-- CATEGORY NAV -->
     <nav class="border-t border-white/10 bg-black/20">
         <div class="no-scrollbar mx-auto flex max-w-[1300px] gap-1 overflow-x-auto px-4 sm:px-5">
-            <a href="{% url 'home' %}" class="flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if not category_id and not product_type %}border-brand-yellow text-white{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
-            <a href="{% url 'home' %}?type=local#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if product_type == 'local' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
-            <a href="{% url 'home' %}?type=preorder#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if product_type == 'preorder' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
+            <a href="{% url 'home' %}" class="flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if not category_id and not product_type %}border-brand-yellow text-white{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
+            <a href="{% url 'home' %}?type=local#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if product_type == 'local' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
+            <a href="{% url 'home' %}?type=preorder#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if product_type == 'preorder' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
             {% for category in nav_categories %}
-                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold text-white/80 transition hover:bg-white/10 hover:text-white {% if category_id == category.id|stringformat:'s' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">{{ category.name }}</a>
+                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if category_id == category.id|stringformat:'s' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">{{ category.name }}</a>
             {% endfor %}
             <a href="{% url 'communinity:home' %}" class="ml-auto flex items-center gap-1.5 whitespace-nowrap border-b-[3px] border-transparent px-3.5 py-2.5 text-xs font-bold text-brand-yellow transition hover:bg-white/10"><i class="fa-solid fa-comments"></i> Community</a>
         </div>

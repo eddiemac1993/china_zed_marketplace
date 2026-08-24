@@ -5,15 +5,15 @@
 {% block floating_actions %}{% endblock %}
 
 {% block content %}
-<div class="mx-auto max-w-[920px] px-3.5 py-4.5">
-    <div class="overflow-hidden rounded-xl border border-brand-border bg-white shadow-lg shadow-black/5">
+<div class="mx-auto flex h-[calc(100dvh-150px)] max-w-[920px] flex-col px-3.5 py-3 sm:h-[calc(100dvh-132px)]">
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-brand-border bg-white shadow-lg shadow-black/5">
         <div class="no-scrollbar flex gap-2 overflow-x-auto border-b border-brand-border p-3">
             <button type="button" data-question="How does the 35% deposit work?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">35% deposit</button>
             <button type="button" data-question="How long does delivery from China take?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">Delivery time</button>
             <button type="button" data-question="How do I request a product from Alibaba or Temu?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">Request product</button>
             <button type="button" data-question="What happens if my item is unavailable?" class="whitespace-nowrap rounded-full border border-brand-border bg-neutral-50 px-3 py-2 text-xs font-extrabold transition hover:border-brand-red hover:text-brand-red">Unavailable item</button>
         </div>
-        <div class="flex h-[min(56vh,540px)] min-h-[360px] flex-col gap-2.5 overflow-y-auto p-4" id="messages">
+        <div class="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-contain p-4" id="messages">
             <div class="max-w-[82%] rounded-xl rounded-tl-sm bg-neutral-100 px-3.5 py-2.5 text-[13px] leading-relaxed text-brand-ink">Hi, I am the ChinaZed AI assistant. Ask me about deposits, delivery, product requests, order tracking, or balances.</div>
         </div>
         <form class="flex gap-2 border-t border-brand-border bg-neutral-50 p-3" id="chatForm">

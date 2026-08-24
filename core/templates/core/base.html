@@ -77,7 +77,7 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body x-data="{ cartOpen: false, menuOpen: false }" class="bg-brand-bg font-sans text-[13px] text-brand-ink antialiased">
+<body x-data="{ cartOpen: false, menuOpen: false }" class="{% if request.resolver_match.url_name == 'assistant' %}h-[100dvh] overflow-hidden{% endif %} bg-brand-bg font-sans text-[13px] text-brand-ink antialiased">
 
 {% include "core/components/_mobile_menu.html" %}
 {% if request.user.is_authenticated %}
@@ -104,7 +104,7 @@
 </main>
 
 <!-- FOOTER -->
-<footer class="mt-6 bg-neutral-900 print:hidden">
+<footer class="mt-6 bg-neutral-900 print:hidden {% if request.resolver_match.url_name == 'assistant' %}hidden{% endif %}">
     <div class="mx-auto grid max-w-[1300px] gap-9 px-5 py-7 sm:grid-cols-3">
         <div>
             <svg class="h-[70px] w-[70px]" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>

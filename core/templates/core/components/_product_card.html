@@ -42,6 +42,7 @@
         </div>
 
         <div class="mt-auto">
+            {% if product.is_order_ready %}
             {% if product.rmb_display %}
                 <div class="text-[10px] text-brand-muted">¥{{ product.rmb_display|intcomma }} <span class="text-neutral-300">·</span> origin price</div>
             {% endif %}
@@ -50,9 +51,21 @@
                 <span class="font-display text-xl font-black leading-none text-brand-orange">{{ product.selling_price|floatformat:0|intcomma }}</span>
             </div>
             <div class="text-[10px] text-brand-muted">35% deposit: <span class="font-semibold text-brand-orange">K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
+            {% else %}
+                {% if request.user.is_staff %}
+                    <a href="{% url 'admin:core_product_change' product.id %}" class="inline-flex items-center gap-2 font-display text-xl font-black text-brand-orange hover:underline">---- <span class="font-sans text-[10px]">Add information</span></a>
+                {% else %}
+                    <div class="font-display text-xl font-black text-brand-muted">----</div>
+                    <div class="text-[10px] text-brand-muted">Details coming soon</div>
+                {% endif %}
+            {% endif %}
         </div>
 
-        {% if request.user.is_authenticated %}
+        {% if not product.is_order_ready %}
+            {% if request.user.is_staff %}
+                <a href="{% url 'admin:core_product_change' product.id %}" class="mt-1.5 block w-full rounded-md bg-brand-orange py-2 text-center text-xs font-bold text-white">Complete Listing</a>
+            {% endif %}
+        {% elif request.user.is_authenticated %}
             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                 <button disabled class="mt-1.5 w-full cursor-not-allowed rounded-md bg-neutral-200 py-2 text-xs font-bold text-neutral-500">Out of Stock</button>
             {% else %}

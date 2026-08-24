@@ -235,9 +235,19 @@ class SupplierProductRequestForm(forms.ModelForm):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.fields["supplier_contact"].required = True
+        if self.user and self.user.is_staff:
+            for field_name in (
+                "supplier_name", "supplier_contact", "product_name", "description",
+                "category", "rmb_price", "local_price", "stock_quantity",
+                "price_confirmed", "selected_color", "selected_size",
+                "selected_other_variants",
+            ):
+                self.fields[field_name].required = False
 
     def clean(self):
         cleaned_data = super().clean()
+
+        is_staff_draft = bool(self.user and self.user.is_staff)
 
         product_type = cleaned_data.get("product_type")
         stock_quantity = cleaned_data.get("stock_quantity") or 0
@@ -252,7 +262,7 @@ class SupplierProductRequestForm(forms.ModelForm):
         cover_image = self.files.get("image")
         variant_data = cleaned_data.get("imported_variant_data") or {}
 
-        if product_type == "local":
+        if product_type == "local" and not is_staff_draft:
             if stock_quantity <= 0:
                 self.add_error(
                     "stock_quantity",
@@ -265,7 +275,7 @@ class SupplierProductRequestForm(forms.ModelForm):
                     "Please enter local price in ZMW."
                 )
 
-        if product_type == "preorder":
+        if product_type == "preorder" and not is_staff_draft:
             if stock_quantity <= 0:
                 self.add_error("stock_quantity", "Please enter the quantity you can supply.")
             if not rmb_price:
@@ -279,9 +289,9 @@ class SupplierProductRequestForm(forms.ModelForm):
         if not uploaded_images and not cover_image and not imported_paths:
             self.add_error("images", "Add at least one valid product image before submission.")
 
-        if variant_data.get("colors") and not cleaned_data.get("selected_color"):
+        if not is_staff_draft and variant_data.get("colors") and not cleaned_data.get("selected_color"):
             self.add_error("selected_color", "Select or enter the exact colour.")
-        if variant_data.get("sizes") and not cleaned_data.get("selected_size"):
+        if not is_staff_draft and variant_data.get("sizes") and not cleaned_data.get("selected_size"):
             self.add_error("selected_size", "Select or enter the exact size.")
 
         return cleaned_data

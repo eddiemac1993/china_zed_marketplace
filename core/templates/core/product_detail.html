@@ -91,11 +91,23 @@
                 </div>
                 <div class="p-4.5">
 
+                    {% if product.is_order_ready %}
                     <div class="mb-3.5 flex items-baseline gap-1">
                         <span class="text-base font-bold text-brand-red">K</span>
                         <span class="font-display text-[42px] font-black leading-none tracking-tight text-brand-red">{{ product.selling_price|floatformat:0|intcomma }}</span>
                     </div>
+                    {% else %}
+                    <div class="mb-3.5">
+                        {% if request.user.is_staff %}
+                            <a href="{% url 'admin:core_product_change' product.id %}" class="font-display text-[32px] font-black text-brand-red hover:underline">---- <span class="font-sans text-xs">Add information</span></a>
+                        {% else %}
+                            <div class="font-display text-[32px] font-black text-brand-muted">----</div>
+                            <p class="mt-1 text-xs text-brand-muted">Product details are coming soon.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
+                    {% if product.is_order_ready %}
                     <div class="mb-3.5 grid grid-cols-2 gap-2">
                         <div class="rounded border border-brand-border bg-neutral-50 px-3 py-2.5">
                             <div class="mb-1 text-[10px] font-semibold text-brand-muted"><i class="fa-solid fa-sack-dollar"></i> Deposit Now</div>
@@ -106,6 +118,7 @@
                             <div class="font-display text-xl font-black text-brand-ink">K{{ product.balance_amount|floatformat:0|intcomma }}</div>
                         </div>
                     </div>
+                    {% endif %}
 
                     {% if product.delivery_range %}
                     <div class="mb-3.5 flex items-center gap-2.5 rounded border border-blue-200 bg-blue-50 px-3.5 py-2.5">
@@ -123,7 +136,9 @@
                         <span>We verify your requested size, color, and quantity within 2 days after your deposit. If the requested option is unavailable and you choose not to continue before purchase, your deposit is refunded 100%.</span>
                     </div>
                     {% endif %}
-                    {% if request.user.is_authenticated %}
+                    {% if not product.is_order_ready %}
+                        {% if request.user.is_staff %}<a href="{% url 'admin:core_product_change' product.id %}" class="block rounded bg-brand-orange py-3.5 text-center text-sm font-bold text-white">Complete Product Information</a>{% endif %}
+                    {% elif request.user.is_authenticated %}
                         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
                             {% csrf_token %}
                             {% if product.size_option_list %}
@@ -252,9 +267,11 @@
 <div class="safe-b fixed inset-x-2.5 z-[490] flex items-center gap-2.5 rounded-xl border border-brand-border bg-white px-3.5 py-2.5 shadow-2xl lg:hidden" style="bottom: calc(99px + env(safe-area-inset-bottom));">
     <div class="flex-1">
         <div class="text-[10px] font-semibold text-brand-muted">Price</div>
-        <div class="font-display text-xl font-black text-brand-red">K{{ product.selling_price|floatformat:0|intcomma }}</div>
+        <div class="font-display text-xl font-black text-brand-red">{% if product.is_order_ready %}K{{ product.selling_price|floatformat:0|intcomma }}{% else %}----{% endif %}</div>
     </div>
-    {% if request.user.is_authenticated %}
+    {% if not product.is_order_ready %}
+        {% if request.user.is_staff %}<a href="{% url 'admin:core_product_change' product.id %}" class="whitespace-nowrap rounded-lg bg-brand-orange px-5 py-2.5 text-center text-[13px] font-bold text-white">Add Info</a>{% endif %}
+    {% elif request.user.is_authenticated %}
         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
             {% csrf_token %}
             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
