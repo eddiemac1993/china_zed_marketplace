@@ -1,7 +1,7 @@
-<nav class="safe-b fixed inset-x-0 bottom-0 z-[400] border-t border-brand-border bg-white lg:hidden print:hidden">
+<nav class="safe-b fixed inset-x-0 bottom-0 z-[400] border-t border-brand-border bg-white/95 shadow-[0_-4px_18px_rgba(0,0,0,.08)] backdrop-blur-lg lg:hidden print:hidden">
     <div class="grid grid-cols-5">
-        <a href="{% url 'home' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold {% if not product_type and not query %}text-brand-red{% else %}text-brand-muted{% endif %}">
-            <i class="fa-solid fa-house text-lg leading-none"></i>Home
+        <a href="{% url 'home' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold {% if not product_type and not query %}text-brand-orange{% else %}text-brand-muted{% endif %}">
+            <span class="grid h-7 w-7 place-items-center rounded-full {% if not product_type and not query %}bg-brand-orange text-white{% endif %}"><i class="fa-solid fa-house text-base leading-none"></i></span>Home
         </a>
         <a href="{% url 'home' %}?type=local#results" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold {% if product_type == 'local' %}text-brand-red{% else %}text-brand-muted{% endif %}">
             <span class="text-lg leading-none">🇿🇲</span>Zambia

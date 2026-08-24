@@ -1,5 +1,5 @@
 {% load humanize %}
-<div class="group relative flex flex-col overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm transition hover:-translate-y-1 hover:border-brand-orange hover:shadow-lg">
+<div class="group relative flex flex-col overflow-hidden rounded-[10px] border border-transparent bg-white shadow-sm transition sm:rounded-xl sm:border-brand-border hover:-translate-y-1 hover:border-brand-orange hover:shadow-lg">
     <a href="{% url 'product_detail' product.slug %}" class="relative block aspect-square overflow-hidden bg-neutral-100">
         {% if product.display_image_url %}
             <img src="{{ product.display_image_url }}" alt="{{ product.name }}" loading="lazy"
@@ -21,12 +21,12 @@
         {% endif %}
     </a>
 
-    <div class="flex flex-1 flex-col gap-1.5 p-2.5">
-        <a href="{% url 'product_detail' product.slug %}" class="line-clamp-2 min-h-[2.5em] text-[13px] leading-snug text-brand-ink transition hover:text-brand-orange">
+    <div class="flex flex-1 flex-col gap-1 p-2 sm:gap-1.5 sm:p-2.5">
+        <a href="{% url 'product_detail' product.slug %}" class="line-clamp-2 min-h-[2.5em] text-xs font-semibold leading-snug text-brand-ink transition hover:text-brand-orange sm:text-[13px] sm:font-normal">
             {{ product.name }}
         </a>
 
-        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-brand-muted">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-brand-muted sm:text-[11px]">
             {% if product.rating_count %}
                 <span class="inline-flex items-center gap-1 font-bold text-brand-gold-dark">
                     <i class="fa-solid fa-star"></i>
@@ -48,7 +48,7 @@
             {% endif %}
             <div class="flex items-baseline gap-1">
                 <span class="text-xs font-bold text-brand-orange">K</span>
-                <span class="font-display text-xl font-black leading-none text-brand-orange">{{ product.selling_price|floatformat:0|intcomma }}</span>
+                <span class="font-display text-xl font-black leading-none text-brand-orange sm:text-2xl">{{ product.selling_price|floatformat:0|intcomma }}</span>
             </div>
             <div class="text-[10px] text-brand-muted">35% deposit: <span class="font-semibold text-brand-orange">K{{ product.deposit_amount|floatformat:0|intcomma }}</span></div>
             {% else %}
@@ -71,7 +71,7 @@
             {% else %}
                 <form method="POST" action="{% url 'add_to_cart' product.slug %}" class="mt-1.5">
                     {% csrf_token %}
-                    <button type="submit" class="flex w-full items-center justify-center gap-1.5 rounded-md bg-brand-red py-2 text-xs font-bold text-white transition hover:bg-brand-red-dark active:scale-[0.98]">
+                    <button type="submit" class="flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-orange py-2 text-[11px] font-bold text-white transition hover:bg-orange-600 active:scale-[0.98] sm:rounded-md sm:bg-brand-red sm:text-xs">
                         <i class="fa-solid fa-cart-plus"></i>
                         Add to Cart
                     </button>

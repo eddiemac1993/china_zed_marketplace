@@ -1,5 +1,5 @@
 <header class="sticky top-0 z-[200] bg-gradient-to-br from-brand-orange to-red-700 shadow-lg shadow-black/20">
-    <div class="mx-auto flex max-w-[1300px] flex-wrap items-center gap-2 px-3 py-3 sm:flex-nowrap sm:gap-3.5 sm:px-5">
+    <div class="mx-auto flex max-w-[1300px] flex-wrap items-center gap-2 px-2.5 py-2.5 sm:px-4 lg:flex-nowrap lg:gap-3.5 lg:px-5 lg:py-3">
         <button type="button" @click="menuOpen = true" aria-label="Open menu" aria-expanded="false" :aria-expanded="menuOpen.toString()"
                 class="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-white transition hover:bg-white/15 lg:hidden">
             <i class="fa-solid fa-bars text-xl"></i>
@@ -11,8 +11,8 @@
         </a>
 
         <!-- SEARCH -->
-        <div class="relative order-last min-w-0 basis-full sm:order-none sm:flex-1 sm:basis-auto" x-data="{ open: false }" @click.outside="open = false">
-            <form method="GET" action="{% url 'home' %}" class="flex h-11 items-center overflow-hidden rounded-xl border-2 border-transparent bg-white shadow-lg shadow-black/10 focus-within:border-orange-200">
+        <div class="relative order-last min-w-0 basis-full lg:order-none lg:flex-1 lg:basis-auto" x-data="{ open: false }" @click.outside="open = false">
+            <form method="GET" action="{% url 'home' %}" class="flex h-11 items-center overflow-hidden rounded-full border-2 border-brand-orange bg-white shadow-lg shadow-black/10 focus-within:border-yellow-300 lg:rounded-xl lg:border-transparent">
                 <input type="text" name="q" value="{{ query|default:'' }}" autocomplete="off"
                        placeholder="Search products from China"
                        aria-label="Search products"
@@ -24,7 +24,7 @@
                        @focus="open = true" @input="open = true">
                 {% if product_type %}<input type="hidden" name="type" value="{{ product_type }}">{% endif %}
                 <button type="submit" aria-label="Search"
-                        class="m-1 grid h-9 w-11 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-orange-500 to-brand-red text-white transition hover:brightness-110">
+                        class="m-1 grid h-9 w-14 shrink-0 place-items-center rounded-full bg-gradient-to-br from-orange-500 to-brand-red text-white transition hover:brightness-110 lg:w-11 lg:rounded-lg">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
             </form>
@@ -33,33 +33,33 @@
         </div>
 
         <!-- ACTIONS -->
-        <div class="flex shrink-0 items-center gap-1">
+        <div class="ml-auto flex shrink-0 items-center gap-1">
             {% if request.user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white sm:flex">
+                <a href="{% url 'profile' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white md:flex">
                     <i class="fa-solid fa-user text-lg"></i>
                     Account
                 </a>
                 <button type="button" @click="cartOpen = true; $dispatch('cartDrawerOpen')"
                         class="flex items-center gap-1.5 rounded-lg bg-brand-orange px-3.5 py-2.5 text-sm font-extrabold text-white transition hover:bg-orange-600">
                     <i class="fa-solid fa-cart-shopping"></i>
-                    <span class="hidden sm:inline">Cart</span>
+                    <span class="hidden md:inline">Cart</span>
                     {% if nav_cart_count %}<span class="rounded-full bg-white/25 px-1.5 text-xs">{{ nav_cart_count }}</span>{% endif %}
                 </button>
             {% else %}
-                <a href="{% url 'login' %}" class="hidden items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-bold text-white/90 transition hover:bg-white/15 sm:flex">Sign in</a>
-                <a href="{% url 'register' %}" class="rounded-lg bg-brand-yellow px-3.5 py-2.5 text-sm font-extrabold text-red-800 transition hover:brightness-105">Join Free</a>
+                <a href="{% url 'login' %}" class="hidden items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-bold text-white/90 transition hover:bg-white/15 md:flex">Sign in</a>
+                <a href="{% url 'register' %}" class="rounded-lg bg-brand-yellow px-2.5 py-2.5 text-xs font-extrabold text-red-800 transition hover:brightness-105 sm:px-3.5 sm:text-sm">Join Free</a>
             {% endif %}
         </div>
     </div>
 
     <!-- CATEGORY NAV -->
     <nav class="border-t border-white/10 bg-black/20">
-        <div class="no-scrollbar mx-auto flex max-w-[1300px] gap-1 overflow-x-auto px-4 sm:px-5">
-            <a href="{% url 'home' %}" class="flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if not category_id and not product_type %}border-brand-yellow text-white{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
-            <a href="{% url 'home' %}?type=local#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if product_type == 'local' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
-            <a href="{% url 'home' %}?type=preorder#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if product_type == 'preorder' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
+        <div class="no-scrollbar mx-auto flex max-w-[1300px] snap-x snap-mandatory gap-0.5 overflow-x-auto px-2 sm:gap-1 sm:px-5">
+            <a href="{% url 'home' %}" class="flex snap-start items-center gap-1.5 whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if not category_id and not product_type %}border-brand-yellow text-white{% else %}border-transparent{% endif %}"><i class="fa-solid fa-house"></i> All</a>
+            <a href="{% url 'home' %}?type=local#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if product_type == 'local' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇿🇲 Zambia Stock</a>
+            <a href="{% url 'home' %}?type=preorder#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if product_type == 'preorder' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">🇨🇳 Pre-order</a>
             {% for category in nav_categories %}
-                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex items-center whitespace-nowrap border-b-[3px] px-3.5 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 {% if category_id == category.id|stringformat:'s' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">{{ category.name }}</a>
+                <a href="{% url 'home' %}?category={{ category.id }}#results" class="flex snap-start items-center whitespace-nowrap border-b-[3px] px-3 py-2.5 text-xs font-bold !text-white transition hover:bg-white/10 sm:px-3.5 {% if category_id == category.id|stringformat:'s' %}border-brand-yellow text-white{% else %}border-transparent{% endif %}">{{ category.name }}</a>
             {% endfor %}
             <a href="{% url 'communinity:home' %}" class="ml-auto flex items-center gap-1.5 whitespace-nowrap border-b-[3px] border-transparent px-3.5 py-2.5 text-xs font-bold text-brand-yellow transition hover:bg-white/10"><i class="fa-solid fa-comments"></i> Community</a>
         </div>
