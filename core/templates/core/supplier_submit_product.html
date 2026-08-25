@@ -217,6 +217,7 @@
                                 {{ form.images }}
                             </label>
                             <div class="preview-grid mt-3.5 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3" id="previewGrid"></div>
+                            <div id="aiAnalyzeStatus" class="mt-2 text-[11px] leading-relaxed text-brand-muted" role="status" aria-live="polite"></div>
 
                             <div class="mt-3.5">
                                 <label class="mb-1.5 block text-xs font-bold text-brand-ink">Cover photo (optional)</label>
@@ -424,11 +425,58 @@
     var zone = document.getElementById('dropZone');
     var grid = document.getElementById('previewGrid');
     var fileInput = zone ? zone.querySelector('input[type=file]') : null;
+    var aiStatus = document.getElementById('aiAnalyzeStatus');
+
+    function setSelectByLabel(id, label) {
+        var select = document.getElementById(id);
+        if (!select || !label) return false;
+        var target = label.trim().toLowerCase();
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].text.trim().toLowerCase() === target) {
+                select.value = select.options[i].value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function analyzePhoto(file) {
+        if (!aiStatus) return;
+        aiStatus.textContent = 'Looking at your photo to suggest a name, description, category and price…';
+        var data = new FormData();
+        data.append('photo', file);
+        data.append('csrfmiddlewaretoken', form.querySelector('[name=csrfmiddlewaretoken]').value);
+        fetch("{% url 'analyze_product_photo' %}", { method: 'POST', body: data, credentials: 'same-origin' })
+            .then(function (response) { return response.json().then(function (body) { if (!response.ok) throw new Error(body.error || 'Could not analyze this photo.'); return body; }); })
+            .then(function (item) {
+                var nameField = document.getElementById('id_product_name');
+                if (nameField && !nameField.value.trim()) nameField.value = item.name || '';
+                var descField = document.getElementById('id_description');
+                if (descField && !descField.value.trim()) descField.value = item.description || '';
+                setSelectByLabel('id_category', item.category);
+
+                var notes = ['Suggested from your photo — check everything before submitting.'];
+                if (item.estimated_price_rmb) {
+                    var priceField = document.getElementById('id_rmb_price');
+                    if (priceField && !priceField.value.trim() && form.getAttribute('data-type') === 'preorder') {
+                        priceField.value = item.estimated_price_rmb;
+                        var confirmBox = document.getElementById('id_price_confirmed');
+                        if (confirmBox) confirmBox.checked = false;
+                        notes.push('Estimated RMB price ¥' + item.estimated_price_rmb + ' filled in — this is a rough market guess, not your real supply cost. Replace it with your actual price and tick the confirmation box.');
+                    } else {
+                        notes.push('Rough market price for reference: ¥' + item.estimated_price_rmb + '.');
+                    }
+                }
+                aiStatus.textContent = notes.join(' ');
+            })
+            .catch(function (error) { aiStatus.textContent = error.message; });
+    }
 
     if (fileInput && grid) {
         fileInput.addEventListener('change', function () {
             grid.innerHTML = '';
-            Array.prototype.slice.call(fileInput.files, 0, 8).forEach(function (file) {
+            var files = Array.prototype.slice.call(fileInput.files, 0, 8);
+            files.forEach(function (file) {
                 if (!file.type.startsWith('image/')) return;
                 var wrap = document.createElement('div');
                 wrap.className = 'preview-thumb relative aspect-square min-h-[140px] w-full overflow-hidden rounded-lg border border-brand-border bg-neutral-100';
@@ -439,6 +487,7 @@
                 wrap.appendChild(img);
                 grid.appendChild(wrap);
             });
+            if (files.length) analyzePhoto(files[0]);
         });
     }
 })();

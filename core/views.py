@@ -1,3 +1,4 @@
+import base64
 import json
 import requests
 from django.conf import settings
@@ -187,6 +188,106 @@ def marketplace_import_preview_view(request):
 def taobao_import_preview_view(request):
     """Backward-compatible endpoint; the shared importer auto-detects the marketplace."""
     return marketplace_import_preview_view(request)
+
+
+MAX_ANALYZE_IMAGE_BYTES = 8 * 1024 * 1024
+ALLOWED_ANALYZE_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+
+@login_required(login_url="login")
+@require_POST
+@ratelimit(key="user", rate="20/h", method="POST", block=True)
+def analyze_product_photo_view(request):
+    """Suggest a name, description, category and rough price from a single product photo.
+
+    Purely a starting point for the supplier — nothing here is trusted or saved
+    automatically; the form fields stay editable and price still requires the
+    existing 'I have confirmed the supplier price' checkbox before submission.
+    """
+    if not is_approved_supplier(request.user):
+        return JsonResponse({"error": "Approved supplier access is required.", "code": "forbidden"}, status=403)
+
+    photo = request.FILES.get("photo")
+    if not photo:
+        return JsonResponse({"error": "Attach a product photo first.", "code": "missing_photo"}, status=400)
+    if photo.size > MAX_ANALYZE_IMAGE_BYTES:
+        return JsonResponse({"error": "Photo is too large (max 8MB).", "code": "too_large"}, status=400)
+    if photo.content_type not in ALLOWED_ANALYZE_CONTENT_TYPES:
+        return JsonResponse({"error": "Use a JPEG, PNG or WEBP photo.", "code": "bad_type"}, status=400)
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return JsonResponse(
+            {"error": "AI photo analysis is not configured on this server.", "code": "not_configured"},
+            status=503,
+        )
+
+    category_names = list(Category.objects.order_by("name").values_list("name", flat=True))
+    data_uri = f"data:{photo.content_type};base64,{base64.b64encode(photo.read()).decode('ascii')}"
+
+    system_prompt = (
+        "You are a product-listing assistant for ChinaZed, a marketplace that sources products from China "
+        "for buyers in Zambia. Look only at what is visibly in the photo. Reply with strict JSON only, no "
+        "markdown, using exactly these keys: name (short specific product title, max 80 characters, no "
+        "marketing fluff or emoji), description (2-3 plain sentences describing colour, material, type and "
+        "visible features - never invent a brand, model number or spec you cannot actually see), category "
+        "(choose the single closest match from this exact list, or an empty string if nothing fits well: "
+        f"{', '.join(category_names) or 'none available'}), estimated_price_rmb (a rough typical wholesale "
+        "China-marketplace price for this item in Chinese yuan, as a plain number with no currency symbol, "
+        "or null if you cannot reasonably estimate one), confidence (one of \"high\", \"medium\", \"low\")."
+    )
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini"),
+                "response_format": {"type": "json_object"},
+                "temperature": 0.2,
+                "max_tokens": 350,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": [
+                        {"type": "text", "text": "Identify this product for a new marketplace listing."},
+                        {"type": "image_url", "image_url": {"url": data_uri}},
+                    ]},
+                ],
+            },
+            timeout=25,
+        )
+        response.raise_for_status()
+        payload = json.loads(response.json()["choices"][0]["message"]["content"])
+    except requests.Timeout:
+        return JsonResponse({"error": "The AI analysis timed out. Please try again.", "code": "timeout"}, status=504)
+    except Exception:
+        return JsonResponse(
+            {"error": "Could not analyze this photo. Please fill in the details manually.", "code": "analysis_failed"},
+            status=502,
+        )
+
+    from decimal import Decimal, InvalidOperation
+
+    name = str(payload.get("name") or "").strip()[:200]
+    description = str(payload.get("description") or "").strip()
+    category_name = str(payload.get("category") or "").strip()
+    category = Category.objects.filter(name__iexact=category_name).first() if category_name else None
+
+    price = payload.get("estimated_price_rmb")
+    try:
+        price = str(Decimal(str(price)).quantize(Decimal("0.01"))) if price not in (None, "") else ""
+    except (InvalidOperation, ValueError, TypeError):
+        price = ""
+
+    return JsonResponse({
+        "name": name,
+        "description": description,
+        "category": category.name if category else "",
+        "category_id": category.id if category else None,
+        "estimated_price_rmb": price,
+        "confidence": payload.get("confidence") or "low",
+    })
+
 
 def service_worker_view(request):
     response = render(

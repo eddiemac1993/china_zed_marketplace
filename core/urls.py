@@ -71,6 +71,7 @@ urlpatterns = [
     path("supplier/submit-product/", views.supplier_submit_product, name="supplier_submit_product"),
     path("supplier/import-product/", views.marketplace_import_preview_view, name="marketplace_import_preview"),
     path("supplier/import-taobao/", views.taobao_import_preview_view, name="taobao_import_preview"),
+    path("supplier/analyze-photo/", views.analyze_product_photo_view, name="analyze_product_photo"),
 
     # =========================
     # BIKER DELIVERY NETWORK
