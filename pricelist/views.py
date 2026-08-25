@@ -1,7 +1,9 @@
+from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, get_object_or_404
 from .models import PriceList
 
 
+@staff_member_required
 def price_list_view(request, pk):
     price_list = get_object_or_404(PriceList, pk=pk)
     items = price_list.items.all()
@@ -15,8 +17,7 @@ def price_list_view(request, pk):
     return render(request, "pricelist/price_list.html", context)
 
 
-from django.db.models import Sum
-
+@staff_member_required
 def price_list_index(request):
 
     price_lists = PriceList.objects.all().order_by("-date")
