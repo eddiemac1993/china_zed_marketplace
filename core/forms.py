@@ -1,9 +1,36 @@
 from django import forms
-from .models import Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
+from .models import Advertisement, Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 import hashlib
 import re
+
+
+class AdvertisementSubmissionForm(forms.ModelForm):
+    input_class = "w-full rounded-lg border border-brand-border bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-orange-100"
+
+    class Meta:
+        model = Advertisement
+        fields = ["advertiser_name", "headline", "subtext", "image", "cta_text", "cta_url"]
+        widgets = {
+            "advertiser_name": forms.TextInput(attrs={"placeholder": "Business or advertiser name"}),
+            "headline": forms.TextInput(attrs={"placeholder": "A short, attention-grabbing headline"}),
+            "subtext": forms.TextInput(attrs={"placeholder": "One sentence about your offer (optional)"}),
+            "image": forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
+            "cta_text": forms.TextInput(attrs={"placeholder": "Visit website"}),
+            "cta_url": forms.URLInput(attrs={"placeholder": "https://example.com"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = self.input_class
+
+    def clean_image(self):
+        image = self.cleaned_data.get("image")
+        if image and image.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("The image must be 5 MB or smaller.")
+        return image
 
 
 class StyledPasswordResetForm(PasswordResetForm):

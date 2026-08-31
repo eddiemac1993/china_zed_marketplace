@@ -20,6 +20,7 @@ from django.db.models import Q
 from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
+    AdvertisementSubmissionForm,
     CustomerProductRequestForm,
     OrderForm,
     SupplierProductRequestForm,
@@ -45,6 +46,7 @@ from .models import (
     DeliveryJob,
     SupplierProductRequest,
     SupplierProductRequestImage,
+    Advertisement,
     money,
     calculate_delivery_fee,
 )
@@ -411,6 +413,12 @@ def home(request):
     if request.user.is_authenticated:
         cart_count = get_user_cart(request.user).total_items()
 
+    now = timezone.now()
+    active_ads = Advertisement.objects.filter(is_active=True).filter(
+        Q(display_from__isnull=True) | Q(display_from__lte=now),
+        Q(display_until__isnull=True) | Q(display_until__gte=now),
+    ).filter(Q(hour_slot__isnull=True) | Q(hour_slot=timezone.localtime(now).hour))
+
     return render(request, "core/home.html", {
         "products": products,
         "categories": categories,
@@ -423,7 +431,26 @@ def home(request):
         "preorder_products": preorder_products,
         "testimonials": testimonials,
         "cart_count": cart_count,
+        "active_ads": active_ads,
     })
+
+
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
+def advertise_view(request):
+    if request.method == "POST":
+        form = AdvertisementSubmissionForm(request.POST, request.FILES)
+        if form.is_valid():
+            advertisement = form.save(commit=False)
+            advertisement.is_active = True
+            advertisement.display_from = timezone.now()
+            advertisement.save()
+            messages.success(request, "Your ad is live and will now appear among products on the home page.")
+            return redirect("home")
+    else:
+        form = AdvertisementSubmissionForm(initial={"cta_text": "Visit"})
+
+    cart_count = get_user_cart(request.user).total_items() if request.user.is_authenticated else 0
+    return render(request, "core/advertise.html", {"form": form, "cart_count": cart_count})
 
 
 @ratelimit(key="ip", rate="60/m", method="GET", block=True)
