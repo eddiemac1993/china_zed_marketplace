@@ -1,6 +1,7 @@
 import base64
 import json
 import requests
+from decimal import Decimal
 from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
@@ -393,6 +394,29 @@ def home(request):
         product_type="preorder"
     )).order_by("-created_at")[:10]
 
+    card_ready = (
+        Q(category__isnull=False)
+        & Q(rmb_price__gt=0)
+        & (Q(image__isnull=False) | ~Q(external_image_url=""))
+        & (Q(product_type="preorder") | Q(product_type="local", stock_quantity__gt=0))
+    )
+    trending_products = with_display_annotations(Product.objects.filter(
+        card_ready, is_available=True
+    )).order_by("-sold_count", "-views_count", "-created_at")[:10]
+
+    active_rate = Product.active_exchange_rate()
+    rmb_to_zmw = active_rate.rmb_to_zmw if active_rate else Decimal("3.20")
+    preorder_markup = active_rate.markup_percentage if active_rate else Decimal("35.00")
+    local_markup = active_rate.local_markup_percentage if active_rate else Decimal("80.00")
+    preorder_rmb_limit = Decimal("200") / (rmb_to_zmw * (Decimal("1") + preorder_markup / Decimal("100")))
+    local_cost_limit = Decimal("200") / (Decimal("1") + local_markup / Decimal("100"))
+    budget_products = with_display_annotations(Product.objects.filter(
+        card_ready,
+        Q(product_type="preorder", rmb_price__lte=preorder_rmb_limit)
+        | Q(product_type="local", rmb_price__lte=local_cost_limit),
+        is_available=True,
+    )).order_by("-is_featured", "-created_at")[:10]
+
     testimonials = ProductReview.objects.filter(
         is_approved=True
     ).select_related("product", "user").order_by("-created_at")[:3]
@@ -429,9 +453,13 @@ def home(request):
         "featured_products": featured_products,
         "local_products": local_products,
         "preorder_products": preorder_products,
+        "trending_products": trending_products,
+        "budget_products": budget_products,
         "testimonials": testimonials,
         "cart_count": cart_count,
         "active_ads": active_ads,
+        "successful_order_count": Order.objects.filter(status="successful").count(),
+        "collection_centres": CollectionCentre.objects.filter(is_active=True, is_deleted=False)[:4],
     })
 
 
@@ -441,16 +469,28 @@ def advertise_view(request):
         form = AdvertisementSubmissionForm(request.POST, request.FILES)
         if form.is_valid():
             advertisement = form.save(commit=False)
+            advertisement.advertiser_name = "Community advertiser"
+            advertisement.headline = "Sponsored advertisement"
+            advertisement.cta_text = "View ad"
+            advertisement.cta_url = "/"
             advertisement.is_active = True
             advertisement.display_from = timezone.now()
             advertisement.save()
-            messages.success(request, "Your ad is live and will now appear among products on the home page.")
-            return redirect("home")
+            return redirect("advertise_success", ad_id=advertisement.pk)
     else:
-        form = AdvertisementSubmissionForm(initial={"cta_text": "Visit"})
+        form = AdvertisementSubmissionForm()
 
     cart_count = get_user_cart(request.user).total_items() if request.user.is_authenticated else 0
     return render(request, "core/advertise.html", {"form": form, "cart_count": cart_count})
+
+
+def advertise_success_view(request, ad_id):
+    advertisement = get_object_or_404(Advertisement, pk=ad_id, is_active=True)
+    cart_count = get_user_cart(request.user).total_items() if request.user.is_authenticated else 0
+    return render(request, "core/advertise_success.html", {
+        "advertisement": advertisement,
+        "cart_count": cart_count,
+    })
 
 
 @ratelimit(key="ip", rate="60/m", method="GET", block=True)

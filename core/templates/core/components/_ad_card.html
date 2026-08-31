@@ -1,5 +1,5 @@
 <div class="group relative flex flex-col overflow-hidden rounded-[10px] border border-amber-300 bg-white shadow-sm transition sm:rounded-xl hover:-translate-y-1 hover:shadow-lg">
-    <a href="{{ ad.cta_url }}" target="_blank" rel="noopener sponsored" class="relative block aspect-square overflow-hidden bg-amber-50">
+    <div class="relative block aspect-square overflow-hidden bg-amber-50">
         {% if ad.image %}
             <img src="{{ ad.image.url }}" alt="{{ ad.advertiser_name }}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
         {% else %}
@@ -9,7 +9,8 @@
             </div>
         {% endif %}
         <span class="absolute left-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-950 shadow">Sponsored</span>
-    </a>
+    </div>
+    {% if ad.headline != "Sponsored advertisement" %}
     <div class="flex flex-1 flex-col gap-1 p-2 sm:gap-1.5 sm:p-2.5">
         <a href="{{ ad.cta_url }}" target="_blank" rel="noopener sponsored" class="line-clamp-2 min-h-[2.5em] text-xs font-semibold leading-snug text-brand-ink transition hover:text-brand-orange sm:text-[13px]">{{ ad.headline }}</a>
         <div class="text-[10px] font-bold uppercase tracking-wide text-brand-muted">{{ ad.advertiser_name }}</div>
@@ -18,4 +19,5 @@
             <a href="{{ ad.cta_url }}" target="_blank" rel="noopener sponsored" class="block w-full rounded-md bg-amber-500 py-2 text-center text-xs font-bold text-amber-950 transition hover:bg-amber-400">{{ ad.cta_text }}</a>
         </div>
     </div>
+    {% endif %}
 </div>

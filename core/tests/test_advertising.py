@@ -1,3 +1,6 @@
+import base64
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -20,26 +23,27 @@ class AdvertisementSubmissionTests(TestCase):
         response = self.client.get(reverse("advertise"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Post my ad")
+        self.assertContains(response, "Upload my ad")
+        self.assertNotContains(response, "Advertiser name")
 
     def test_public_submission_goes_live_and_appears_as_product_sized_card(self):
-        response = self.client.post(reverse("advertise"), {
-            "advertiser_name": "Zed Services",
-            "headline": "Fast delivery across Lusaka",
-            "subtext": "Same-day deliveries available.",
-            "cta_text": "Book now",
-            "cta_url": "https://example.com/book",
-        })
+        image = SimpleUploadedFile("advert.png", base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+        ), content_type="image/png")
+        response = self.client.post(reverse("advertise"), {"image": image})
 
-        self.assertRedirects(response, reverse("home"))
         advertisement = Advertisement.objects.get()
+        self.assertRedirects(response, reverse("advertise_success", kwargs={"ad_id": advertisement.pk}))
         self.assertTrue(advertisement.is_active)
         self.assertIsNotNone(advertisement.display_from)
 
+        success = self.client.get(response["Location"])
+        self.assertContains(success, "Your advert is live!")
+        self.assertContains(success, advertisement.image.url)
+
         home = self.client.get(reverse("home"))
-        self.assertContains(home, "Fast delivery across Lusaka")
+        self.assertContains(home, advertisement.image.url)
         self.assertContains(home, "Sponsored")
-        self.assertContains(home, 'rel="noopener sponsored"')
 
     def test_future_and_inactive_ads_do_not_appear(self):
         Advertisement.objects.create(
@@ -51,3 +55,13 @@ class AdvertisementSubmissionTests(TestCase):
 
         home = self.client.get(reverse("home"))
         self.assertNotContains(home, "This should stay hidden")
+
+    def test_homepage_shows_zambian_shopping_shortcuts_and_real_trust_copy(self):
+        home = self.client.get(reverse("home"))
+
+        self.assertContains(home, "Pay with Mobile Money")
+        self.assertContains(home, "MTN MoMo")
+        self.assertContains(home, "TRENDING IN ZAMBIA")
+        self.assertContains(home, "Ask on WhatsApp")
+        self.assertNotContains(home, "1,247")
+        self.assertNotContains(home, "people browsing now")

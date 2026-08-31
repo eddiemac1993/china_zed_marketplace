@@ -34,8 +34,24 @@
         </div>
     </div>
 
+    <section class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        <div class="grid gap-px bg-neutral-100 sm:grid-cols-3">
+            <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-100 text-lg text-emerald-700"><i class="fa-solid fa-mobile-screen-button"></i></div><div><div class="text-xs font-black text-brand-ink">Pay with Mobile Money</div><div class="mt-0.5 text-[11px] text-brand-muted">MTN MoMo · Airtel Money · Zamtel</div></div></div>
+            <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-amber-100 text-lg text-amber-700"><i class="fa-solid fa-shield-halved"></i></div><div><div class="text-xs font-black text-brand-ink">Only 35% to order</div><div class="mt-0.5 text-[11px] text-brand-muted">Pay the remaining balance on arrival</div></div></div>
+            <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blue-100 text-lg text-blue-700"><i class="fa-solid fa-location-dot"></i></div><div><div class="text-xs font-black text-brand-ink">Track every order</div><div class="mt-0.5 text-[11px] text-brand-muted">Delivery and collection updates online</div></div></div>
+        </div>
+    </section>
+
+    <nav aria-label="Popular categories" class="no-scrollbar mb-3.5 flex gap-2 overflow-x-auto pb-1">
+        <a href="?type=local#results" class="shrink-0 rounded-full bg-brand-green px-3.5 py-2 text-xs font-black text-white"><i class="fa-solid fa-location-dot mr-1"></i> Zambia Stock</a>
+        <a href="?type=preorder#results" class="shrink-0 rounded-full bg-brand-red px-3.5 py-2 text-xs font-black text-white"><i class="fa-solid fa-plane mr-1"></i> China Pre-orders</a>
+        <a href="{% url 'request_product' %}" class="shrink-0 rounded-full border border-brand-orange bg-orange-50 px-3.5 py-2 text-xs font-black text-brand-orange"><i class="fa-solid fa-magnifying-glass mr-1"></i> Request Any Product</a>
+        {% for category in categories|slice:":7" %}<a href="?category={{ category.id }}#results" class="shrink-0 rounded-full border border-brand-border bg-white px-3.5 py-2 text-xs font-bold text-brand-ink transition hover:border-brand-orange hover:text-brand-orange">{{ category.name }}</a>{% endfor %}
+    </nav>
+
     {% include "core/components/_flash_sale_banner.html" %}
 
+    {% comment %}Legacy simulated social proof removed: homepage now shows only real order data.
     <!-- SOCIAL PROOF -->
     <div class="mb-3.5 hidden items-center gap-2.5 rounded-xl border border-orange-100 bg-orange-50/60 px-4.5 py-3 text-[13px] text-amber-900 sm:flex"
          x-data="{ orders: 1247, viewers: 38 }"
@@ -44,6 +60,7 @@
         <span><strong x-text="orders.toLocaleString()">1,247</strong> orders delivered this month · <strong x-text="viewers">38</strong> people browsing now</span>
     </div>
 
+    {% endcomment %}
     <!-- TWO-COL -->
     <div class="mb-3.5 grid grid-cols-1 gap-3.5 lg:grid-cols-[190px_1fr]">
 
@@ -57,6 +74,22 @@
 
             <!-- HOT ITEMS -->
             {% if not category_id and not product_type and not query %}
+            <div class="reveal">
+                <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-100 pb-2.5">
+                    <div class="flex items-baseline gap-2.5"><span class="border-l-4 border-brand-red pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">TRENDING IN ZAMBIA</span><span class="text-[11px] text-brand-muted">Popular and frequently viewed</span></div>
+                </div>
+                {% include "core/components/_product_grid.html" with products=trending_products empty_title="Popular products are coming soon" empty_note="Browse our newest China and Zambia listings below." %}
+            </div>
+
+            {% if budget_products %}
+            <div class="reveal">
+                <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-100 pb-2.5">
+                    <div class="flex items-baseline gap-2.5"><span class="border-l-4 border-emerald-500 pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">DEALS UNDER K200</span><span class="text-[11px] text-brand-muted">Affordable finds</span></div>
+                </div>
+                {% include "core/components/_product_grid.html" with products=budget_products %}
+            </div>
+            {% endif %}
+
             <div class="reveal">
                 <div class="mb-2.5 flex items-baseline gap-2.5 border-b border-neutral-100 pb-2.5">
                     <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl"><i class="fa-solid fa-fire text-brand-red"></i> HOT ITEMS</span>
@@ -133,6 +166,13 @@
 
         </div>
     </div>
+
+    <section class="mb-3.5 grid gap-3.5 rounded-xl border border-brand-border bg-white p-4 sm:grid-cols-3 sm:p-5">
+        <div class="flex gap-3"><i class="fa-solid fa-circle-check mt-0.5 text-xl text-brand-green"></i><div><h3 class="text-sm font-black text-brand-ink">Clear payment breakdown</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">See the total, your 35% deposit, and the balance before ordering.</p></div></div>
+        <div class="flex gap-3"><i class="fa-brands fa-whatsapp mt-0.5 text-xl text-emerald-500"></i><div><h3 class="text-sm font-black text-brand-ink">Talk to a real person</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">Ask about a product on WhatsApp before you pay.</p><a href="https://wa.me/260766491002" target="_blank" rel="noopener" class="mt-1.5 inline-block text-xs font-black text-emerald-600">Chat now →</a></div></div>
+        <div class="flex gap-3"><i class="fa-solid fa-box-open mt-0.5 text-xl text-brand-orange"></i><div><h3 class="text-sm font-black text-brand-ink">Tracked from order to arrival</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">Follow progress from your ChinaZed profile.{% if successful_order_count %} {{ successful_order_count }} order{{ successful_order_count|pluralize }} successfully completed.{% endif %}</p></div></div>
+        {% if collection_centres %}<div class="border-t border-neutral-100 pt-3 text-xs text-brand-muted sm:col-span-3"><strong class="text-brand-ink">Active collection centres:</strong> {% for centre in collection_centres %}{{ centre.name }} ({{ centre.town }}){% if not forloop.last %} · {% endif %}{% endfor %}</div>{% endif %}
+    </section>
 
     <!-- HOW IT WORKS -->
     <div class="mb-3.5 rounded-xl border border-brand-border bg-white">

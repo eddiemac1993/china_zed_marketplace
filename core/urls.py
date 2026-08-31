@@ -10,6 +10,7 @@ urlpatterns = [
     path("service-worker.js", views.service_worker_view, name="chinazed_service_worker"),
     path("about/", views.about, name="about"),
     path("advertise/", views.advertise_view, name="advertise"),
+    path("advertise/success/<int:ad_id>/", views.advertise_success_view, name="advertise_success"),
     path("faq/", views.faq, name="faq"),
     path("terms/", views.terms, name="terms"),
     path("privacy/", views.privacy, name="privacy"),

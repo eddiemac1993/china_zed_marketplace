@@ -11,14 +11,9 @@ class AdvertisementSubmissionForm(forms.ModelForm):
 
     class Meta:
         model = Advertisement
-        fields = ["advertiser_name", "headline", "subtext", "image", "cta_text", "cta_url"]
+        fields = ["image"]
         widgets = {
-            "advertiser_name": forms.TextInput(attrs={"placeholder": "Business or advertiser name"}),
-            "headline": forms.TextInput(attrs={"placeholder": "A short, attention-grabbing headline"}),
-            "subtext": forms.TextInput(attrs={"placeholder": "One sentence about your offer (optional)"}),
             "image": forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
-            "cta_text": forms.TextInput(attrs={"placeholder": "Visit website"}),
-            "cta_url": forms.URLInput(attrs={"placeholder": "https://example.com"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -28,8 +23,12 @@ class AdvertisementSubmissionForm(forms.ModelForm):
 
     def clean_image(self):
         image = self.cleaned_data.get("image")
-        if image and image.size > 5 * 1024 * 1024:
+        if not image:
+            raise forms.ValidationError("Please choose an image for your ad.")
+        if image.size > 5 * 1024 * 1024:
             raise forms.ValidationError("The image must be 5 MB or smaller.")
+        if getattr(image, "content_type", "") not in {"image/jpeg", "image/png", "image/webp"}:
+            raise forms.ValidationError("Use a JPG, PNG, or WebP image.")
         return image
 
 
