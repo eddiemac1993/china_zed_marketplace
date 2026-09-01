@@ -189,7 +189,7 @@
                            class="mt-2.5 flex w-full items-center justify-center rounded bg-neutral-900 py-3 text-[13px] font-bold text-white transition hover:bg-orange-600">
                             <i class="fa-solid fa-download mr-1.5"></i> Save Product Poster
                         </a>
-                        <a href="https://wa.me/?text=Hi!%20I%20am%20interested%20in%20ordering%20{{ product.name|urlencode }}%20on%20ChinaZed:%20https://www.chinatozambia.org{% url 'product_detail' product.slug %}"
+                        <a href="{% url 'product_whatsapp' product.slug %}"
                            target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600">
                             <i class="fa-brands fa-whatsapp text-base"></i> Share or Order on WhatsApp
                         </a>

@@ -25,7 +25,32 @@ from .models import (
     StockMovement,
     ProductReview,
     BroadcastNotification,
+    MarketplaceEvent,
+    WishlistItem,
 )
+
+
+@admin.register(WishlistItem)
+class WishlistItemAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "created_at")
+    search_fields = ("user__username", "user__email", "product__name")
+    list_select_related = ("user", "product")
+
+
+@admin.register(MarketplaceEvent)
+class MarketplaceEventAdmin(admin.ModelAdmin):
+    list_display = ("event_type", "product", "search_query", "result_count", "quantity", "value", "user", "created_at")
+    list_filter = ("event_type", "created_at")
+    search_fields = ("search_query", "product__name", "user__username", "user__email", "session_key")
+    readonly_fields = ("event_type", "user", "session_key", "product", "order", "search_query", "result_count", "quantity", "value", "path", "created_at")
+    date_hierarchy = "created_at"
+    list_select_related = ("product", "user", "order")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 # =========================
@@ -424,7 +449,11 @@ def mark_orders_arrived(modeladmin, request, queryset):
 
 @admin.action(description="Mark selected orders as successful")
 def mark_orders_successful(modeladmin, request, queryset):
-    updated = queryset.update(status="successful")
+    updated = 0
+    for order in queryset:
+        order.status = "successful"
+        order.save(update_fields=["status", "updated_at"])
+        updated += 1
     messages.success(request, f"{updated} order(s) marked as successful.")
 
 

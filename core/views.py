@@ -15,9 +15,10 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
-from django.db.models import Q
+from django.db.models import F, Q
 from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
@@ -48,6 +49,8 @@ from .models import (
     SupplierProductRequest,
     SupplierProductRequestImage,
     Advertisement,
+    MarketplaceEvent,
+    WishlistItem,
     money,
     calculate_delivery_fee,
 )
@@ -64,6 +67,19 @@ from datetime import timedelta
 
 WHATSAPP_NUMBER = "260766491002"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
+
+
+def record_marketplace_event(request, event_type, **details):
+    """Record useful first-party behaviour without retaining visitor IP addresses."""
+    if not request.session.session_key:
+        request.session.create()
+    MarketplaceEvent.objects.create(
+        event_type=event_type,
+        user=request.user if request.user.is_authenticated else None,
+        session_key=request.session.session_key or "",
+        path=request.path[:500],
+        **details,
+    )
 
 
 AI_ASSISTANT_SYSTEM_PROMPT = """
@@ -433,6 +449,15 @@ def home(request):
     products = with_display_annotations(products)
     products = apply_sort(products, sort) if sort else products.order_by("-created_at")
 
+    if query:
+        result_count = products.count()
+        record_marketplace_event(
+            request,
+            "search" if result_count else "zero_search",
+            search_query=query[:200],
+            result_count=result_count,
+        )
+
     cart_count = 0
     if request.user.is_authenticated:
         cart_count = get_user_cart(request.user).total_items()
@@ -551,6 +576,8 @@ def product_detail(request, slug):
         slug=slug,
         is_available=True
     )
+    Product.objects.filter(pk=product.pk).update(views_count=F("views_count") + 1)
+    record_marketplace_event(request, "product_view", product=product)
 
     cart_count = 0
     if request.user.is_authenticated:
@@ -559,6 +586,41 @@ def product_detail(request, slug):
     return render(request, "core/product_detail.html", {
         "product": product,
         "cart_count": cart_count,
+    })
+
+
+def product_whatsapp_view(request, slug):
+    product = get_object_or_404(Product, slug=slug, is_available=True)
+    record_marketplace_event(request, "whatsapp_click", product=product)
+    return redirect(product.whatsapp_link())
+
+
+@login_required(login_url="login")
+@require_POST
+def toggle_wishlist_view(request, slug):
+    product = get_object_or_404(Product, slug=slug, is_available=True)
+    item, created = WishlistItem.objects.get_or_create(user=request.user, product=product)
+    if created:
+        messages.success(request, f"{product.name} saved for later.")
+    else:
+        item.delete()
+        messages.success(request, f"{product.name} removed from saved products.")
+
+    next_url = request.POST.get("next", "")
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+    return redirect("wishlist")
+
+
+@login_required(login_url="login")
+def wishlist_view(request):
+    products = with_display_annotations(Product.objects.filter(
+        wishlist_items__user=request.user,
+        is_available=True,
+    )).order_by("-wishlist_items__created_at")
+    return render(request, "core/wishlist.html", {
+        "products": products,
+        "cart_count": get_user_cart(request.user).total_items(),
     })
 
 
@@ -807,6 +869,14 @@ def add_to_cart_view(request, slug):
 
         cart_item.quantity = new_quantity
         cart_item.save()
+
+    record_marketplace_event(
+        request,
+        "add_to_cart",
+        product=product,
+        quantity=quantity,
+        value=product.selling_price() * quantity,
+    )
 
     messages.success(request, f"{product.name} added to cart.")
     return redirect("cart")

@@ -458,6 +458,21 @@ class CartItem(models.Model):
         return f"{self.quantity} x {self.product.name}"
 
 
+class WishlistItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlist_items")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "product"], name="unique_user_wishlist_product"),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.product.name}"
+
+
 class SupplierProductRequest(TimeStampedModel):
     SOURCE_CHOICES = Product.SOURCE_CHOICES
     PRODUCT_TYPE_CHOICES = Product.PRODUCT_TYPE_CHOICES
@@ -1028,4 +1043,37 @@ class BroadcastNotification(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class MarketplaceEvent(models.Model):
+    EVENT_CHOICES = [
+        ("search", "Search"),
+        ("zero_search", "Search with no results"),
+        ("product_view", "Product view"),
+        ("whatsapp_click", "WhatsApp click"),
+        ("add_to_cart", "Add to cart"),
+        ("completed_order", "Completed order"),
+    ]
+
+    event_type = models.CharField(max_length=30, choices=EVENT_CHOICES, db_index=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="marketplace_events")
+    session_key = models.CharField(max_length=40, blank=True, db_index=True)
+    product = models.ForeignKey(Product, null=True, blank=True, on_delete=models.SET_NULL, related_name="marketplace_events")
+    order = models.ForeignKey(Order, null=True, blank=True, on_delete=models.SET_NULL, related_name="marketplace_events")
+    search_query = models.CharField(max_length=200, blank=True, db_index=True)
+    result_count = models.PositiveIntegerField(null=True, blank=True)
+    quantity = models.PositiveIntegerField(null=True, blank=True)
+    value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    path = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["event_type", "order"], name="unique_completed_order_event"),
+        ]
+
+    def __str__(self):
+        subject = self.search_query or (self.product.name if self.product_id else "")
+        return f"{self.get_event_type_display()}: {subject}".strip()
 

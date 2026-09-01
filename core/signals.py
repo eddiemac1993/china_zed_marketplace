@@ -5,9 +5,23 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from webpush import send_user_notification
 
-from .models import Product, OrderCheckpoint, DeliveryJob, Biker, calculate_biker_payout
+from .models import Product, Order, OrderCheckpoint, DeliveryJob, Biker, MarketplaceEvent, calculate_biker_payout
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(post_save, sender=Order)
+def record_completed_order(sender, instance, **kwargs):
+    if instance.status != "successful":
+        return
+    MarketplaceEvent.objects.get_or_create(
+        event_type="completed_order",
+        order=instance,
+        defaults={
+            "user": instance.user,
+            "value": instance.total_price,
+        },
+    )
 
 
 @receiver(post_save, sender=Product)

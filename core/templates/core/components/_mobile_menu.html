@@ -19,6 +19,7 @@
         <div class="border-b border-neutral-100 py-2.5">
             <div class="px-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-brand-muted">My Account</div>
             <a href="{% url 'profile' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-user w-4 text-center"></i> My Profile &amp; Orders</a>
+            <a href="{% url 'wishlist' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-heart w-4 text-center"></i> Saved Products{% if nav_saved_count %} ({{ nav_saved_count }}){% endif %}</a>
             <a href="{% url 'cart' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-cart-shopping w-4 text-center"></i> My Cart{% if nav_cart_count %} ({{ nav_cart_count }}){% endif %}</a>
             <a href="{% url 'communinity:home' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-comments w-4 text-center"></i> Community</a>
             <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium text-brand-ink transition hover:bg-orange-50 hover:text-brand-red"><i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Logout</a>

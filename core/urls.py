@@ -32,6 +32,9 @@ urlpatterns = [
 
     # Products
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),
+    path("product/<slug:slug>/whatsapp/", views.product_whatsapp_view, name="product_whatsapp"),
+    path("product/<slug:slug>/save/", views.toggle_wishlist_view, name="toggle_wishlist"),
+    path("saved/", views.wishlist_view, name="wishlist"),
     path("product/<slug:slug>/order/", views.place_order_view, name="place_order"),
     path("request-product/", views.request_product_view, name="request_product"),
 

@@ -1,10 +1,13 @@
 import base64
+from decimal import Decimal
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from core.models import Advertisement, Product
+from django.contrib.auth.models import User
+
+from core.models import Advertisement, Category, MarketplaceEvent, Order, Product, WishlistItem
 
 
 @override_settings(ALLOWED_HOSTS=["testserver"], SECURE_SSL_REDIRECT=False)
@@ -65,3 +68,62 @@ class AdvertisementSubmissionTests(TestCase):
         self.assertContains(home, "Ask on WhatsApp")
         self.assertNotContains(home, "1,247")
         self.assertNotContains(home, "people browsing now")
+
+    def test_search_product_view_and_whatsapp_click_are_recorded(self):
+        product = Product.objects.get(name="Grid product")
+
+        self.client.get(reverse("home"), {"q": "Grid"})
+        self.client.get(reverse("home"), {"q": "Not sold here"})
+        self.client.get(reverse("product_detail", kwargs={"slug": product.slug}))
+        whatsapp = self.client.get(reverse("product_whatsapp", kwargs={"slug": product.slug}))
+
+        self.assertEqual(whatsapp.status_code, 302)
+        self.assertTrue(whatsapp["Location"].startswith("https://wa.me/"))
+        self.assertTrue(MarketplaceEvent.objects.filter(event_type="search", search_query="Grid").exists())
+        self.assertTrue(MarketplaceEvent.objects.filter(event_type="zero_search", search_query="Not sold here").exists())
+        self.assertTrue(MarketplaceEvent.objects.filter(event_type="product_view", product=product).exists())
+        self.assertTrue(MarketplaceEvent.objects.filter(event_type="whatsapp_click", product=product).exists())
+        product.refresh_from_db()
+        self.assertEqual(product.views_count, 1)
+
+    def test_successful_order_is_recorded_only_once(self):
+        user = User.objects.create_user(username="analytics-buyer", password="test-pass")
+        order = Order.objects.create(user=user, total_price="550.00")
+
+        order.status = "successful"
+        order.save()
+        order.save()
+
+        events = MarketplaceEvent.objects.filter(event_type="completed_order", order=order)
+        self.assertEqual(events.count(), 1)
+        self.assertEqual(events.get().value, Decimal("550.00"))
+
+    def test_add_to_cart_conversion_is_recorded(self):
+        user = User.objects.create_user(username="cart-analytics", password="test-pass")
+        category = Category.objects.create(name="Analytics products")
+        product = Product.objects.get(name="Grid product")
+        product.category = category
+        product.external_image_url = "https://example.com/product.jpg"
+        product.save()
+        self.client.force_login(user)
+
+        response = self.client.post(reverse("add_to_cart", kwargs={"slug": product.slug}), {"quantity": 2})
+
+        self.assertRedirects(response, reverse("cart"))
+        event = MarketplaceEvent.objects.get(event_type="add_to_cart", product=product)
+        self.assertEqual(event.quantity, 2)
+        self.assertEqual(event.user, user)
+
+    def test_user_can_save_and_remove_a_product(self):
+        user = User.objects.create_user(username="wishlist-buyer", password="test-pass")
+        product = Product.objects.get(name="Grid product")
+        self.client.force_login(user)
+
+        save = self.client.post(reverse("toggle_wishlist", kwargs={"slug": product.slug}))
+        self.assertRedirects(save, reverse("wishlist"))
+        self.assertTrue(WishlistItem.objects.filter(user=user, product=product).exists())
+        saved_page = self.client.get(reverse("wishlist"))
+        self.assertContains(saved_page, product.name)
+
+        self.client.post(reverse("toggle_wishlist", kwargs={"slug": product.slug}))
+        self.assertFalse(WishlistItem.objects.filter(user=user, product=product).exists())

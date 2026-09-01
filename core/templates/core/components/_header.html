@@ -64,6 +64,10 @@
         <!-- ACTIONS -->
         <div class="ml-auto hidden shrink-0 items-center gap-1 md:flex lg:col-auto">
             {% if request.user.is_authenticated %}
+                <a href="{% url 'wishlist' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white md:flex">
+                    <span class="relative"><i class="fa-solid fa-heart text-lg"></i>{% if nav_saved_count %}<span class="absolute -right-2 -top-2 rounded-full bg-brand-yellow px-1 text-[9px] font-black text-red-800">{{ nav_saved_count }}</span>{% endif %}</span>
+                    Saved
+                </a>
                 <a href="{% url 'profile' %}" class="hidden flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[11px] text-white/85 transition hover:bg-white/15 hover:text-white md:flex">
                     <i class="fa-solid fa-user text-lg"></i>
                     Account

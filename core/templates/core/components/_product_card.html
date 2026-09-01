@@ -21,6 +21,13 @@
         {% endif %}
     </a>
 
+    {% if request.user.is_authenticated %}
+    <form method="post" action="{% url 'toggle_wishlist' product.slug %}" class="absolute right-2 top-9 z-10">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" aria-label="{% if product.id in saved_product_ids %}Remove from saved products{% else %}Save product for later{% endif %}" class="grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-md transition hover:scale-110 {% if product.id in saved_product_ids %}text-brand-red{% else %}text-neutral-400 hover:text-brand-red{% endif %}"><i class="{% if product.id in saved_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i></button>
+    </form>
+    {% endif %}
+
     <div class="flex flex-1 flex-col gap-1 p-2 sm:gap-1.5 sm:p-2.5">
         <a href="{% url 'product_detail' product.slug %}" class="line-clamp-2 min-h-[2.5em] text-xs font-semibold leading-snug text-brand-ink transition hover:text-brand-orange sm:text-[13px] sm:font-normal">
             {{ product.name }}
@@ -86,6 +93,6 @@
         {% else %}
             <a href="{% url 'login' %}" class="mt-1.5 block w-full rounded-md bg-brand-orange py-2 text-center text-xs font-bold text-white transition hover:bg-brand-orange-light">Login to Order</a>
         {% endif %}
-        <a href="{{ product.whatsapp_link }}" target="_blank" rel="noopener" class="mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 py-1.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-100"><i class="fa-brands fa-whatsapp text-xs"></i> Ask on WhatsApp</a>
+        <a href="{% url 'product_whatsapp' product.slug %}" target="_blank" rel="noopener" class="mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 py-1.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-100"><i class="fa-brands fa-whatsapp text-xs"></i> Ask on WhatsApp</a>
     </div>
 </div>
