@@ -69,7 +69,7 @@ from .models import (
     money,
     calculate_delivery_fee,
 )
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from io import BytesIO
 from django.http import HttpResponse
 from django.http import FileResponse, Http404
@@ -2336,7 +2336,7 @@ def get_product_value(product, field_name, fallback=""):
 # =========================
 
 @require_GET
-def save_product_image_view(request, slug):
+def _legacy_save_product_image_view(request, slug):
     """
     Generates a clean marketplace poster for a product.
 
@@ -2935,6 +2935,129 @@ def save_product_image_view(request, slug):
         f'attachment; filename="{product.slug}-poster.jpg"'
     )
 
+    return response
+
+
+@require_GET
+def save_product_image_view(request, slug):
+    """Generate a simple, mobile-first product poster for social sharing."""
+    product = get_object_or_404(
+        Product, slug=slug, is_available=True, status="active", is_deleted=False
+    )
+    scale = 2
+    width, height = 1080 * scale, 1600 * scale
+
+    def px(value):
+        return int(value * scale)
+
+    poster = Image.new("RGB", (width, height), "#F3F4F6")
+    draw = ImageDraw.Draw(poster)
+    regular = load_system_font("DejaVuSans.ttf", px(25))
+    small_bold = load_system_font("DejaVuSans-Bold.ttf", px(25))
+    title_font = load_system_font("DejaVuSans-Bold.ttf", px(55))
+    price_font = load_system_font("DejaVuSans-Bold.ttf", px(92))
+    cta_font = load_system_font("DejaVuSans-Bold.ttf", px(30))
+
+    margin = px(28)
+    card_right = width - margin
+    card_bottom = height - margin
+    radius = px(30)
+    draw.rounded_rectangle(
+        (margin, margin, card_right, card_bottom), radius=radius, fill="#FFFFFF"
+    )
+
+    image_box = (margin, margin, card_right, px(1035))
+    source = None
+    primary = product.gallery_images.filter(
+        visibility="public", is_primary=True
+    ).first()
+    image_field = None
+    if primary:
+        image_field = primary.customer_image or primary.image
+    if not image_field and product.image:
+        image_field = product.image
+    try:
+        if image_field:
+            with image_field.open("rb") as image_file:
+                source = Image.open(image_file).convert("RGB")
+        elif product.external_image_url:
+            external = requests.get(product.external_image_url, timeout=12)
+            external.raise_for_status()
+            source = Image.open(BytesIO(external.content)).convert("RGB")
+    except Exception:
+        logger.exception("Could not load image for simple poster product %s", product.pk)
+
+    image_width = image_box[2] - image_box[0]
+    image_height = image_box[3] - image_box[1]
+    if source:
+        fitted = ImageOps.fit(
+            source, (image_width, image_height), method=Image.Resampling.LANCZOS,
+            centering=(0.5, 0.48),
+        )
+        mask = Image.new("L", (image_width, image_height), 0)
+        ImageDraw.Draw(mask).rounded_rectangle(
+            (0, 0, image_width, image_height + radius), radius=radius, fill=255
+        )
+        poster.paste(fitted, (image_box[0], image_box[1]), mask)
+    else:
+        draw.rounded_rectangle(image_box, radius=radius, fill="#E5E7EB")
+        draw_centered_text(draw, image_box, "Product image", title_font, "#6B7280")
+
+    # Small brand and fulfilment labels stay readable without competing with the product.
+    draw.rounded_rectangle(
+        (px(55), px(55), px(300), px(120)), radius=px(18), fill="#FFFFFF"
+    )
+    draw.text((px(78), px(70)), "ChinaZed", font=small_bold, fill="#E5141A")
+    if product.product_type == "local":
+        badge = "ZAMBIA STOCK"
+        badge_color = "#059669"
+    else:
+        badge = "CHINA PRE-ORDER"
+        badge_color = "#2563EB"
+    badge_left = px(720 if product.product_type == "local" else 655)
+    draw.rounded_rectangle(
+        (badge_left, px(55), px(1025), px(120)), radius=px(18), fill=badge_color
+    )
+    draw_centered_text(
+        draw, (badge_left, px(55), px(1025), px(120)), badge, small_bold, "#FFFFFF"
+    )
+
+    panel_top = px(995)
+    draw.rounded_rectangle(
+        (margin, panel_top, card_right, card_bottom), radius=radius, fill="#111827"
+    )
+    draw.rectangle((margin, panel_top, card_right, panel_top + radius), fill="#111827")
+
+    product_name = safe_text(product.name, "Product")
+    title_bottom = draw_wrapped_text(
+        draw, product_name, px(75), px(1050), title_font, "#FFFFFF",
+        px(930), px(65), max_lines=2,
+    )
+
+    price_label_y = max(title_bottom + px(18), px(1200))
+    draw.text((px(78), price_label_y), "PRICE", font=regular, fill="#D1D5DB")
+    price = f"K{format_currency(product.selling_price())}"
+    price = truncate_to_width(draw, price, price_font, px(900))
+    draw.text((px(72), price_label_y + px(28)), price, font=price_font, fill="#FF5A00")
+
+    cta_top = px(1405)
+    draw.rounded_rectangle(
+        (px(70), cta_top, px(1010), px(1510)), radius=px(25), fill="#10B981"
+    )
+    draw_centered_text(
+        draw, (px(70), cta_top, px(1010), px(1510)),
+        "Order on WhatsApp  +260 766 491 002", cta_font, "#FFFFFF",
+    )
+    draw_centered_text(
+        draw, (px(70), px(1522), px(1010), px(1562)),
+        "chinatozambia.org", regular, "#D1D5DB",
+    )
+
+    buffer = BytesIO()
+    poster.save(buffer, format="JPEG", quality=92, optimize=True, progressive=True)
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type="image/jpeg")
+    response["Content-Disposition"] = f'attachment; filename="{product.slug}-poster.jpg"'
     return response
 
 
