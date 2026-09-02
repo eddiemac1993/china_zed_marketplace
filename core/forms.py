@@ -1,9 +1,36 @@
 from django import forms
-from .models import Advertisement, Category, CustomerProfile, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
+from .models import Advertisement, Category, CustomerProfile, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker, Product
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 import hashlib
 import re
+
+
+class AdminQuickPublishProductForm(forms.ModelForm):
+    customer_image = forms.ImageField(
+        required=False,
+        label="Clean customer image",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
+    )
+
+    class Meta:
+        model = Product
+        fields = ["name", "category", "description", "product_type", "rmb_price", "stock_quantity"]
+        widgets = {"description": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        input_class = "w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-orange"
+        for field in self.fields.values():
+            field.widget.attrs["class"] = input_class
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("product_type") == "local" and not cleaned.get("stock_quantity"):
+            self.add_error("stock_quantity", "Enter stock greater than zero for Zambia stock.")
+        if not cleaned.get("customer_image") and self.instance and not self.instance.display_image_url():
+            self.add_error("customer_image", "Upload a clean customer image before publishing.")
+        return cleaned
 
 
 class CustomerProfileForm(forms.ModelForm):

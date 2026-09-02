@@ -29,6 +29,7 @@ urlpatterns = [
 
     # Profile
     path("profile/", views.profile_view, name="profile"),
+    path("profile/products/<int:product_id>/publish/", views.staff_quick_publish_product_view, name="staff_quick_publish_product"),
 
     # Products
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),

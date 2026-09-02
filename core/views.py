@@ -27,6 +27,7 @@ from django.db.models import F, Q
 from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
+    AdminQuickPublishProductForm,
     AdvertisementSubmissionForm,
     CustomerProfileForm,
     CustomerProductRequestForm,
@@ -878,7 +879,53 @@ def profile_view(request):
         "profile_form": profile_form,
         "profile_complete": customer_profile.is_complete(),
         "profile_completion": customer_profile.completion_percentage(),
+        "staff_draft_products": [
+            {
+                "product": product,
+                "form": AdminQuickPublishProductForm(instance=product, prefix=f"product-{product.pk}"),
+            }
+            for product in Product.objects.filter(status="draft", is_deleted=False).order_by("-created_at")[:12]
+        ] if request.user.is_staff else [],
     })
+
+
+@staff_member_required(login_url="login")
+@require_POST
+def staff_quick_publish_product_view(request, product_id):
+    product = get_object_or_404(Product, pk=product_id, status="draft", is_deleted=False)
+    form = AdminQuickPublishProductForm(
+        request.POST,
+        request.FILES,
+        instance=product,
+        prefix=f"product-{product.pk}",
+    )
+    if not form.is_valid():
+        messages.error(request, "Product was not published. Please correct the highlighted fields in Product Admin.")
+        return redirect(reverse("admin:core_product_change", args=[product.pk]))
+
+    with transaction.atomic():
+        product = form.save(commit=False)
+        product.status = "active"
+        product.is_available = True
+        product.save()
+        customer_image = form.cleaned_data.get("customer_image")
+        if customer_image:
+            ProductImage.objects.create(
+                product=product,
+                customer_image=customer_image,
+                visibility="public",
+                processing_status="ready",
+                is_primary=True,
+                alt_text=product.name,
+            )
+
+        if not product.is_order_ready():
+            transaction.set_rollback(True)
+            messages.error(request, "Product is still missing required information and was not published.")
+            return redirect(reverse("admin:core_product_change", args=[product.pk]))
+
+    messages.success(request, f"{product.name} is now live on the homepage.")
+    return redirect("profile")
 
 
 @login_required(login_url="login")
