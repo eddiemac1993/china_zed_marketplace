@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from core.admin import approve_supplier_requests
-from core.models import Category, Product, SupplierProductRequest
+from core.models import Category, Product, SupplierProductRequest, SupplierProductRequestImage
 
 
 @override_settings(SITE_OWNER_EMAIL="owner@example.com")
@@ -126,3 +126,36 @@ class StaffQuickPublishTests(TestCase):
         self.assertRedirects(response, expected, fetch_redirect_response=False)
         product.refresh_from_db()
         self.assertEqual(product.status, "draft")
+
+    def test_staff_can_publish_using_confirmed_existing_supplier_photo(self):
+        staff = get_user_model().objects.create_user("photo-admin", password="pass", is_staff=True)
+        category = Category.objects.create(name="Footwear")
+        product = Product.objects.create(name="Draft", description="Draft", rmb_price="100", status="draft", is_available=False)
+        submission = SupplierProductRequest.objects.create(
+            submitted_by=staff, converted_product=product, supplier_name="Admin",
+            product_name="Draft", description="Draft", category=category,
+            rmb_price="100", is_reviewed=True, is_approved=True,
+        )
+        source_image = SupplierProductRequestImage.objects.create(
+            supplier_request=submission,
+            image=SimpleUploadedFile(
+                "source.png",
+                base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+                content_type="image/png",
+            ),
+        )
+        self.client.force_login(staff)
+
+        prefix = f"product-{product.pk}"
+        response = self.client.post(reverse("staff_quick_publish_product", args=[product.pk]), {
+            f"{prefix}-name": "Ready footwear", f"{prefix}-category": category.pk,
+            f"{prefix}-description": "Ready for customers", f"{prefix}-product_type": "preorder",
+            f"{prefix}-rmb_price": "100.00", f"{prefix}-stock_quantity": "0",
+            f"{prefix}-existing_image": source_image.pk,
+            f"{prefix}-confirm_image_is_customer_safe": "on",
+        })
+
+        self.assertRedirects(response, reverse("profile"))
+        product.refresh_from_db()
+        self.assertEqual(product.status, "active")
+        self.assertTrue(product.gallery_images.filter(customer_image__isnull=False, visibility="public").exists())

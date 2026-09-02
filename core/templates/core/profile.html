@@ -97,11 +97,30 @@
                     {% csrf_token %}
                     <div class="sm:col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-900"><i class="fa-solid fa-triangle-exclamation mr-1"></i>The supplier photos are kept private. Upload one clean customer image below; this is the image shoppers will see.</div>
                     {% for field in item.form %}
+                    {% if field.name != 'existing_image' and field.name != 'confirm_image_is_customer_safe' %}
                     <div class="{% if field.name == 'description' or field.name == 'customer_image' %}sm:col-span-2{% endif %}">
                         <label for="{{ field.id_for_label }}" class="mb-1 block text-[11px] font-bold text-brand-ink">{{ field.label }}</label>{{ field }}
                         {% for error in field.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
                     </div>
+                    {% endif %}
                     {% endfor %}
+                    {% if item.source_images %}
+                    <fieldset class="sm:col-span-2">
+                        <legend class="mb-2 text-[11px] font-bold text-brand-ink">Or choose one of your existing photos</legend>
+                        <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                            {% for source_image in item.source_images %}
+                            <label class="cursor-pointer rounded-lg border border-brand-border bg-white p-1.5 text-center transition has-[:checked]:border-brand-orange has-[:checked]:ring-2 has-[:checked]:ring-orange-100">
+                                <img src="{{ source_image.image.url }}" alt="Option {{ forloop.counter }}" class="aspect-square w-full rounded object-cover">
+                                <input type="radio" name="product-{{ item.product.id }}-existing_image" value="{{ source_image.id }}" class="mt-1.5 accent-orange-600"> <span class="text-[10px]">Use photo {{ forloop.counter }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    <label class="sm:col-span-2 flex items-start gap-2 rounded-lg border border-brand-border bg-white p-3 text-[11px] font-semibold text-brand-ink">
+                        <input type="checkbox" name="product-{{ item.product.id }}-confirm_image_is_customer_safe" class="mt-0.5 h-4 w-4 accent-orange-600">
+                        I confirm the selected photo has no supplier price or private information.
+                    </label>
+                    {% endif %}
                     <div class="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3">
                         <span class="text-[11px] text-brand-muted">Use a clean image without a supplier price printed on it.</span>
                         <button class="rounded-lg bg-brand-red px-5 py-2.5 text-xs font-black text-white" type="submit"><i class="fa-solid fa-paper-plane mr-1.5"></i>Publish on homepage</button>

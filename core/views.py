@@ -883,6 +883,9 @@ def profile_view(request):
             {
                 "product": product,
                 "form": AdminQuickPublishProductForm(instance=product, prefix=f"product-{product.pk}"),
+                "source_images": list(SupplierProductRequestImage.objects.filter(
+                    supplier_request__converted_product=product
+                ).order_by("created_at")),
             }
             for product in Product.objects.filter(status="draft", is_deleted=False).order_by("-created_at")[:12]
         ] if request.user.is_staff else [],
@@ -914,15 +917,25 @@ def staff_quick_publish_product_view(request, product_id):
         product.is_available = True
         product.save()
         customer_image = form.cleaned_data.get("customer_image")
-        if customer_image:
-            ProductImage.objects.create(
+        existing_image = form.cleaned_data.get("existing_image")
+        if customer_image or existing_image:
+            public_image = ProductImage(
                 product=product,
-                customer_image=customer_image,
                 visibility="public",
                 processing_status="ready",
                 is_primary=True,
                 alt_text=product.name,
             )
+            if customer_image:
+                public_image.customer_image = customer_image
+            else:
+                with existing_image.image.open("rb") as source:
+                    public_image.customer_image.save(
+                        existing_image.image.name.rsplit("/", 1)[-1],
+                        ContentFile(source.read()),
+                        save=False,
+                    )
+            public_image.save()
 
         if not product.is_order_ready():
             transaction.set_rollback(True)

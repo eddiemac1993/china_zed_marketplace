@@ -1,5 +1,5 @@
 from django import forms
-from .models import Advertisement, Category, CustomerProfile, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker, Product
+from .models import Advertisement, Category, CustomerProfile, CustomerProductRequest, SupplierProductRequest, SupplierProductRequestImage, Order, CollectionCentre, Biker, Product
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 import hashlib
@@ -12,6 +12,16 @@ class AdminQuickPublishProductForm(forms.ModelForm):
         label="Clean customer image",
         widget=forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
     )
+    existing_image = forms.ModelChoiceField(
+        queryset=SupplierProductRequestImage.objects.none(),
+        required=False,
+        widget=forms.RadioSelect,
+        label="Or choose an uploaded supplier photo",
+    )
+    confirm_image_is_customer_safe = forms.BooleanField(
+        required=False,
+        label="I confirm the selected photo has no supplier price or private information",
+    )
 
     class Meta:
         model = Product
@@ -20,6 +30,10 @@ class AdminQuickPublishProductForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["existing_image"].queryset = SupplierProductRequestImage.objects.filter(
+                supplier_request__converted_product=self.instance
+            ).order_by("created_at")
         input_class = "w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-orange"
         for field in self.fields.values():
             field.widget.attrs["class"] = input_class
@@ -28,8 +42,11 @@ class AdminQuickPublishProductForm(forms.ModelForm):
         cleaned = super().clean()
         if cleaned.get("product_type") == "local" and not cleaned.get("stock_quantity"):
             self.add_error("stock_quantity", "Enter stock greater than zero for Zambia stock.")
-        if not cleaned.get("customer_image") and self.instance and not self.instance.display_image_url():
-            self.add_error("customer_image", "Upload a clean customer image before publishing.")
+        existing_image = cleaned.get("existing_image")
+        if existing_image and not cleaned.get("confirm_image_is_customer_safe"):
+            self.add_error("confirm_image_is_customer_safe", "Confirm that the selected image is safe for customers.")
+        if not cleaned.get("customer_image") and not existing_image and self.instance and not self.instance.display_image_url():
+            self.add_error("customer_image", "Upload a clean image or choose one of the existing photos below.")
         return cleaned
 
 
