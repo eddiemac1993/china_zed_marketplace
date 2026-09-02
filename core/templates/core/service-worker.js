@@ -1,4 +1,4 @@
-const CACHE_NAME = "chinazed-app-v2";
+const CACHE_NAME = "chinazed-app-v3";
 const APP_SHELL = [
     "/",
     "/login/",
@@ -96,7 +96,7 @@ self.addEventListener("push", function (event) {
     event.waitUntil(
         self.registration.showNotification(data.head || "ChinaZed", {
             body: data.body || "",
-            icon: data.icon || "/static/core/images/chinazed-icon-192.png",
+            icon: data.icon || "/static/core/images/market-icon-192.png",
             data: { url: data.url || "/" }
         })
     );
