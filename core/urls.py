@@ -30,6 +30,8 @@ urlpatterns = [
     # Profile
     path("profile/", views.profile_view, name="profile"),
     path("profile/products/<int:product_id>/publish/", views.staff_quick_publish_product_view, name="staff_quick_publish_product"),
+    path("profile/products/<int:product_id>/split/", views.staff_split_product_view, name="staff_split_product"),
+    path("profile/products/<int:product_id>/split-photo/<int:image_id>/analyze/", views.staff_analyze_split_photo_view, name="staff_analyze_split_photo"),
 
     # Products
     path("product/<slug:slug>/", views.product_detail, name="product_detail"),

@@ -93,6 +93,39 @@
                     <div class="min-w-0 flex-1"><strong class="block truncate text-sm text-brand-ink">{{ item.product.name }}</strong><span class="text-[10px] text-brand-muted">Draft · {{ item.product.created_at|date:"j M Y" }}</span></div>
                     <span class="text-xs font-black text-brand-orange">Edit &amp; publish <i class="fa-solid fa-chevron-down ml-1"></i></span>
                 </summary>
+                {% if item.source_images|length > 1 %}
+                <div id="split-product-{{ item.product.id }}" class="border-t border-blue-200 bg-blue-50 p-4 sm:p-5">
+                    <div class="mb-3 flex items-start gap-2">
+                        <i class="fa-solid fa-layer-group mt-0.5 text-blue-700"></i>
+                        <div><strong class="block text-sm text-blue-950">Are these photos different products?</strong><span class="text-[11px] text-blue-800">Enter each product's details and split them into separate drafts. The grouped draft will be archived.</span></div>
+                    </div>
+                    <details>
+                        <summary class="inline-flex cursor-pointer list-none rounded-lg bg-blue-700 px-4 py-2.5 text-xs font-black text-white">Split into separate products</summary>
+                        <form method="post" action="{% url 'staff_split_product' item.product.id %}" class="js-split-product-form mt-3 space-y-3">
+                            {% csrf_token %}
+                            <div class="flex flex-wrap items-center gap-2"><button type="button" class="js-analyze-all rounded-lg border border-blue-700 bg-white px-4 py-2 text-xs font-black text-blue-800"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Detect details from all photos</button><span class="js-analysis-summary text-[10px] text-blue-900">AI reads visible model, price, sizes and colors. Check the results before creating drafts.</span></div>
+                            {% for source_image in item.source_images %}
+                            <div class="js-split-photo-row grid gap-3 rounded-lg border border-blue-200 bg-white p-3 sm:grid-cols-[100px_1fr_1fr]" data-analyze-url="{% url 'staff_analyze_split_photo' item.product.id source_image.id %}">
+                                <label class="flex cursor-pointer flex-col gap-1 text-[10px] font-bold text-brand-ink">
+                                    <img src="{{ source_image.image.url }}" alt="Product photo {{ forloop.counter }}" class="aspect-square w-full rounded object-cover">
+                                    <span><input type="checkbox" name="include_{{ source_image.id }}" checked class="accent-blue-700"> Create product {{ forloop.counter }}</span>
+                                </label>
+                                <div class="space-y-2">
+                                    <label class="block text-[10px] font-bold">Product name<input required name="name_{{ source_image.id }}" value="{{ source_image.caption|default:item.product.name }} {{ forloop.counter }}" class="mt-1 w-full rounded border border-brand-border px-2.5 py-2 text-xs"></label>
+                                    <label class="block text-[10px] font-bold">Sizes<input name="sizes_{{ source_image.id }}" placeholder="37, 38, 39, 40, 41" class="mt-1 w-full rounded border border-brand-border px-2.5 py-2 text-xs"></label>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="block text-[10px] font-bold">Cost price ({% if item.product.product_type == 'local' %}K{% else %}RMB{% endif %})<input required type="number" min="0.01" step="0.01" name="price_{{ source_image.id }}" value="{{ item.product.rmb_price }}" class="mt-1 w-full rounded border border-brand-border px-2.5 py-2 text-xs"></label>
+                                    <div class="grid grid-cols-2 gap-2"><label class="block text-[10px] font-bold">Quantity<input type="number" min="0" name="stock_{{ source_image.id }}" value="0" class="mt-1 w-full rounded border border-brand-border px-2.5 py-2 text-xs"></label><label class="block text-[10px] font-bold">Colors<input name="colors_{{ source_image.id }}" placeholder="Black, White" class="mt-1 w-full rounded border border-brand-border px-2.5 py-2 text-xs"></label></div>
+                                    <p class="js-analysis-status min-h-4 text-[10px] font-semibold text-blue-700"></p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <button type="submit" class="rounded-lg bg-blue-700 px-5 py-2.5 text-xs font-black text-white"><i class="fa-solid fa-scissors mr-1.5"></i>Create separate drafts</button>
+                        </form>
+                    </details>
+                </div>
+                {% endif %}
                 <form method="post" enctype="multipart/form-data" action="{% url 'staff_quick_publish_product' item.product.id %}" class="grid gap-3 border-t border-neutral-100 bg-neutral-50 p-4 sm:grid-cols-2 sm:p-5">
                     {% csrf_token %}
                     <div class="sm:col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] leading-relaxed text-amber-900"><i class="fa-solid fa-triangle-exclamation mr-1"></i>The supplier photos are kept private. Upload one clean customer image below; this is the image shoppers will see.</div>
@@ -131,6 +164,44 @@
         </div>
     </section>
     {% endif %}
+
+    <script>
+    document.querySelectorAll('.js-split-product-form').forEach((form) => {
+        const button = form.querySelector('.js-analyze-all');
+        if (!button) return;
+        button.addEventListener('click', async () => {
+            const rows = [...form.querySelectorAll('.js-split-photo-row')].filter((row) => row.querySelector('input[type="checkbox"]').checked);
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>Reading photos...';
+            let completed = 0;
+            for (const row of rows) {
+                const status = row.querySelector('.js-analysis-status');
+                status.textContent = 'Reading photo...';
+                try {
+                    const response = await fetch(row.dataset.analyzeUrl, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value},
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Analysis failed');
+                    const setIfFound = (prefix, value) => { if (value) row.querySelector(`[name^="${prefix}_"]`).value = value; };
+                    setIfFound('name', data.product_name);
+                    setIfFound('price', data.supplier_price_rmb);
+                    setIfFound('sizes', data.sizes);
+                    setIfFound('colors', data.colors);
+                    status.textContent = `Detected (${data.confidence} confidence) — please verify.`;
+                    completed += 1;
+                } catch (error) {
+                    status.textContent = error.message;
+                    status.classList.add('text-red-600');
+                }
+            }
+            button.disabled = false;
+            button.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Detect details again';
+            form.querySelector('.js-analysis-summary').textContent = `${completed} of ${rows.length} selected photos analyzed. Check every result before creating drafts.`;
+        });
+    });
+    </script>
 
     <!-- STATS -->
     <div class="mb-3.5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">

@@ -285,7 +285,7 @@
                                         </span>
                                     {% endwith %}
                                     <span class="text-[10px] text-brand-muted">{{ item.created_at|date:"j M" }}</span>
-                                    {% if request.user.is_staff and item.converted_product_id %}<a href="{% url 'admin:core_product_change' item.converted_product_id %}" class="text-[10px] font-black text-brand-orange underline">Finish &amp; publish</a>{% endif %}
+                                    {% if request.user.is_staff and item.converted_product_id %}<a href="{% url 'profile' %}?edit_product={{ item.converted_product_id }}#quick-product-{{ item.converted_product_id }}" class="text-[10px] font-black text-brand-orange underline">Finish &amp; publish</a>{% endif %}
                                 </div>
                             </div>
                         </div>

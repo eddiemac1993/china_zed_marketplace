@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 import base64
+import json
+import os
 import tempfile
 
 from allauth.account.signals import user_signed_up
@@ -159,3 +161,82 @@ class StaffQuickPublishTests(TestCase):
         product.refresh_from_db()
         self.assertEqual(product.status, "active")
         self.assertTrue(product.gallery_images.filter(customer_image__isnull=False, visibility="public").exists())
+
+    def test_staff_can_split_grouped_supplier_photos_into_separate_drafts(self):
+        staff = get_user_model().objects.create_user("split-admin", password="pass", is_staff=True)
+        category = Category.objects.create(name="Shoes")
+        grouped = Product.objects.create(
+            name="Grouped shoes", description="Supplier shoes", category=category,
+            rmb_price="100", product_type="preorder", status="draft", is_available=False,
+        )
+        submission = SupplierProductRequest.objects.create(
+            submitted_by=staff, converted_product=grouped, supplier_name="Supplier",
+            product_name="Grouped shoes", description="Supplier shoes", category=category,
+            rmb_price="100", is_reviewed=True, is_approved=True,
+        )
+        image_ids = []
+        for filename in ("w51.png", "s10.png"):
+            source = SupplierProductRequestImage.objects.create(
+                supplier_request=submission,
+                image=SimpleUploadedFile(
+                    filename,
+                    base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+                    content_type="image/png",
+                ),
+            )
+            image_ids.append(source.pk)
+        self.client.force_login(staff)
+        data = {}
+        for image_id, name, price in zip(image_ids, ("W51", "S10"), ("150", "100")):
+            data.update({
+                f"include_{image_id}": "on", f"name_{image_id}": name,
+                f"price_{image_id}": price, f"stock_{image_id}": "30",
+                f"sizes_{image_id}": "37, 38", f"colors_{image_id}": "Black, White",
+            })
+
+        response = self.client.post(reverse("staff_split_product", args=[grouped.pk]), data)
+
+        self.assertRedirects(response, reverse("profile"))
+        grouped.refresh_from_db()
+        self.assertEqual(grouped.status, "archived")
+        split_products = Product.objects.filter(name__in=["W51", "S10"])
+        self.assertEqual(split_products.count(), 2)
+        self.assertTrue(all(item.status == "draft" for item in split_products))
+        self.assertTrue(all(item.gallery_images.filter(visibility="private", original_image__isnull=False).exists() for item in split_products))
+
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"})
+    @patch("core.views.requests.post")
+    def test_staff_can_detect_split_product_details_from_photo(self, post_mock):
+        staff = get_user_model().objects.create_user("vision-admin", password="pass", is_staff=True)
+        grouped = Product.objects.create(
+            name="Grouped", description="Supplier products", rmb_price="100",
+            product_type="preorder", status="draft", is_available=False,
+        )
+        submission = SupplierProductRequest.objects.create(
+            converted_product=grouped, supplier_name="Supplier", product_name="Grouped",
+            description="Supplier products", rmb_price="100", is_reviewed=True, is_approved=True,
+        )
+        source = SupplierProductRequestImage.objects.create(
+            supplier_request=submission,
+            image=SimpleUploadedFile(
+                "w51.png",
+                base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="),
+                content_type="image/png",
+            ),
+        )
+        response_mock = SimpleNamespace(
+            raise_for_status=lambda: None,
+            json=lambda: {"choices": [{"message": {"content": json.dumps({
+                "product_name": "Footwear Model W51", "supplier_price_rmb": 150,
+                "sizes": "37, 38, 39, 40, 41", "colors": "White, Grey", "confidence": "high",
+            })}}]},
+        )
+        post_mock.return_value = response_mock
+        self.client.force_login(staff)
+
+        response = self.client.post(reverse("staff_analyze_split_photo", args=[grouped.pk, source.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["product_name"], "Footwear Model W51")
+        self.assertEqual(response.json()["supplier_price_rmb"], "150.00")
+        self.assertEqual(response.json()["sizes"], "37, 38, 39, 40, 41")

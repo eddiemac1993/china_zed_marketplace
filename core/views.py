@@ -3,6 +3,7 @@ import json
 import logging
 import requests
 from decimal import Decimal
+from decimal import InvalidOperation
 from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
@@ -944,6 +945,187 @@ def staff_quick_publish_product_view(request, product_id):
 
     messages.success(request, f"{product.name} is now live on the homepage.")
     return redirect("profile")
+
+
+@staff_member_required(login_url="login")
+@require_POST
+def staff_split_product_view(request, product_id):
+    """Turn a mistakenly grouped multi-photo supplier draft into separate drafts."""
+    product = get_object_or_404(Product, pk=product_id, status="draft", is_deleted=False)
+    supplier_request = get_object_or_404(SupplierProductRequest, converted_product=product)
+    source_images = list(supplier_request.images.order_by("created_at"))
+    if len(source_images) < 2:
+        messages.error(request, "This draft does not have multiple photos to split.")
+        return redirect(f"{reverse('profile')}?edit_product={product.pk}#quick-product-{product.pk}")
+
+    rows = []
+    errors = []
+    for position, source_image in enumerate(source_images, start=1):
+        if request.POST.get(f"include_{source_image.pk}") != "on":
+            continue
+        name = request.POST.get(f"name_{source_image.pk}", "").strip()
+        price_text = request.POST.get(f"price_{source_image.pk}", "").strip()
+        try:
+            price = Decimal(price_text)
+            if price <= 0:
+                raise InvalidOperation
+        except (InvalidOperation, ValueError):
+            errors.append(f"Photo {position}: enter a valid cost price greater than zero.")
+            continue
+        if not name:
+            errors.append(f"Photo {position}: enter a product name.")
+            continue
+        try:
+            stock = int(request.POST.get(f"stock_{source_image.pk}", "0") or 0)
+            if stock < 0:
+                raise ValueError
+        except ValueError:
+            errors.append(f"Photo {position}: enter a valid stock quantity.")
+            continue
+        if product.product_type == "local" and stock <= 0:
+            errors.append(f"Photo {position}: Zambia stock must be greater than zero.")
+            continue
+        rows.append({
+            "source_image": source_image,
+            "name": name,
+            "price": price,
+            "stock": stock,
+            "sizes": request.POST.get(f"sizes_{source_image.pk}", "").strip(),
+            "colors": request.POST.get(f"colors_{source_image.pk}", "").strip(),
+        })
+
+    if not rows and not errors:
+        errors.append("Select at least one photo to create a product draft.")
+    if errors:
+        messages.error(request, "Products were not split. " + " ".join(errors))
+        return redirect(f"{reverse('profile')}?edit_product={product.pk}#split-product-{product.pk}")
+
+    with transaction.atomic():
+        created_products = []
+        for row in rows:
+            split_product = Product.objects.create(
+                name=row["name"],
+                description=product.description,
+                category=product.category,
+                rmb_price=row["price"],
+                product_type=product.product_type,
+                stock_quantity=row["stock"] if product.product_type == "local" else 0,
+                available_quantity=row["stock"] or None if product.product_type == "preorder" else None,
+                size_options=row["sizes"],
+                color_options=row["colors"],
+                source_platform=product.source_platform,
+                source_link=product.source_link,
+                supplier_name=product.supplier_name,
+                supplier_contact=product.supplier_contact,
+                status="draft",
+                is_available=False,
+                is_featured=product.is_featured,
+            )
+            private_image = ProductImage(
+                product=split_product,
+                visibility="private",
+                processing_status="original",
+                is_primary=False,
+                caption=row["source_image"].caption,
+            )
+            with row["source_image"].image.open("rb") as source:
+                private_image.original_image.save(
+                    row["source_image"].image.name.rsplit("/", 1)[-1],
+                    ContentFile(source.read()),
+                    save=False,
+                )
+            private_image.save()
+            created_products.append(split_product)
+
+        product.status = "archived"
+        product.is_available = False
+        product.supplier_note = "Replaced by split drafts: " + ", ".join(str(item.pk) for item in created_products)
+        product.save(update_fields=["status", "is_available", "supplier_note", "updated_at"])
+        supplier_request.admin_note = (
+            f"Grouped draft split into {len(created_products)} separate product drafts by {request.user.username}."
+        )
+        supplier_request.save(update_fields=["admin_note", "updated_at"])
+
+    messages.success(request, f"Created {len(created_products)} separate drafts. Open each one below, add its clean customer image, and publish it.")
+    return redirect("profile")
+
+
+@staff_member_required(login_url="login")
+@require_POST
+@ratelimit(key="user", rate="30/h", method="POST", block=True)
+def staff_analyze_split_photo_view(request, product_id, image_id):
+    """Read visible supplier listing details from a stored split-source photo."""
+    product = get_object_or_404(Product, pk=product_id, status="draft", is_deleted=False)
+    source_image = get_object_or_404(
+        SupplierProductRequestImage,
+        pk=image_id,
+        supplier_request__converted_product=product,
+    )
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return JsonResponse({"error": "AI photo analysis is not configured on this server."}, status=503)
+
+    try:
+        with source_image.image.open("rb") as image_file:
+            image_bytes = image_file.read(MAX_ANALYZE_IMAGE_BYTES + 1)
+    except OSError:
+        return JsonResponse({"error": "The source photo could not be opened."}, status=404)
+    if len(image_bytes) > MAX_ANALYZE_IMAGE_BYTES:
+        return JsonResponse({"error": "Photo is too large for analysis (max 8MB)."}, status=400)
+
+    extension = source_image.image.name.rsplit(".", 1)[-1].lower()
+    content_type = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}.get(extension)
+    if not content_type:
+        return JsonResponse({"error": "Only JPEG, PNG and WEBP photos can be analyzed."}, status=400)
+    data_uri = f"data:{content_type};base64,{base64.b64encode(image_bytes).decode('ascii')}"
+    prompt = (
+        "Read this supplier product photo carefully, including text printed over the image. Return strict JSON only "
+        "with exactly these keys: product_name, supplier_price_rmb, sizes, colors, confidence. product_name should "
+        "use a visible model number where present (for example 'Footwear Model W51'); supplier_price_rmb must be "
+        "the visibly printed supplier price as a number only, never an estimate; sizes must be a comma-separated "
+        "list, expanding a visible range such as 37-41 to '37, 38, 39, 40, 41'; colors must be a comma-separated "
+        "list of colors visibly offered or clearly shown. Use an empty string for anything not visible. Do not "
+        "confuse carton quantity with price or size. confidence must be high, medium, or low."
+    )
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini"),
+                "response_format": {"type": "json_object"},
+                "temperature": 0,
+                "max_tokens": 250,
+                "messages": [
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": [
+                        {"type": "text", "text": "Extract the visible product details from this supplier photo."},
+                        {"type": "image_url", "image_url": {"url": data_uri}},
+                    ]},
+                ],
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        payload = json.loads(response.json()["choices"][0]["message"]["content"])
+    except requests.Timeout:
+        return JsonResponse({"error": "Photo analysis timed out. Try again."}, status=504)
+    except Exception:
+        logger.exception("Split photo analysis failed for source image %s", source_image.pk)
+        return JsonResponse({"error": "The photo could not be analyzed. Enter its details manually."}, status=502)
+
+    raw_price = payload.get("supplier_price_rmb")
+    try:
+        price = str(Decimal(str(raw_price)).quantize(Decimal("0.01"))) if raw_price not in (None, "") else ""
+    except (InvalidOperation, ValueError, TypeError):
+        price = ""
+    return JsonResponse({
+        "product_name": str(payload.get("product_name") or "").strip()[:200],
+        "supplier_price_rmb": price,
+        "sizes": str(payload.get("sizes") or "").strip()[:255],
+        "colors": str(payload.get("colors") or "").strip()[:255],
+        "confidence": str(payload.get("confidence") or "low").lower(),
+    })
 
 
 @login_required(login_url="login")
