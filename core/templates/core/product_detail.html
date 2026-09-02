@@ -187,29 +187,29 @@
 
                         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                               class="flex items-center justify-center gap-1.5 rounded bg-gradient-to-br from-brand-red to-brand-orange py-2.5 text-[13px] font-bold text-white transition hover:brightness-105"><i class="fa-solid fa-robot"></i> AI Ask Assistant</a>
+                               class="flex items-center justify-center gap-1.5 rounded bg-gradient-to-br from-brand-red to-brand-orange py-2.5 text-[13px] font-bold text-white transition hover:brightness-105" style="color:#fff!important"><i class="fa-solid fa-robot"></i><span style="color:#fff!important">AI Ask Assistant</span></a>
 
                             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                                 <button disabled class="flex items-center justify-center rounded bg-neutral-200 py-2.5 text-[13px] font-bold text-neutral-500">Buy Now</button>
                             {% else %}
-                                <a href="{% url 'place_order' product.slug %}" class="flex items-center justify-center gap-1.5 rounded bg-brand-ink py-2.5 text-[13px] font-bold text-white transition hover:bg-neutral-700"><i class="fa-solid fa-bolt"></i> Buy Now</a>
+                                <a href="{% url 'place_order' product.slug %}" class="flex items-center justify-center gap-1.5 rounded bg-brand-ink py-2.5 text-[13px] font-bold text-white transition hover:bg-neutral-700" style="color:#fff!important;background-color:#1a1a1a"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span style="color:#fff!important">Buy Now</span></a>
                             {% endif %}
                         </div>
                         <a href="{% url 'save_product_image' product.slug %}"
-                           class="mt-2.5 flex w-full items-center justify-center rounded bg-neutral-900 py-3 text-[13px] font-bold text-white transition hover:bg-orange-600">
-                            <i class="fa-solid fa-download mr-1.5"></i> Save Product Poster
+                           class="mt-2.5 flex w-full items-center justify-center rounded bg-neutral-900 py-3 text-[13px] font-bold text-white transition hover:bg-orange-600" style="color:#fff!important;background-color:#171717">
+                            <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i><span style="color:#fff!important">Save Product Poster</span>
                         </a>
                         <a href="{% url 'product_whatsapp' product.slug %}"
-                           target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600">
-                            <i class="fa-brands fa-whatsapp text-base"></i> Share or Order on WhatsApp
+                           target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600" style="color:#fff!important;background-color:#10b981">
+                            <i class="fa-brands fa-whatsapp text-base"></i><span style="color:#fff!important">Share or Order on WhatsApp</span>
                         </a>
 
                     {% else %}
                         <a href="{% url 'login' %}" class="block rounded bg-brand-orange py-3.5 text-center text-sm font-bold text-white transition hover:bg-orange-500"><i class="fa-solid fa-key"></i> Login to Add to Cart</a>
                         <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <a href="{% url 'assistant' %}?message=I%20am%20interested%20in%20{{ product.name|urlencode }}"
-                               class="flex items-center justify-center gap-1.5 rounded bg-gradient-to-br from-brand-red to-brand-orange py-2.5 text-[13px] font-bold text-white transition hover:brightness-105"><i class="fa-solid fa-robot"></i> AI Ask Assistant</a>
-                            <a href="{% url 'register' %}" class="flex items-center justify-center gap-1.5 rounded bg-brand-ink py-2.5 text-[13px] font-bold text-white transition hover:bg-neutral-700"><i class="fa-solid fa-user-plus"></i> Register Free</a>
+                               class="flex items-center justify-center gap-1.5 rounded bg-gradient-to-br from-brand-red to-brand-orange py-2.5 text-[13px] font-bold text-white transition hover:brightness-105" style="color:#fff!important"><i class="fa-solid fa-robot"></i><span style="color:#fff!important">AI Ask Assistant</span></a>
+                            <a href="{% url 'register' %}" class="flex items-center justify-center gap-1.5 rounded bg-brand-ink py-2.5 text-[13px] font-bold text-white transition hover:bg-neutral-700" style="color:#fff!important;background-color:#1a1a1a"><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span style="color:#fff!important">Register Free</span></a>
                         </div>
                     {% endif %}
 
