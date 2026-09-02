@@ -240,3 +240,46 @@ class StaffQuickPublishTests(TestCase):
         self.assertEqual(response.json()["product_name"], "Footwear Model W51")
         self.assertEqual(response.json()["supplier_price_rmb"], "150.00")
         self.assertEqual(response.json()["sizes"], "37, 38, 39, 40, 41")
+
+    def test_staff_can_edit_published_product_from_profile(self):
+        staff = get_user_model().objects.create_user("product-admin", password="pass", is_staff=True)
+        category = Category.objects.create(name="Fashion")
+        product = Product.objects.create(
+            name="Old name", description="Old description", category=category,
+            rmb_price="35", product_type="local", stock_quantity=5,
+            status="active", is_available=True,
+        )
+        self.client.force_login(staff)
+        prefix = f"shop-product-{product.pk}"
+        response = self.client.post(reverse("staff_update_shop_product", args=[product.pk]), {
+            f"{prefix}-name": "Updated shirt", f"{prefix}-category": category.pk,
+            f"{prefix}-description": "Updated description", f"{prefix}-product_type": "local",
+            f"{prefix}-rmb_price": "40", f"{prefix}-stock_quantity": "10",
+            f"{prefix}-available_quantity": "", f"{prefix}-size_options": "M, L",
+            f"{prefix}-color_options": "Black, White", f"{prefix}-status": "active",
+            f"{prefix}-is_available": "on", f"{prefix}-is_featured": "on",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        product.refresh_from_db()
+        self.assertEqual(product.name, "Updated shirt")
+        self.assertEqual(product.stock_quantity, 10)
+        self.assertEqual(product.color_options, "Black, White")
+
+    def test_staff_profile_delete_is_recoverable_soft_delete(self):
+        staff = get_user_model().objects.create_user("delete-admin", password="pass", is_staff=True)
+        product = Product.objects.create(
+            name="Remove me", description="Product", rmb_price="20",
+            product_type="preorder", status="active", is_available=True,
+        )
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse("staff_delete_shop_product", args=[product.pk]), {"confirm_delete": "on"}
+        )
+
+        self.assertRedirects(response, reverse("profile"))
+        product.refresh_from_db()
+        self.assertTrue(product.is_deleted)
+        self.assertFalse(product.is_available)
+        self.assertEqual(product.status, "archived")

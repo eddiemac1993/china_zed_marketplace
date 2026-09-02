@@ -29,6 +29,7 @@ from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
     AdminQuickPublishProductForm,
+    AdminProfileProductForm,
     AdvertisementSubmissionForm,
     CustomerProfileForm,
     CustomerProductRequestForm,
@@ -890,7 +891,15 @@ def profile_view(request):
             }
             for product in Product.objects.filter(status="draft", is_deleted=False).order_by("-created_at")[:12]
         ] if request.user.is_staff else [],
+        "staff_shop_products": [
+            {
+                "product": product,
+                "form": AdminProfileProductForm(instance=product, prefix=f"shop-product-{product.pk}"),
+            }
+            for product in Product.objects.filter(is_deleted=False).exclude(status="draft").select_related("category").order_by("-updated_at")[:100]
+        ] if request.user.is_staff else [],
         "edit_product_id": int(request.GET["edit_product"]) if request.user.is_staff and request.GET.get("edit_product", "").isdigit() else None,
+        "manage_product_id": int(request.GET["manage_product"]) if request.user.is_staff and request.GET.get("manage_product", "").isdigit() else None,
     })
 
 
@@ -1126,6 +1135,55 @@ def staff_analyze_split_photo_view(request, product_id, image_id):
         "colors": str(payload.get("colors") or "").strip()[:255],
         "confidence": str(payload.get("confidence") or "low").lower(),
     })
+
+
+@staff_member_required(login_url="login")
+@require_POST
+def staff_update_shop_product_view(request, product_id):
+    product = get_object_or_404(Product, pk=product_id, is_deleted=False)
+    form = AdminProfileProductForm(
+        request.POST, request.FILES, instance=product, prefix=f"shop-product-{product.pk}"
+    )
+    if not form.is_valid():
+        errors = [
+            f"{form.fields.get(field).label if field in form.fields else 'Product'}: {' '.join(messages_list)}"
+            for field, messages_list in form.errors.items()
+        ]
+        messages.error(request, "Product was not updated. " + " ".join(errors))
+        return redirect(f"{reverse('profile')}?manage_product={product.pk}#manage-product-{product.pk}")
+
+    with transaction.atomic():
+        product = form.save()
+        customer_image = form.cleaned_data.get("customer_image")
+        if customer_image:
+            ProductImage.objects.filter(
+                product=product, color__isnull=True, visibility="public", is_primary=True
+            ).update(is_primary=False)
+            ProductImage.objects.create(
+                product=product,
+                customer_image=customer_image,
+                visibility="public",
+                processing_status="ready",
+                is_primary=True,
+                alt_text=product.name,
+            )
+    messages.success(request, f"{product.name} was updated.")
+    return redirect(f"{reverse('profile')}?manage_product={product.pk}#manage-product-{product.pk}")
+
+
+@staff_member_required(login_url="login")
+@require_POST
+def staff_delete_shop_product_view(request, product_id):
+    product = get_object_or_404(Product, pk=product_id, is_deleted=False)
+    if request.POST.get("confirm_delete") != "on":
+        messages.error(request, "Tick the confirmation box before removing this product.")
+        return redirect(f"{reverse('profile')}?manage_product={product.pk}#manage-product-{product.pk}")
+    product.is_deleted = True
+    product.is_available = False
+    product.status = "archived"
+    product.save(update_fields=["is_deleted", "is_available", "status", "updated_at"])
+    messages.success(request, f"{product.name} was removed from the shop. It can still be recovered in Django admin.")
+    return redirect("profile")
 
 
 @login_required(login_url="login")

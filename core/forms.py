@@ -50,6 +50,36 @@ class AdminQuickPublishProductForm(forms.ModelForm):
         return cleaned
 
 
+class AdminProfileProductForm(forms.ModelForm):
+    customer_image = forms.ImageField(
+        required=False,
+        label="Replace customer image",
+        widget=forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
+    )
+
+    class Meta:
+        model = Product
+        fields = [
+            "name", "category", "description", "product_type", "rmb_price",
+            "stock_quantity", "available_quantity", "size_options", "color_options",
+            "status", "is_available", "is_featured",
+        ]
+        widgets = {"description": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        input_class = "w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-orange"
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs["class"] = input_class
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("product_type") == "local" and cleaned.get("status") == "active" and not cleaned.get("stock_quantity"):
+            self.add_error("stock_quantity", "Active Zambia stock must be greater than zero.")
+        return cleaned
+
+
 class CustomerProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, label="First name")
     last_name = forms.CharField(max_length=150, label="Last name")

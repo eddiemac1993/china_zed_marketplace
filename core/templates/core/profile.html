@@ -203,6 +203,48 @@
     });
     </script>
 
+    {% if request.user.is_staff and staff_shop_products %}
+    <section class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        <div class="flex items-center justify-between bg-neutral-900 px-4 py-3 text-white sm:px-5">
+            <div><strong class="block text-sm font-black"><i class="fa-solid fa-boxes-stacked mr-1.5 text-brand-yellow"></i>Manage shop products</strong><span class="text-[11px] text-white/70">Edit or remove products directly from your profile.</span></div>
+            <span class="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black">{{ staff_shop_products|length }} products</span>
+        </div>
+        <div class="divide-y divide-neutral-100">
+            {% for item in staff_shop_products %}
+            <details id="manage-product-{{ item.product.id }}" class="scroll-mt-36" {% if manage_product_id == item.product.id %}open{% endif %}>
+                <summary class="flex cursor-pointer list-none items-center gap-3 px-4 py-3 sm:px-5">
+                    <div class="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                        {% if item.product.display_image_url %}<img src="{{ item.product.display_image_url }}" alt="" class="h-full w-full object-cover">{% endif %}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <strong class="block truncate text-sm text-brand-ink">{{ item.product.name }}</strong>
+                        <span class="text-[10px] text-brand-muted">{{ item.product.get_status_display }} · {{ item.product.get_product_type_display }} · K{{ item.product.selling_price }}</span>
+                    </div>
+                    <span class="text-xs font-black text-brand-orange">Edit <i class="fa-solid fa-chevron-down ml-1"></i></span>
+                </summary>
+                <form method="post" enctype="multipart/form-data" action="{% url 'staff_update_shop_product' item.product.id %}" class="grid gap-3 border-t border-neutral-100 bg-neutral-50 p-4 sm:grid-cols-2 sm:p-5">
+                    {% csrf_token %}
+                    {% for field in item.form %}
+                    <div class="{% if field.name == 'description' or field.name == 'customer_image' %}sm:col-span-2{% endif %}{% if field.field.widget.input_type == 'checkbox' %} flex items-center gap-2 rounded border border-brand-border bg-white p-3{% endif %}">
+                        {% if field.field.widget.input_type == 'checkbox' %}{{ field }}<label for="{{ field.id_for_label }}" class="text-xs font-bold text-brand-ink">{{ field.label }}</label>{% else %}<label for="{{ field.id_for_label }}" class="mb-1 block text-[11px] font-bold text-brand-ink">{{ field.label }}</label>{{ field }}{% endif %}
+                        {% for error in field.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+                    </div>
+                    {% endfor %}
+                    <div class="sm:col-span-2 flex justify-end border-t border-neutral-200 pt-3">
+                        <button type="submit" class="rounded-lg bg-brand-red px-5 py-2.5 text-xs font-black text-white"><i class="fa-solid fa-floppy-disk mr-1.5"></i>Save changes</button>
+                    </div>
+                </form>
+                <form method="post" action="{% url 'staff_delete_shop_product' item.product.id %}" class="flex flex-wrap items-center justify-between gap-3 border-t border-red-100 bg-red-50 px-4 py-3 sm:px-5">
+                    {% csrf_token %}
+                    <label class="flex items-center gap-2 text-[11px] font-semibold text-red-900"><input required type="checkbox" name="confirm_delete" class="accent-red-600">I confirm I want to remove this product from the shop</label>
+                    <button type="submit" class="rounded-lg border border-red-300 bg-white px-4 py-2 text-xs font-black text-red-700"><i class="fa-solid fa-trash-can mr-1.5"></i>Remove product</button>
+                </form>
+            </details>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <!-- STATS -->
     <div class="mb-3.5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         <div class="rounded-xl border border-brand-border bg-white p-4 shadow-sm">
