@@ -257,6 +257,10 @@ class Product(TimeStampedModel):
         if self.product_type == "local" and self.stock_quantity <= 0:
             self.status = "out_of_stock"
 
+        if self.product_type == "local" and self.delivery_max_days > 10:
+            self.delivery_min_days = 1
+            self.delivery_max_days = 10
+
         if self.imported_from_link and self.product_type == "preorder":
             self.delivery_min_days = 14
             self.delivery_max_days = 60

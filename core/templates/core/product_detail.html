@@ -64,7 +64,7 @@
                     {% endif %}
                     {% if product.product_type == "local" %}
                         {% if product.stock_quantity > 0 %}
-                            <span class="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">🇿🇲 In Zambia</span>
+                            <span class="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">🇿🇲 Zambia stock · Ships within 10 days</span>
                             <span class="rounded bg-neutral-100 px-2 py-1 text-[10px] font-bold text-brand-muted">Stock: {{ product.stock_quantity }}</span>
                         {% else %}
                             <span class="rounded bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">Out of Stock</span>
@@ -120,7 +120,15 @@
                     </div>
                     {% endif %}
 
-                    {% if product.delivery_range %}
+                    {% if product.product_type == "local" %}
+                    <div class="mb-3.5 flex items-center gap-2.5 rounded border border-emerald-200 bg-emerald-50 px-3.5 py-2.5">
+                        <i class="fa-solid fa-truck-fast text-lg text-emerald-700"></i>
+                        <div>
+                            <h4 class="text-xs font-bold text-emerald-900">Ships within 10 days</h4>
+                            <p class="mt-0.5 text-[11px] text-emerald-700">Dispatched from Zambia · Track in your profile</p>
+                        </div>
+                    </div>
+                    {% elif product.delivery_range %}
                     <div class="mb-3.5 flex items-center gap-2.5 rounded border border-blue-200 bg-blue-50 px-3.5 py-2.5">
                         <i class="fa-solid fa-plane text-lg text-blue-600"></i>
                         <div>

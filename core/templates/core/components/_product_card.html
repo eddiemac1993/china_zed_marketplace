@@ -44,7 +44,7 @@
                 <span>{{ product.sold_count|intcomma }}+ sold</span>
             {% endif %}
             {% if product.product_type == "local" %}
-                <span class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700"><i class="fa-solid fa-location-dot"></i> Ready in Zambia</span>
+                <span class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700"><i class="fa-solid fa-truck-fast"></i> Ships within 10 days</span>
             {% elif product.delivery_range %}
                 <span class="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 font-semibold text-brand-orange"><i class="fa-solid fa-plane"></i> {{ product.delivery_range }}</span>
             {% endif %}
