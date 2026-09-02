@@ -27,14 +27,14 @@
     </div>
 
     <!-- CUSTOMER PROFILE -->
-    <details class="mb-3.5 overflow-hidden rounded-xl border {% if profile_complete %}border-emerald-200{% else %}border-amber-300{% endif %} bg-white shadow-sm" {% if not profile_complete %}open{% endif %}>
+    <details class="mb-3.5 overflow-hidden rounded-xl border {% if profile_complete %}border-emerald-200{% else %}border-amber-300{% endif %} bg-white shadow-sm" {% if profile_form.errors %}open{% endif %}>
         <summary class="flex cursor-pointer list-none items-center gap-3 p-4 sm:px-5">
             <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full {% if profile_complete %}bg-emerald-100 text-emerald-700{% else %}bg-amber-100 text-amber-700{% endif %}"><i class="fa-solid {% if profile_complete %}fa-circle-check{% else %}fa-user-pen{% endif %}"></i></div>
             <div class="min-w-0 flex-1">
                 <div class="text-sm font-black text-brand-ink">{% if profile_complete %}Your profile is complete{% else %}Complete your profile{% endif %}</div>
                 <div class="mt-0.5 text-[11px] text-brand-muted">Add your name, Zambian phone number and profile photo. You can edit these details anytime.</div>
             </div>
-            <div class="shrink-0 text-right"><strong class="text-sm text-brand-orange">{{ profile_completion }}%</strong><i class="fa-solid fa-chevron-down ml-2 text-xs text-brand-muted"></i></div>
+            <div class="flex shrink-0 items-center gap-2 text-right"><span class="hidden text-xs font-bold text-brand-muted sm:inline">Edit profile</span><strong class="text-sm text-brand-orange">{{ profile_completion }}%</strong><i class="fa-solid fa-chevron-down text-xs text-brand-muted"></i></div>
         </summary>
         <div class="border-t border-neutral-100 p-4 sm:p-5">
             <div class="mb-4 h-2 overflow-hidden rounded-full bg-neutral-100"><div class="h-full rounded-full bg-gradient-to-r from-brand-orange to-brand-red" style="width: {{ profile_completion }}%"></div></div>
