@@ -78,14 +78,6 @@
 
                     {% csrf_token %}
                     <input type="text" name="website" class="hidden">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="mb-4.5 rounded border-l-[3px] px-3.5 py-2.5 text-xs {% if message.tags == 'success' %}border-emerald-500 bg-emerald-50 text-emerald-900{% else %}border-brand-red bg-red-50 text-red-900{% endif %}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
                     <div class="mb-3">
                         <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-ink">Email Address</label>
                         <div class="register-field relative"><span class="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-sm text-brand-orange"><i class="fa-solid fa-envelope"></i></span>{{ form.email }}</div>

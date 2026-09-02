@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import requests
 from decimal import Decimal
 from django.conf import settings
@@ -35,6 +36,9 @@ from .forms import (
     PaymentProofForm,
     BikerApplicationForm,
 )
+
+
+logger = logging.getLogger(__name__)
 from .marketplace_importer import ImportFailure, import_marketplace_product
 from .utils import with_display_annotations, apply_sort
 from .models import (
@@ -729,14 +733,18 @@ def register_view(request):
             user.is_active = False
             user.save()
 
+            request.session["pending_activation_email"] = user.email
+
             try:
                 send_activation_email(request, user)
             except Exception:
-                user.delete()
-                messages.error(request, "We could not send the verification email. Please check the address or try again later.")
-                return redirect("register")
+                logger.exception("Could not send account activation email for user %s", user.pk)
+                messages.error(
+                    request,
+                    "Your account was saved, but we could not send the verification email. "
+                    "Please try Resend below in a few minutes.",
+                )
 
-            request.session["pending_activation_email"] = user.email
             return redirect("registration_pending")
 
     else:
@@ -783,8 +791,17 @@ def resend_activation_view(request):
     user = User.objects.filter(email__iexact=email, is_active=False).first()
 
     if user:
-        send_activation_email(request, user)
         request.session["pending_activation_email"] = user.email
+
+        try:
+            send_activation_email(request, user)
+        except Exception:
+            logger.exception("Could not resend account activation email for user %s", user.pk)
+            messages.error(
+                request,
+                "We still could not send the verification email. Please try again later or contact support.",
+            )
+            return redirect("registration_pending")
 
     messages.success(request, "If that email has an unverified account, we sent a new activation link. Please check inbox and spam.")
     return redirect("registration_pending")
