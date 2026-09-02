@@ -10,4 +10,6 @@ urlpatterns = [
     path("room/<str:code>/typing/", views.typing, name="typing"),
     path("room/<str:code>/change-name/", views.change_name, name="change_name"),
     path("room/<str:code>/leave/", views.leave, name="leave"),
+    path("room/<str:code>/message/<int:message_id>/react/", views.react, name="react"),
+    path("room/<str:code>/message/<int:message_id>/report/", views.report, name="report"),
 ]

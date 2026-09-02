@@ -1,7 +1,14 @@
-{% extends "core/base.html" %}{% load static %}
-{% block title %}Communinity · ChinaZed{% endblock %}
-{% block floating_actions %}{% endblock %}
-{% block content %}<link rel="stylesheet" href="{% static 'communinity/chat.css' %}?v=7">
-<main class="comm-shell"><section class="comm-card comm-home"><div class="comm-emoji">💬</div><h1>Communinity</h1><p class="comm-tagline">Talk. Laugh. Stay anonymous.</p><p class="comm-muted">Create a private room or join friends using their five-character code. No account needed.</p>{% if error %}<div class="comm-error">{{ error }}</div>{% endif %}
-<form method="post" action="{% url 'communinity:create' %}">{% csrf_token %}<button class="comm-btn comm-primary" type="submit">✨ Create Room</button></form>
-<div class="comm-divider"><span>or join a room</span></div><form class="join-form" method="post" action="{% url 'communinity:join' %}">{% csrf_token %}<input name="code" maxlength="5" required placeholder="K7MP4" autocomplete="off" aria-label="Room code"><button class="comm-btn" type="submit">Join</button></form><small>Some rooms may include automated or AI participants.</small></section></main>{% endblock %}
+{% extends "core/base.html" %}
+{% block title %}ChinaZed Community{% endblock %}
+{% block content %}
+<main class="mx-auto max-w-[1100px] px-3 py-6 sm:px-5">
+  <section class="overflow-hidden rounded-2xl bg-gradient-to-r from-red-900 via-brand-red to-orange-600 p-6 text-white sm:p-8">
+    <div class="text-xs font-black uppercase tracking-[.18em] text-amber-200">ChinaZed Community</div><h1 class="mt-2 font-display text-3xl font-black sm:text-4xl">Talk products. Find deals. Buy smarter.</h1><p class="mt-2 max-w-2xl text-sm text-white/80">Join public shopping discussions with your profile, or create a private anonymous room for friends.</p>
+  </section>
+  <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_340px]">
+    <section><h2 class="font-display text-xl font-black text-brand-ink">Public shopping rooms</h2><p class="mb-3 text-xs text-brand-muted">Anyone can read. Sign in to post, react or report.</p><div class="grid gap-3 sm:grid-cols-2">
+      {% for room in public_rooms %}<a href="{% url 'communinity:room' room.code %}" class="rounded-xl border border-brand-border bg-white p-4 shadow-sm transition hover:border-brand-orange hover:shadow-md"><div class="flex justify-between"><i class="fa-solid fa-comments text-xl text-brand-orange"></i><span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Public</span></div><h3 class="mt-3 text-sm font-black text-brand-ink">{{ room.title }}</h3><p class="mt-1 text-xs text-brand-muted">{{ room.description }}</p><div class="mt-3 text-[11px] font-bold text-brand-orange">Open discussion →</div></a>{% empty %}<div class="rounded-xl border border-dashed border-brand-border p-5 text-sm text-brand-muted sm:col-span-2">Public rooms will appear after migration.</div>{% endfor %}
+    </div></section>
+    <aside class="h-fit rounded-2xl border border-brand-border bg-white p-5 shadow-sm"><div class="text-3xl">🔒</div><h2 class="mt-2 font-display text-xl font-black text-brand-ink">Private anonymous room</h2><p class="mt-1 text-xs text-brand-muted">No account required. Create a room and privately share its five-character code.</p>{% if error %}<div class="mt-3 rounded-lg bg-red-50 p-3 text-xs font-bold text-red-700">{{ error }}</div>{% endif %}<form class="mt-4" method="post" action="{% url 'communinity:create' %}">{% csrf_token %}<button class="w-full rounded-lg bg-brand-orange px-4 py-3 text-sm font-black text-white">Create private room</button></form><div class="my-4 border-t"></div><form class="flex gap-2" method="post" action="{% url 'communinity:join' %}">{% csrf_token %}<input class="min-w-0 flex-1 rounded-lg border px-3 py-2.5 text-center font-black uppercase tracking-[.2em]" name="code" maxlength="5" required placeholder="K7MP4"><button class="rounded-lg bg-brand-ink px-4 text-xs font-black text-white">Join</button></form></aside>
+  </div>
+</main>{% endblock %}

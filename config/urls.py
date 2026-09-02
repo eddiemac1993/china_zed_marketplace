@@ -10,6 +10,7 @@ from django.views.generic import RedirectView
 from django.urls import reverse
 from core.models import Product
 from core.forms import StyledPasswordResetForm, StyledSetPasswordForm
+from core import views
 
 
 
@@ -61,6 +62,7 @@ def robots_txt(request):
 
 
 urlpatterns = [
+    path("admin/private-product-media/<path:path>", views.private_product_media_view, name="private_product_media"),
     path("favicon.ico", RedirectView.as_view(url=settings.STATIC_URL + "core/images/market-icon-64.png", permanent=True), name="favicon"),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),

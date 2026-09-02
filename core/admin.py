@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.core.mail import send_mail
+from django.core.files.base import ContentFile
 from django.utils import timezone
 from datetime import timedelta
 from django.utils.html import format_html
@@ -12,6 +13,9 @@ from .models import (
     Biker,
     Product,
     ProductImage,
+    ProductColor,
+    ProductVariant,
+    Size,
     Cart,
     CartItem,
     Order,
@@ -27,7 +31,15 @@ from .models import (
     BroadcastNotification,
     MarketplaceEvent,
     WishlistItem,
+    CustomerProfile,
 )
+
+
+@admin.register(CustomerProfile)
+class CustomerProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "phone", "is_complete", "updated_at")
+    search_fields = ("user__username", "user__email", "user__first_name", "user__last_name", "phone")
+    list_select_related = ("user",)
 
 
 @admin.register(WishlistItem)
@@ -60,7 +72,7 @@ class MarketplaceEventAdmin(admin.ModelAdmin):
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
-    fields = ("image", "caption", "image_preview")
+    fields = ("image", "original_image", "customer_image", "color", "variant", "is_primary", "position", "visibility", "processing_status", "caption", "alt_text", "image_preview")
     readonly_fields = ("image_preview",)
 
     def image_preview(self, obj):
@@ -85,6 +97,19 @@ class SupplierProductRequestImageInline(admin.TabularInline):
                 obj.image.url,
             )
         return "No image"
+
+
+class ProductColorInline(admin.TabularInline):
+    model = ProductColor
+    extra = 1
+    fields = ("name", "code", "hex_value", "position", "is_default", "is_active")
+    prepopulated_fields = {"code": ("name",)}
+
+
+class ProductVariantInline(admin.TabularInline):
+    model = ProductVariant
+    extra = 1
+    fields = ("color", "size", "sku", "supplier_sku", "cost_price", "cost_currency", "selling_price_override", "stock_quantity", "supplier_available_quantity", "track_inventory", "is_default", "is_active")
 
 
 class CartItemInline(admin.TabularInline):
@@ -213,6 +238,32 @@ class CategoryAdmin(admin.ModelAdmin):
 # PRODUCT
 # =========================
 
+@admin.register(Size)
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ("name", "code", "sort_order", "is_active")
+    list_editable = ("sort_order", "is_active")
+    prepopulated_fields = {"code": ("name",)}
+    search_fields = ("name", "code")
+
+
+@admin.register(ProductColor)
+class ProductColorAdmin(admin.ModelAdmin):
+    list_display = ("product", "name", "code", "position", "is_default", "is_active")
+    list_filter = ("is_active", "is_default")
+    search_fields = ("product__name", "name", "code")
+
+
+@admin.register(ProductVariant)
+class ProductVariantAdmin(admin.ModelAdmin):
+    list_display = ("sku", "product", "color", "size", "stock_quantity", "cost_price", "cost_currency", "selling_price_display", "is_active")
+    list_filter = ("cost_currency", "is_active", "track_inventory")
+    search_fields = ("sku", "supplier_sku", "product__name")
+    list_select_related = ("product", "color", "size")
+
+    @admin.display(description="Customer price")
+    def selling_price_display(self, obj):
+        return f"K{obj.selling_price()}"
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
@@ -270,7 +321,7 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     prepopulated_fields = {"slug": ("name",)}
-    inlines = [ProductImageInline, StockMovementInline]
+    inlines = [ProductColorInline, ProductVariantInline, ProductImageInline, StockMovementInline]
 
     fieldsets = (
         ("Basic Product Details", {
@@ -719,7 +770,7 @@ class OrderAdmin(admin.ModelAdmin):
 # SUPPLIER REQUEST ACTION
 # =========================
 
-@admin.action(description="Approve selected supplier requests and create products")
+@admin.action(description="Approve selected supplier requests and create draft products")
 def approve_supplier_requests(modeladmin, request, queryset):
     created_count = 0
     skipped_count = 0
@@ -771,27 +822,22 @@ def approve_supplier_requests(modeladmin, request, queryset):
             external_gallery_urls=(supplier_request.external_gallery_urls if supplier_request.source_platform != "aliexpress" else ""),
             supplier_name=supplier_request.supplier_name,
             supplier_contact=supplier_request.supplier_contact,
-            status="active",
-            is_available=True,
+            status="draft",
+            is_available=False,
             is_featured=True,
         )
 
         images = supplier_request.images.all()
 
         for img in images:
-            ProductImage.objects.create(
-                product=product,
-                image=img.image,
-                caption=img.caption,
-            )
-
-        if images.exists():
-            product.image = images.first().image
-            product.save()
+            product_image = ProductImage(product=product, visibility="private", caption=img.caption)
+            with img.image.open("rb") as source:
+                product_image.original_image.save(img.image.name.rsplit("/", 1)[-1], ContentFile(source.read()), save=False)
+            product_image.save()
 
         supplier_request.is_reviewed = True
         supplier_request.is_approved = True
-        supplier_request.admin_note = "Approved and converted to product."
+        supplier_request.admin_note = "Approved and converted to a draft product. Add approved customer images before publishing."
         supplier_request.save()
 
         created_count += 1

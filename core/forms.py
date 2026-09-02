@@ -1,9 +1,56 @@
 from django import forms
-from .models import Advertisement, Category, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
+from .models import Advertisement, Category, CustomerProfile, CustomerProductRequest, SupplierProductRequest, Order, CollectionCentre, Biker
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 import hashlib
 import re
+
+
+class CustomerProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, label="First name")
+    last_name = forms.CharField(max_length=150, label="Last name")
+
+    class Meta:
+        model = CustomerProfile
+        fields = ["first_name", "last_name", "phone", "photo"]
+        widgets = {
+            "phone": forms.TextInput(attrs={"placeholder": "Example: 0971234567", "inputmode": "tel"}),
+            "photo": forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user_id:
+            self.fields["first_name"].initial = self.instance.user.first_name
+            self.fields["last_name"].initial = self.instance.user.last_name
+        input_class = "w-full rounded-lg border border-brand-border bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-orange-100"
+        for field in self.fields.values():
+            field.widget.attrs["class"] = input_class
+
+    def clean_phone(self):
+        raw = re.sub(r"[\s()-]", "", self.cleaned_data.get("phone", ""))
+        if raw.startswith("0") and len(raw) == 10:
+            raw = "+260" + raw[1:]
+        elif raw.startswith("260") and len(raw) == 12:
+            raw = "+" + raw
+        if not re.fullmatch(r"\+260\d{9}", raw):
+            raise forms.ValidationError("Enter a valid Zambian phone number, for example 0971234567.")
+        return raw
+
+    def clean_photo(self):
+        photo = self.cleaned_data.get("photo")
+        if photo and getattr(photo, "size", 0) > 5 * 1024 * 1024:
+            raise forms.ValidationError("Profile photo must be 5 MB or smaller.")
+        return photo
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        profile.user.first_name = self.cleaned_data["first_name"].strip()
+        profile.user.last_name = self.cleaned_data["last_name"].strip()
+        if commit:
+            profile.user.save(update_fields=["first_name", "last_name"])
+            profile.save()
+        return profile
 
 
 class AdvertisementSubmissionForm(forms.ModelForm):

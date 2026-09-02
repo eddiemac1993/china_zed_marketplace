@@ -8,21 +8,26 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import get_template
+from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.mail import send_mail
+from django.core.files.base import ContentFile
 from django.views.decorators.http import require_POST
+from django.db import transaction
 from django.db.models import F, Q
 from django_ratelimit.decorators import ratelimit
 from xhtml2pdf import pisa
 from .forms import (
     AdvertisementSubmissionForm,
+    CustomerProfileForm,
     CustomerProductRequestForm,
     OrderForm,
     SupplierProductRequestForm,
@@ -35,6 +40,8 @@ from .utils import with_display_annotations, apply_sort
 from .models import (
     Product,
     ProductImage,
+    ProductVariant,
+    StockMovement,
     ProductReview,
     CustomerProductRequest,
     Order,
@@ -51,12 +58,15 @@ from .models import (
     Advertisement,
     MarketplaceEvent,
     WishlistItem,
+    CustomerProfile,
     money,
     calculate_delivery_fee,
 )
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from django.http import HttpResponse
+from django.http import FileResponse, Http404
+from django.utils._os import safe_join
 from django.conf import settings
 import os
 import textwrap
@@ -67,6 +77,15 @@ from datetime import timedelta
 
 WHATSAPP_NUMBER = "260766491002"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
+
+
+@staff_member_required
+def private_product_media_view(request, path):
+    try:
+        full_path = safe_join(settings.PRIVATE_MEDIA_ROOT, path)
+        return FileResponse(open(full_path, "rb"))
+    except (ValueError, OSError):
+        raise Http404
 
 
 def record_marketplace_event(request, event_type, **details):
@@ -391,22 +410,22 @@ def home(request):
     product_type = request.GET.get("type", "").strip()
     sort = request.GET.get("sort", "").strip()
 
-    products = Product.objects.filter(is_available=True).order_by("-created_at")
+    products = Product.objects.filter(is_available=True, status="active", is_deleted=False).order_by("-created_at")
     categories = Category.objects.all().order_by("name")
 
     featured_products = with_display_annotations(Product.objects.filter(
-        is_available=True,
+        is_available=True, status="active", is_deleted=False,
         is_featured=True
     )).order_by("-created_at")[:8]
 
     local_products = with_display_annotations(Product.objects.filter(
-        is_available=True,
+        is_available=True, status="active", is_deleted=False,
         product_type="local",
         stock_quantity__gt=0
     )).order_by("-created_at")[:10]
 
     preorder_products = with_display_annotations(Product.objects.filter(
-        is_available=True,
+        is_available=True, status="active", is_deleted=False,
         product_type="preorder"
     )).order_by("-created_at")[:10]
 
@@ -417,7 +436,7 @@ def home(request):
         & (Q(product_type="preorder") | Q(product_type="local", stock_quantity__gt=0))
     )
     trending_products = with_display_annotations(Product.objects.filter(
-        card_ready, is_available=True
+        card_ready, is_available=True, status="active", is_deleted=False
     )).order_by("-sold_count", "-views_count", "-created_at")[:10]
 
     active_rate = Product.active_exchange_rate()
@@ -430,7 +449,7 @@ def home(request):
         card_ready,
         Q(product_type="preorder", rmb_price__lte=preorder_rmb_limit)
         | Q(product_type="local", rmb_price__lte=local_cost_limit),
-        is_available=True,
+        is_available=True, status="active", is_deleted=False,
     )).order_by("-is_featured", "-created_at")[:10]
 
     testimonials = ProductReview.objects.filter(
@@ -574,7 +593,9 @@ def product_detail(request, slug):
     product = get_object_or_404(
         Product,
         slug=slug,
-        is_available=True
+        is_available=True,
+        status="active",
+        is_deleted=False,
     )
     Product.objects.filter(pk=product.pk).update(views_count=F("views_count") + 1)
     record_marketplace_event(request, "product_view", product=product)
@@ -583,14 +604,32 @@ def product_detail(request, slug):
     if request.user.is_authenticated:
         cart_count = get_user_cart(request.user).total_items()
 
+    variants = list(product.structured_variants())
+    variant_config = [{
+        "id": variant.pk,
+        "color": variant.color.name if variant.color_id else "",
+        "color_id": variant.color_id,
+        "size": variant.size.name if variant.size_id else "",
+        "size_id": variant.size_id,
+        "sku": variant.sku,
+        "price": str(variant.selling_price()),
+        "stock": variant.stock_quantity,
+        "available": variant.in_stock(),
+        "images": product.color_gallery_urls(variant.color) if variant.color_id else product.display_gallery_urls(),
+    } for variant in variants]
+
     return render(request, "core/product_detail.html", {
         "product": product,
         "cart_count": cart_count,
+        "uses_structured_variants": product.uses_structured_variants(),
+        "variant_config_json": json.dumps(variant_config).replace("<", "\\u003c"),
+        "structured_colors": product.colors.filter(is_active=True, is_deleted=False),
+        "structured_sizes": sorted({(v.size_id, v.size.name) for v in variants if v.size_id}, key=lambda item: item[1]),
     })
 
 
 def product_whatsapp_view(request, slug):
-    product = get_object_or_404(Product, slug=slug, is_available=True)
+    product = get_object_or_404(Product, slug=slug, is_available=True, status="active", is_deleted=False)
     record_marketplace_event(request, "whatsapp_click", product=product)
     return redirect(product.whatsapp_link())
 
@@ -598,7 +637,7 @@ def product_whatsapp_view(request, slug):
 @login_required(login_url="login")
 @require_POST
 def toggle_wishlist_view(request, slug):
-    product = get_object_or_404(Product, slug=slug, is_available=True)
+    product = get_object_or_404(Product, slug=slug, is_available=True, status="active", is_deleted=False)
     item, created = WishlistItem.objects.get_or_create(user=request.user, product=product)
     if created:
         messages.success(request, f"{product.name} saved for later.")
@@ -775,6 +814,16 @@ def logout_view(request):
 
 @login_required(login_url="login")
 def profile_view(request):
+    customer_profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+    if request.method == "POST":
+        profile_form = CustomerProfileForm(request.POST, request.FILES, instance=customer_profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect("profile")
+    else:
+        profile_form = CustomerProfileForm(instance=customer_profile)
+
     orders = (
         Order.objects.filter(user=request.user)
         .prefetch_related("items__product")
@@ -808,6 +857,10 @@ def profile_view(request):
         "product_requests": product_requests,
         "cart_count": cart_count,
         "vapid_public_key": settings.WEBPUSH_SETTINGS["VAPID_PUBLIC_KEY"],
+        "customer_profile": customer_profile,
+        "profile_form": profile_form,
+        "profile_complete": customer_profile.is_complete(),
+        "profile_completion": customer_profile.completion_percentage(),
     })
 
 
@@ -816,7 +869,9 @@ def add_to_cart_view(request, slug):
     product = get_object_or_404(
         Product,
         slug=slug,
-        is_available=True
+        is_available=True,
+        status="active",
+        is_deleted=False,
     )
 
     if not product.is_order_ready():
@@ -836,10 +891,26 @@ def add_to_cart_view(request, slug):
 
     requested_size = (request.POST.get("size") or "").strip()
     requested_color = (request.POST.get("color") or "").strip()
-    if requested_size and requested_size not in product.size_option_list():
+    variant = None
+    if product.uses_structured_variants():
+        try:
+            variant_id = int(request.POST.get("variant_id", ""))
+        except (TypeError, ValueError):
+            messages.error(request, "Please choose an available color and size.")
+            return redirect("product_detail", slug=product.slug)
+        variant = get_object_or_404(
+            ProductVariant.objects.select_related("color", "size"),
+            pk=variant_id, product=product, is_active=True, is_deleted=False,
+        )
+        if not variant.in_stock():
+            messages.error(request, "That color and size combination is out of stock.")
+            return redirect("product_detail", slug=product.slug)
+        requested_color = variant.color.name if variant.color_id else ""
+        requested_size = variant.size.name if variant.size_id else ""
+    if not variant and requested_size and requested_size not in product.size_option_list():
         messages.error(request, "Please choose a valid size.")
         return redirect("product_detail", slug=product.slug)
-    if requested_color and requested_color not in product.color_option_list():
+    if not variant and requested_color and requested_color not in product.color_option_list():
         messages.error(request, "Please choose a valid color.")
         return redirect("product_detail", slug=product.slug)
 
@@ -852,6 +923,7 @@ def add_to_cart_view(request, slug):
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
+        variant=variant,
         requested_size=requested_size,
         requested_color=requested_color,
         defaults={"quantity": quantity}
@@ -860,10 +932,11 @@ def add_to_cart_view(request, slug):
     if not created:
         new_quantity = cart_item.quantity + quantity
 
-        if product.product_type == "local" and new_quantity > product.stock_quantity:
+        available_stock = variant.stock_quantity if variant and variant.track_inventory else product.stock_quantity
+        if product.product_type == "local" and new_quantity > available_stock:
             messages.error(
                 request,
-                f"Only {product.stock_quantity} item(s) available in stock."
+                f"Only {available_stock} item(s) available in stock."
             )
             return redirect("cart")
 
@@ -885,7 +958,7 @@ def add_to_cart_view(request, slug):
 @login_required(login_url="login")
 def cart_view(request):
     cart = get_user_cart(request.user)
-    cart_items = cart.items.select_related("product", "product__category")
+    cart_items = cart.items.select_related("product", "product__category", "variant", "variant__color", "variant__size")
 
     template = "core/cart.html"
     if request.headers.get("HX-Request"):
@@ -972,7 +1045,7 @@ def _delivery_form_defaults():
 @login_required(login_url="login")
 def checkout_cart_view(request):
     cart = get_user_cart(request.user)
-    cart_items = cart.items.select_related("product")
+    cart_items = cart.items.select_related("product", "variant", "variant__color", "variant__size")
 
     if not cart_items.exists():
         messages.error(request, "Your cart is empty.")
@@ -981,10 +1054,11 @@ def checkout_cart_view(request):
     for item in cart_items:
         product = item.product
 
-        if product.product_type == "local" and item.quantity > product.stock_quantity:
+        available_stock = item.variant.stock_quantity if item.variant_id and item.variant.track_inventory else product.stock_quantity
+        if product.product_type == "local" and item.quantity > available_stock:
             messages.error(
                 request,
-                f"Not enough stock for {product.name}. Available: {product.stock_quantity}"
+                f"Not enough stock for {product.name}. Available: {available_stock}"
             )
             return redirect("cart")
 
@@ -1012,12 +1086,17 @@ def checkout_cart_view(request):
                 OrderItem.objects.create(
                     order=order,
                     product=item.product,
+                    variant=item.variant,
                     product_name=item.product.name,
                     quantity=item.quantity,
                     requested_size=item.requested_size,
                     requested_color=item.requested_color,
+                    product_sku=item.product.sku,
+                    variant_sku=item.variant.sku if item.variant_id else "",
+                    color_name=item.variant.color.name if item.variant_id and item.variant.color_id else item.requested_color,
+                    size_name=item.variant.size.name if item.variant_id and item.variant.size_id else item.requested_size,
                     availability_status=("pending" if item.product.imported_from_link and item.product.product_type == "preorder" else "not_required"),
-                    unit_price=item.product.selling_price(),
+                    unit_price=item.variant.selling_price() if item.variant_id else item.product.selling_price(),
                     product_type=item.product.product_type,
                     line_total=item.line_total(),
                 )
@@ -1138,11 +1217,17 @@ def place_order_view(request, slug):
     product = get_object_or_404(
         Product,
         slug=slug,
-        is_available=True
+        is_available=True,
+        status="active",
+        is_deleted=False,
     )
 
     if not product.is_order_ready():
         messages.error(request, "This product is not ready to order yet.")
+        return redirect("product_detail", slug=product.slug)
+
+    if product.uses_structured_variants():
+        messages.info(request, "Choose your color and size, add it to the cart, then checkout.")
         return redirect("product_detail", slug=product.slug)
 
     if product.product_type == "local" and product.stock_quantity <= 0:
@@ -1471,16 +1556,20 @@ def supplier_submit_product(request):
                     supplier_name=supplier_request.supplier_name,
                     supplier_contact=supplier_request.supplier_contact,
                     status="draft",
-                    is_available=True,
+                    is_available=False,
                 )
-                if supplier_request.image:
-                    product.image = supplier_request.image
-                    product.save(update_fields=["image", "updated_at"])
                 for request_image in supplier_request.images.all():
-                    ProductImage.objects.create(product=product, image=request_image.image, caption=request_image.caption)
+                    product_image = ProductImage(product=product, visibility="private", caption=request_image.caption)
+                    with request_image.image.open("rb") as source:
+                        product_image.original_image.save(request_image.image.name.rsplit("/", 1)[-1], ContentFile(source.read()), save=False)
+                    product_image.save()
 
-                messages.success(request, "Product published. Complete the missing information when ready.")
-                return redirect("product_detail", slug=product.slug)
+                edit_url = reverse("admin:core_product_change", args=[product.id])
+                messages.success(request, format_html(
+                    'Photos saved safely as a draft. <a class="font-bold underline" href="{}">Complete this product</a> when you are ready to add its name, category, price, variants and customer-facing images.',
+                    edit_url,
+                ))
+                return redirect("supplier_submit_product")
 
             messages.success(
                 request,

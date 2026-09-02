@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
-from .models import Message, Room
+from .models import Message, MessageReaction, MessageReport, Room
 from .services.ai_chat import maybe_add_ai_message
 
 ADJECTIVES = ["Quiet", "Blue", "Crazy", "Sleepy", "Happy", "Lost", "Purple", "Silent", "Wild", "Brave"]
@@ -24,6 +24,8 @@ def _session_token(request):
 def _identity(request, room, change=False):
     if not request.session.session_key:
         request.session.create()
+    if room.room_type == "public" and request.user.is_authenticated:
+        return request.user.get_full_name().strip() or request.user.username, request.session.session_key
     key = f"communinity_name_{room.code}"
     if change or key not in request.session:
         request.session[key] = f"{random.choice(ADJECTIVES)} {random.choice(NOUNS)}"
@@ -31,7 +33,7 @@ def _identity(request, room, change=False):
 
 
 def home(request):
-    return render(request, "communinity/home.html")
+    return render(request, "communinity/home.html", {"public_rooms": Room.objects.filter(room_type="public", is_active=True).order_by("title")})
 
 
 @require_POST
@@ -57,7 +59,7 @@ def room(request, code):
     room_obj = get_object_or_404(Room, code=code.upper(), is_active=True)
     name, session_id = _identity(request, room_obj)
     joined_key = f"communinity_joined_{room_obj.code}"
-    if not request.session.get(joined_key):
+    if room_obj.room_type == "private" and not request.session.get(joined_key):
         Message.objects.create(room=room_obj, anonymous_name=name, session_id=session_id,
                                message=f"{name} joined the room 👋", message_type="system")
         request.session[joined_key] = True
@@ -81,7 +83,7 @@ def messages(request, code):
     typers = cache.get(typing_key, {})
     typing_names = [n for sid, (n, ts) in typers.items() if sid != session_id and time.time() - ts < 3]
     rows = room_obj.messages.filter(pk__gt=after).order_by("id")[:100]
-    return JsonResponse({"online": len(users), "typing": typing_names, "messages": [{"id":m.id,"name":m.anonymous_name,"text":m.message,"type":m.message_type,"mine":m.session_id==session_id,"ai":m.is_ai,"time":m.created_at.strftime("%H:%M")} for m in rows]})
+    return JsonResponse({"online": len(users), "typing": typing_names, "messages": [{"id":m.id,"name":m.anonymous_name,"text":m.message,"type":m.message_type,"mine":(m.user_id==request.user.id if request.user.is_authenticated and m.user_id else m.session_id==session_id),"ai":m.is_ai,"time":m.created_at.strftime("%H:%M"),"helpful":m.reactions.filter(reaction_type="helpful").count(),"interested":m.reactions.filter(reaction_type="interested").count(),"can_react":request.user.is_authenticated} for m in rows]})
 
 
 @require_POST
@@ -99,6 +101,8 @@ def typing(request, code):
 def send(request, code):
     room_obj = get_object_or_404(Room, code=code.upper(), is_active=True)
     name, session_id = _identity(request, room_obj)
+    if room_obj.room_type == "public" and not request.user.is_authenticated:
+        return JsonResponse({"error": "Please sign in to post in public community rooms."}, status=403)
     text = request.POST.get("message", "").strip()
     if not text or len(text) > 500:
         return JsonResponse({"error": "Messages must be between 1 and 500 characters."}, status=400)
@@ -107,20 +111,40 @@ def send(request, code):
     if last and (time.time()-last[0] < 1.2 or last[1] == text):
         return JsonResponse({"error": "Please slow down and avoid repeated messages."}, status=429)
     cache.set(spam_key, (time.time(), text), 30)
-    msg = Message.objects.create(room=room_obj, anonymous_name=name, session_id=session_id, message=text)
+    msg = Message.objects.create(room=room_obj, user=request.user if room_obj.room_type == "public" else None, anonymous_name=name, session_id=session_id, message=text)
     Room.objects.filter(pk=room_obj.pk).update(last_activity=timezone.now())
     human_count = room_obj.messages.filter(is_ai=False, message_type="chat").count()
     maybe_add_ai_message(room_obj, human_count)
     return JsonResponse({"ok": True, "message": {
         "id": msg.pk, "name": msg.anonymous_name, "text": msg.message,
         "type": msg.message_type, "mine": True, "ai": False,
-        "time": msg.created_at.strftime("%H:%M"),
+        "time": msg.created_at.strftime("%H:%M"), "helpful": 0, "interested": 0, "can_react": request.user.is_authenticated,
     }})
+
+
+@require_POST
+def react(request, code, message_id):
+    if not request.user.is_authenticated: return JsonResponse({"error": "Please sign in to react."}, status=403)
+    message = get_object_or_404(Message, id=message_id, room__code=code.upper(), room__room_type="public")
+    reaction_type = request.POST.get("reaction")
+    if reaction_type not in {"helpful", "interested"}: return JsonResponse({"error": "Invalid reaction."}, status=400)
+    reaction, created = MessageReaction.objects.get_or_create(message=message, user=request.user, reaction_type=reaction_type)
+    if not created: reaction.delete()
+    return JsonResponse({"helpful":message.reactions.filter(reaction_type="helpful").count(),"interested":message.reactions.filter(reaction_type="interested").count()})
+
+
+@require_POST
+def report(request, code, message_id):
+    if not request.user.is_authenticated: return JsonResponse({"error": "Please sign in to report."}, status=403)
+    message = get_object_or_404(Message, id=message_id, room__code=code.upper(), room__room_type="public")
+    MessageReport.objects.get_or_create(message=message, user=request.user, defaults={"reason":request.POST.get("reason", "")[:240]})
+    return JsonResponse({"ok": True})
 
 
 @require_POST
 def change_name(request, code):
     room_obj = get_object_or_404(Room, code=code.upper(), is_active=True)
+    if room_obj.room_type == "public": return JsonResponse({"error": "Public rooms use your profile name."}, status=400)
     key = f"communinity-name-change:{_session_token(request)}"
     if cache.get(key): return JsonResponse({"error": "You can change your name again later."}, status=429)
     name, _ = _identity(request, room_obj, change=True); cache.set(key, True, 60)

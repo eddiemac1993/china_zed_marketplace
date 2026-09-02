@@ -1,0 +1,6 @@
+<div class="variant-picker mb-3 grid grid-cols-2 gap-2" data-variants='{{ variant_config_json|safe }}'>
+    {% if structured_colors %}<label class="text-xs font-bold text-brand-muted">Color<select class="variant-color mt-1 h-10 w-full rounded border border-brand-border px-2 text-sm"><option value="">Choose color</option>{% for color in structured_colors %}<option value="{{ color.id }}">{{ color.name }}</option>{% endfor %}</select></label>{% endif %}
+    {% if structured_sizes %}<label class="text-xs font-bold text-brand-muted">Size<select class="variant-size mt-1 h-10 w-full rounded border border-brand-border px-2 text-sm"><option value="">Choose size</option>{% for size_id, size_name in structured_sizes %}<option value="{{ size_id }}">{{ size_name }}</option>{% endfor %}</select></label>{% endif %}
+    <input class="variant-id" type="hidden" name="variant_id" value="">
+    <p class="variant-status col-span-2 text-xs font-bold text-brand-muted">Choose an available option.</p>
+</div>

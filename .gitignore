@@ -19,6 +19,7 @@ public_key.pem
 
 # Media uploads
 media/
+private_media/
 
 # Static collected files
 staticfiles/

@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from django.contrib.auth.models import User
 
-from core.models import Advertisement, Category, MarketplaceEvent, Order, Product, WishlistItem
+from core.models import Advertisement, Category, CustomerProfile, MarketplaceEvent, Order, Product, WishlistItem
 
 
 @override_settings(ALLOWED_HOSTS=["testserver"], SECURE_SSL_REDIRECT=False)
@@ -127,3 +127,28 @@ class AdvertisementSubmissionTests(TestCase):
 
         self.client.post(reverse("toggle_wishlist", kwargs={"slug": product.slug}))
         self.assertFalse(WishlistItem.objects.filter(user=user, product=product).exists())
+
+    def test_user_can_complete_and_edit_customer_profile(self):
+        user = User.objects.create_user(username="profile-buyer", email="profile@example.com", password="test-pass")
+        self.client.force_login(user)
+        profile_page = self.client.get(reverse("profile"))
+        self.assertContains(profile_page, "Complete your profile")
+
+        photo = SimpleUploadedFile("profile.png", base64.b64decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+        ), content_type="image/png")
+        response = self.client.post(reverse("profile"), {
+            "first_name": "Mwamba",
+            "last_name": "Banda",
+            "phone": "0971 234 567",
+            "photo": photo,
+        })
+
+        self.assertRedirects(response, reverse("profile"))
+        user.refresh_from_db()
+        profile = CustomerProfile.objects.get(user=user)
+        self.assertEqual(user.first_name, "Mwamba")
+        self.assertEqual(user.last_name, "Banda")
+        self.assertEqual(profile.phone, "+260971234567")
+        self.assertTrue(profile.is_complete())
+        self.assertContains(self.client.get(reverse("profile")), "Your profile is complete")

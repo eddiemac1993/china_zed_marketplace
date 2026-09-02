@@ -32,7 +32,7 @@
         <div class="relative z-10">
             <div class="mb-2.5 inline-block rounded bg-brand-yellow px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-brand-red-dark"><i class="fa-solid fa-store"></i> Approved Supplier Portal</div>
             <h1 class="font-display text-2xl font-black leading-tight sm:text-3xl">{% if request.user.is_staff %}Add a marketplace product{% else %}Submit a product for review{% endif %}</h1>
-            <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-white/75">{% if request.user.is_staff %}You may upload only an image now and complete the product information later. The image will appear immediately, but ordering stays disabled until all required details are filled in.{% else %}List products you can supply — either stock you already hold in Zambia, or items you can source from China. Our team reviews every submission before it goes live on the marketplace.{% endif %}</p>
+            <p class="mt-1.5 max-w-2xl text-sm leading-relaxed text-white/75">{% if request.user.is_staff %}You may upload photos now and complete the product later. Photo-only uploads are saved privately as drafts and are never shown to customers until you finish and publish them.{% else %}List products you can supply — either stock you already hold in Zambia, or items you can source from China. Our team reviews every submission before it goes live on the marketplace.{% endif %}</p>
             <div class="mt-4 flex flex-wrap gap-2">
                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold"><b class="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-brand-yellow text-[11px] font-black text-brand-red-dark">1</b> Fill in the details</span>
                 <span class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold"><b class="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-brand-yellow text-[11px] font-black text-brand-red-dark">2</b> Add clear photos</span>
@@ -255,9 +255,9 @@
 
                         <div class="-mx-4.5 -mb-4.5 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 bg-neutral-50 px-4.5 py-4 sm:-mx-5 sm:-mb-5 sm:px-5">
                             <div class="min-w-[180px] flex-1 text-[11px] leading-relaxed text-brand-muted">
-                                {% if request.user.is_staff %}Your product is published immediately. Incomplete products display without ordering controls.{% else %}Your submission goes to our team for review. Nothing is published until it is approved.{% endif %}
+                                {% if request.user.is_staff %}Photos are saved as a private draft. After saving, use the Complete product link to add customer details and publish safely.{% else %}Your submission goes to our team for review. Nothing is published until it is approved.{% endif %}
                             </div>
-                            <button type="submit" class="whitespace-nowrap rounded-lg bg-brand-red px-6 py-3 text-sm font-black text-white transition hover:bg-brand-red-dark active:scale-[0.98]">{% if request.user.is_staff %}Publish Product{% else %}Submit for review{% endif %} <i class="fa-solid fa-arrow-right"></i></button>
+                            <button type="submit" class="whitespace-nowrap rounded-lg bg-brand-red px-6 py-3 text-sm font-black text-white transition hover:bg-brand-red-dark active:scale-[0.98]">{% if request.user.is_staff %}Save Photo Draft{% else %}Submit for review{% endif %} <i class="fa-solid fa-arrow-right"></i></button>
                         </div>
                     </form>
 

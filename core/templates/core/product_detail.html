@@ -41,7 +41,7 @@
 
             <!-- THUMBNAILS -->
             {% if product.display_gallery_urls %}
-            <div class="no-scrollbar flex gap-2 overflow-x-auto border-t border-brand-border p-3">
+            <div id="productThumbnails" class="no-scrollbar flex gap-2 overflow-x-auto border-t border-brand-border p-3">
                 {% for image_url in product.display_gallery_urls %}
                     <button type="button" @click="mainImg = '{{ image_url|escapejs }}'"
                             class="h-16 w-16 shrink-0 overflow-hidden rounded border-2 bg-neutral-50 transition {% if forloop.first %}border-brand-red{% else %}border-transparent hover:border-brand-orange{% endif %}"
@@ -94,7 +94,7 @@
                     {% if product.is_order_ready %}
                     <div class="mb-3.5 flex items-baseline gap-1">
                         <span class="text-base font-bold text-brand-red">K</span>
-                        <span class="font-display text-[42px] font-black leading-none tracking-tight text-brand-red">{{ product.selling_price|floatformat:0|intcomma }}</span>
+                        <span class="customer-price font-display text-[42px] font-black leading-none tracking-tight text-brand-red">{{ product.selling_price|floatformat:0|intcomma }}</span>
                     </div>
                     {% else %}
                     <div class="mb-3.5">
@@ -141,7 +141,9 @@
                     {% elif request.user.is_authenticated %}
                         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
                             {% csrf_token %}
-                            {% if product.size_option_list %}
+                            {% if uses_structured_variants %}
+                                {% include "core/components/_variant_picker.html" %}
+                            {% elif product.size_option_list %}
                             <div class="mb-2.5 flex items-center gap-2.5">
                                 <label class="text-xs font-bold text-brand-muted" for="id_size">Size:</label>
                                 <select id="id_size" name="size" required class="h-10 flex-1 rounded border border-brand-border px-2.5 text-sm font-bold text-brand-ink outline-none focus:border-brand-red">
@@ -267,13 +269,14 @@
 <div class="safe-b fixed inset-x-2.5 z-[490] flex items-center gap-2.5 rounded-xl border border-brand-border bg-white px-3.5 py-2.5 shadow-2xl lg:hidden" style="bottom: calc(99px + env(safe-area-inset-bottom));">
     <div class="flex-1">
         <div class="text-[10px] font-semibold text-brand-muted">Price</div>
-        <div class="font-display text-xl font-black text-brand-red">{% if product.is_order_ready %}K{{ product.selling_price|floatformat:0|intcomma }}{% else %}----{% endif %}</div>
+        <div class="font-display text-xl font-black text-brand-red">{% if product.is_order_ready %}K<span class="customer-price">{{ product.selling_price|floatformat:0|intcomma }}</span>{% else %}----{% endif %}</div>
     </div>
     {% if not product.is_order_ready %}
         {% if request.user.is_staff %}<a href="{% url 'admin:core_product_change' product.id %}" class="whitespace-nowrap rounded-lg bg-brand-orange px-5 py-2.5 text-center text-[13px] font-bold text-white">Add Info</a>{% endif %}
     {% elif request.user.is_authenticated %}
         <form method="POST" action="{% url 'add_to_cart' product.slug %}">
             {% csrf_token %}
+            {% if uses_structured_variants %}{% include "core/components/_variant_picker.html" %}{% endif %}
             {% if product.product_type == "local" and product.stock_quantity <= 0 %}
                 <button disabled class="whitespace-nowrap rounded-lg bg-neutral-200 px-5 py-2.5 text-[13px] font-bold text-neutral-500">Out of Stock</button>
             {% else %}
@@ -295,6 +298,50 @@
 
 {% block extra_js %}
 <script>
+document.querySelectorAll('.variant-picker').forEach(function (picker) {
+    var variants = JSON.parse(picker.dataset.variants || '[]');
+    var color = picker.querySelector('.variant-color');
+    var size = picker.querySelector('.variant-size');
+    var hidden = picker.querySelector('.variant-id');
+    var status = picker.querySelector('.variant-status');
+    function refresh() {
+        var colorId = color ? Number(color.value || 0) : 0;
+        var sizeId = size ? Number(size.value || 0) : 0;
+        if (size) Array.from(size.options).forEach(function (option) {
+            if (!option.value) return;
+            option.disabled = !variants.some(function (v) {
+                return (!colorId || v.color_id === colorId) && v.size_id === Number(option.value) && v.available;
+            });
+        });
+        var selected = variants.find(function (v) {
+            return (!color || v.color_id === colorId) && (!size || v.size_id === sizeId);
+        });
+        hidden.value = selected && selected.available ? selected.id : '';
+        status.textContent = selected ? (selected.available ? 'Available · SKU ' + selected.sku : 'This combination is out of stock') : 'Choose an available option.';
+        if (selected) document.querySelectorAll('.customer-price').forEach(function (node) { node.textContent = Math.round(Number(selected.price)).toLocaleString(); });
+        if (selected && selected.images && selected.images.length) {
+            var main = document.getElementById('mainProductImage');
+            if (main) main.src = selected.images[0];
+            var thumbs = document.getElementById('productThumbnails');
+            if (thumbs) {
+                thumbs.replaceChildren();
+                selected.images.forEach(function (url, index) {
+                    var button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'h-16 w-16 shrink-0 overflow-hidden rounded border-2 bg-neutral-50 ' + (index ? 'border-transparent' : 'border-brand-red');
+                    var image = document.createElement('img');
+                    image.src = url; image.alt = '{{ product.name|escapejs }}'; image.className = 'h-full w-full object-cover';
+                    button.appendChild(image);
+                    button.addEventListener('click', function () { if (main) main.src = url; });
+                    thumbs.appendChild(button);
+                });
+            }
+        }
+    }
+    if (color) color.addEventListener('change', refresh);
+    if (size) size.addEventListener('change', refresh);
+    refresh();
+});
 // ── Recently Viewed: record this product ──
 (function () {
     try {

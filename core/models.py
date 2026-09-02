@@ -1,10 +1,15 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.text import slugify
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
 import uuid
+from urllib.parse import urlencode
+from .storage import PrivateProductStorage
+
+private_product_storage = PrivateProductStorage()
 
 DEFAULT_DEPOSIT_PERCENTAGE = Decimal("35.00")
 DEFAULT_COLLECTION_FEE_PERCENTAGE = Decimal("2.00")
@@ -290,7 +295,7 @@ class Product(TimeStampedModel):
 
     def is_order_ready(self):
         """Return whether this listing has enough information to be purchased."""
-        has_image = bool(self.image or self.external_image_url)
+        has_image = bool(self.display_image_url())
         has_core_details = bool(
             self.name.strip()
             and self.description.strip()
@@ -329,7 +334,12 @@ class Product(TimeStampedModel):
         return url
 
     def display_image_url(self):
-        # Prefer a verified high-resolution source when one is available.
+        approved_primary = self.gallery_images.filter(
+            color__isnull=True, visibility="public", is_primary=True,
+        ).first()
+        if approved_primary and approved_primary.public_url():
+            return approved_primary.public_url()
+        # Preserve the legacy external/uploaded cover behavior for old products.
         if self.external_image_url:
             return self.full_resolution_external_image_url(self.external_image_url)
         if self.image:
@@ -341,13 +351,28 @@ class Product(TimeStampedModel):
         main_url = self.display_image_url()
         if main_url:
             urls.append(main_url)
-        urls.extend(img.image.url for img in self.gallery_images.all())
+        urls.extend(
+            url for url in (img.public_url() for img in self.gallery_images.filter(color__isnull=True))
+            if url
+        )
         urls.extend(
             self.full_resolution_external_image_url(line)
             for line in self.external_gallery_urls.splitlines()
             if line.strip()
         )
         return list(dict.fromkeys(urls))
+
+    def structured_variants(self):
+        return self.variants.filter(is_active=True, is_deleted=False).select_related("color", "size")
+
+    def uses_structured_variants(self):
+        variants = self.structured_variants()
+        return variants.exclude(color__isnull=True, size__isnull=True).exists() or variants.count() > 1
+
+    def color_gallery_urls(self, color):
+        urls = [img.public_url() for img in self.gallery_images.filter(color=color)]
+        urls = [url for url in urls if url]
+        return urls or self.display_gallery_urls()
 
     def size_option_list(self):
         return [item.strip() for item in self.size_options.split(",") if item.strip()]
@@ -385,22 +410,159 @@ class Product(TimeStampedModel):
     def whatsapp_link(self):
         phone = "260766491002"
         message = (
-            f"Hello, I want to ask about this product:%0A"
-            f"Product: {self.name}%0A"
-            f"Price: K{self.selling_price()}%0A"
-            f"Deposit: K{self.deposit_amount()}%0A"
-            f"Balance: K{self.balance_amount()}"
+            "Hello, I want to ask about this product:\n"
+            f"Product: {self.name}\n"
+            f"Price: K{self.selling_price()}\n"
+            f"Deposit: K{self.deposit_amount()}\n"
+            f"Balance: K{self.balance_amount()}\n"
+            f"View product: {settings.SITE_URL}/product/{self.slug}/"
         )
-        return f"https://wa.me/{phone}?text={message}"
+        return f"https://api.whatsapp.com/send/?{urlencode({'phone': phone, 'text': message, 'type': 'phone_number', 'app_absent': '0'})}"
 
     def __str__(self):
         return self.name
 
 
+class ProductColor(TimeStampedModel):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="colors")
+    name = models.CharField(max_length=80)
+    code = models.SlugField(max_length=90)
+    hex_value = models.CharField(max_length=7, blank=True)
+    position = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+    source_option_id = models.CharField(max_length=120, blank=True)
+
+    class Meta:
+        ordering = ["position", "name"]
+        constraints = [models.UniqueConstraint(fields=["product", "code"], name="unique_product_color_code")]
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.name}"
+
+
+class Size(models.Model):
+    name = models.CharField(max_length=80)
+    code = models.SlugField(max_length=90, unique=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class ProductVariant(TimeStampedModel):
+    CURRENCY_CHOICES = [("RMB", "RMB"), ("ZMW", "ZMW"), ("USD", "USD")]
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
+    color = models.ForeignKey(ProductColor, on_delete=models.PROTECT, null=True, blank=True, related_name="variants")
+    size = models.ForeignKey(Size, on_delete=models.PROTECT, null=True, blank=True, related_name="variants")
+    sku = models.CharField(max_length=100, unique=True, blank=True)
+    supplier_sku = models.CharField(max_length=120, blank=True)
+    cost_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    cost_currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="RMB")
+    selling_price_override = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    stock_quantity = models.PositiveIntegerField(default=0)
+    supplier_available_quantity = models.PositiveIntegerField(null=True, blank=True)
+    track_inventory = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    is_default = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["product", "color__position", "size__sort_order", "sku"]
+        constraints = [
+            models.UniqueConstraint(fields=["product", "color", "size"], name="unique_product_color_size"),
+            models.UniqueConstraint(fields=["product"], condition=models.Q(color__isnull=True, size__isnull=True), name="unique_default_product_variant"),
+            models.UniqueConstraint(fields=["product", "color"], condition=models.Q(color__isnull=False, size__isnull=True), name="unique_product_color_only_variant"),
+            models.UniqueConstraint(fields=["product", "size"], condition=models.Q(color__isnull=True, size__isnull=False), name="unique_product_size_only_variant"),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            parts = [self.product.sku]
+            if self.color_id:
+                parts.append((self.color.code or "CLR")[:12].upper())
+            if self.size_id:
+                parts.append((self.size.code or "SIZE")[:12].upper())
+            if len(parts) == 1:
+                parts.append("DEFAULT")
+            base = "-".join(parts)
+            candidate = base
+            counter = 2
+            while ProductVariant.objects.filter(sku=candidate).exclude(pk=self.pk).exists():
+                candidate = f"{base}-{counter}"
+                counter += 1
+            self.sku = candidate
+        super().save(*args, **kwargs)
+
+    def selling_price(self):
+        if self.selling_price_override is not None:
+            return money(self.selling_price_override)
+        if self.cost_price is None:
+            return self.product.selling_price()
+        rate = self.product.active_exchange_rate()
+        if self.cost_currency == "ZMW":
+            markup = rate.local_markup_percentage if rate else Decimal("80.00")
+            return money(self.cost_price * (Decimal("1") + markup / Decimal("100")))
+        if self.cost_currency == "RMB":
+            exchange = rate.rmb_to_zmw if rate else Decimal("3.20")
+            markup = rate.markup_percentage if rate else Decimal("35.00")
+            return money(self.cost_price * exchange * (Decimal("1") + markup / Decimal("100")))
+        return self.product.selling_price()
+
+    def in_stock(self):
+        return not self.track_inventory or self.stock_quantity > 0
+
+    def __str__(self):
+        options = " / ".join(filter(None, [self.color.name if self.color_id else "", self.size.name if self.size_id else ""]))
+        return f"{self.product.name} - {options or 'Default'}"
+
+
 class ProductImage(TimeStampedModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="gallery_images")
-    image = models.ImageField(upload_to="products/gallery/")
+    image = models.ImageField(upload_to="products/gallery/", blank=True, null=True)
+    color = models.ForeignKey(ProductColor, on_delete=models.SET_NULL, null=True, blank=True, related_name="images")
+    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name="images")
+    original_image = models.ImageField(storage=private_product_storage, upload_to="products/originals/", blank=True, null=True)
+    customer_image = models.ImageField(upload_to="products/customer/", blank=True, null=True)
+    processing_status = models.CharField(max_length=20, choices=[("original", "Original"), ("ready", "Ready"), ("rejected", "Rejected")], default="original")
+    visibility = models.CharField(max_length=20, choices=[("private", "Private"), ("public", "Public")], default="public")
+    is_primary = models.BooleanField(default=False)
+    position = models.PositiveIntegerField(default=0)
     caption = models.CharField(max_length=100, blank=True)
+    alt_text = models.CharField(max_length=160, blank=True)
+    crop_data = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["position", "created_at"]
+
+    def public_url(self):
+        if self.visibility != "public":
+            return ""
+        if self.customer_image:
+            return self.customer_image.url
+        return self.image.url if self.image else ""
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            previous = ProductImage.objects.filter(pk=self.pk).only("original_image").first()
+            if previous and previous.original_image and self.original_image.name != previous.original_image.name:
+                self.original_image = previous.original_image
+        super().save(*args, **kwargs)
+        if self.is_primary:
+            ProductImage.objects.filter(product=self.product, color=self.color, is_primary=True).exclude(pk=self.pk).update(is_primary=False)
 
     def __str__(self):
         return f"Image for {self.product.name}"
@@ -434,6 +596,7 @@ class Cart(TimeStampedModel):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.PROTECT, null=True, blank=True, related_name="cart_items")
     quantity = models.PositiveIntegerField(default=1)
     requested_size = models.CharField(max_length=80, blank=True)
     requested_color = models.CharField(max_length=120, blank=True)
@@ -442,14 +605,28 @@ class CartItem(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["cart", "product", "requested_size", "requested_color"], name="unique_cart_product_variant")
+            models.UniqueConstraint(fields=["cart", "product", "requested_size", "requested_color"], condition=models.Q(variant__isnull=True), name="unique_legacy_cart_product_variant"),
+            models.UniqueConstraint(fields=["cart", "variant"], condition=models.Q(variant__isnull=False), name="unique_cart_structured_variant"),
         ]
         ordering = ["-added_at"]
 
     def line_total(self):
-        return money(self.product.selling_price() * self.quantity)
+        price = self.variant.selling_price() if self.variant_id else self.product.selling_price()
+        return money(price * self.quantity)
+
+    def unit_price(self):
+        return self.variant.selling_price() if self.variant_id else self.product.selling_price()
+
+    def display_image_url(self):
+        if self.variant_id and self.variant.color_id:
+            urls = self.product.color_gallery_urls(self.variant.color)
+            if urls:
+                return urls[0]
+        return self.product.display_image_url()
 
     def can_order_quantity(self):
+        if self.variant_id and self.variant.track_inventory:
+            return self.quantity <= self.variant.stock_quantity
         if self.product.product_type == "local":
             return self.quantity <= self.product.stock_quantity
         return True
@@ -471,6 +648,22 @@ class WishlistItem(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.product.name}"
+
+
+class CustomerProfile(TimeStampedModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="customer_profile")
+    phone = models.CharField(max_length=20, blank=True)
+    photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
+
+    def is_complete(self):
+        return bool(self.user.first_name.strip() and self.user.last_name.strip() and self.phone.strip() and self.photo)
+
+    def completion_percentage(self):
+        fields = [self.user.first_name.strip(), self.user.last_name.strip(), self.phone.strip(), self.photo]
+        return int(sum(bool(value) for value in fields) / len(fields) * 100)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"
 
 
 class SupplierProductRequest(TimeStampedModel):
@@ -761,19 +954,35 @@ class Order(TimeStampedModel):
     def reduce_local_stock(self):
         if self.stock_reduced:
             return
-
-        for item in self.items.all():
-            product = item.product
-
-            if product.product_type == "local":
-                if product.stock_quantity < item.quantity:
-                    raise ValueError(f"Not enough stock for {product.name}")
-
-                product.stock_quantity -= item.quantity
-                product.save()
-
-        self.stock_reduced = True
-        self.save()
+        from django.db import transaction
+        with transaction.atomic():
+            locked_order = Order.objects.select_for_update().get(pk=self.pk)
+            if locked_order.stock_reduced:
+                return
+            for item in locked_order.items.select_related("product", "variant"):
+                product = item.product
+                if product.product_type != "local":
+                    continue
+                if item.variant_id:
+                    variant = ProductVariant.objects.select_for_update().get(pk=item.variant_id)
+                    if variant.track_inventory and variant.stock_quantity < item.quantity:
+                        raise ValueError(f"Not enough stock for {product.name} ({variant.sku})")
+                    if variant.track_inventory:
+                        variant.stock_quantity -= item.quantity
+                        variant.save(update_fields=["stock_quantity", "updated_at"])
+                        StockMovement.objects.create(product=product, variant=variant, movement_type="sale", quantity=-item.quantity, note=f"Order {locked_order.tracking_code}")
+                    product.stock_quantity = sum(v.stock_quantity for v in product.variants.filter(is_active=True, is_deleted=False, track_inventory=True))
+                    product.save(update_fields=["stock_quantity", "status", "updated_at"])
+                else:
+                    product = Product.objects.select_for_update().get(pk=product.pk)
+                    if product.stock_quantity < item.quantity:
+                        raise ValueError(f"Not enough stock for {product.name}")
+                    product.stock_quantity -= item.quantity
+                    product.save(update_fields=["stock_quantity", "status", "updated_at"])
+                    StockMovement.objects.create(product=product, movement_type="sale", quantity=-item.quantity, note=f"Order {locked_order.tracking_code}")
+            locked_order.stock_reduced = True
+            locked_order.save(update_fields=["stock_reduced", "updated_at"])
+            self.stock_reduced = True
 
     def is_delayed(self):
         active_statuses = ["pending", "confirmed", "purchased", "shipped", "in_transit"]
@@ -834,6 +1043,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.PROTECT, null=True, blank=True, related_name="order_items")
 
     product_name = models.CharField(max_length=200)
     quantity = models.PositiveIntegerField(default=1)
@@ -844,6 +1054,11 @@ class OrderItem(models.Model):
     product_type = models.CharField(max_length=20, default="preorder")
     requested_size = models.CharField(max_length=80, blank=True)
     requested_color = models.CharField(max_length=120, blank=True)
+    product_sku = models.CharField(max_length=60, blank=True)
+    variant_sku = models.CharField(max_length=100, blank=True)
+    color_name = models.CharField(max_length=120, blank=True)
+    size_name = models.CharField(max_length=80, blank=True)
+    selected_image = models.CharField(max_length=500, blank=True)
     availability_status = models.CharField(max_length=20, choices=[
         ("not_required", "Not required"),
         ("pending", "Pending verification"),
@@ -865,6 +1080,14 @@ class OrderItem(models.Model):
     def save(self, *args, **kwargs):
         if not self.product_name:
             self.product_name = self.product.name
+        if not self.product_sku:
+            self.product_sku = self.product.sku
+        if self.variant_id:
+            self.variant_sku = self.variant_sku or self.variant.sku
+            self.color_name = self.color_name or (self.variant.color.name if self.variant.color_id else "")
+            self.size_name = self.size_name or (self.variant.size.name if self.variant.size_id else "")
+            self.requested_color = self.requested_color or self.color_name
+            self.requested_size = self.requested_size or self.size_name
 
         if not self.unit_price:
             self.unit_price = self.product.selling_price()
@@ -951,6 +1174,7 @@ class StockMovement(TimeStampedModel):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stock_movements")
+    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name="stock_movements")
     movement_type = models.CharField(max_length=20, choices=MOVEMENT_CHOICES)
     quantity = models.IntegerField()
     note = models.TextField(blank=True)

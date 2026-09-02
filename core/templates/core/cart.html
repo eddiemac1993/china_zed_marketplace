@@ -50,6 +50,7 @@
                     <!-- BODY -->
                     <div class="min-w-0 flex-1">
                         <a href="{% url 'product_detail' item.product.slug %}" class="line-clamp-2 text-[13px] font-bold text-brand-ink transition hover:text-brand-red">{{ item.product.name }}</a>
+                        {% if item.variant %}<div class="mt-1 text-[11px] font-semibold text-brand-muted">{% if item.variant.color %}Color: {{ item.variant.color.name }}{% endif %}{% if item.variant.size %} · Size: {{ item.variant.size.name }}{% endif %} · SKU: {{ item.variant.sku }}</div>{% endif %}
 
                         <div class="mt-2 flex flex-wrap gap-1.5">
                             {% if item.product.product_type == "local" %}
@@ -70,7 +71,7 @@
                                 <div class="text-[10px] text-brand-muted">Unit Price</div>
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-xs font-bold text-brand-red">K</span>
-                                    <span class="font-display text-xl font-black leading-none text-brand-red">{{ item.product.selling_price|floatformat:0|intcomma }}</span>
+                                    <span class="font-display text-xl font-black leading-none text-brand-red">{{ item.unit_price|floatformat:0|intcomma }}</span>
                                 </div>
                                 <div class="mt-0.5 text-[11px] text-brand-muted">Line total: <strong class="font-bold text-brand-ink">K{{ item.line_total|floatformat:0|intcomma }}</strong></div>
                             </div>
