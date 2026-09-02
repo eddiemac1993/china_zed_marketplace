@@ -886,6 +886,7 @@ def profile_view(request):
             }
             for product in Product.objects.filter(status="draft", is_deleted=False).order_by("-created_at")[:12]
         ] if request.user.is_staff else [],
+        "edit_product_id": int(request.GET["edit_product"]) if request.user.is_staff and request.GET.get("edit_product", "").isdigit() else None,
     })
 
 
@@ -900,8 +901,12 @@ def staff_quick_publish_product_view(request, product_id):
         prefix=f"product-{product.pk}",
     )
     if not form.is_valid():
-        messages.error(request, "Product was not published. Please correct the highlighted fields in Product Admin.")
-        return redirect(reverse("admin:core_product_change", args=[product.pk]))
+        error_messages = [
+            f"{form.fields.get(field).label if field in form.fields else 'Product'}: {' '.join(errors)}"
+            for field, errors in form.errors.items()
+        ]
+        messages.error(request, "Product was not published. " + " ".join(error_messages))
+        return redirect(f"{reverse('profile')}?edit_product={product.pk}#quick-product-{product.pk}")
 
     with transaction.atomic():
         product = form.save(commit=False)
@@ -922,7 +927,7 @@ def staff_quick_publish_product_view(request, product_id):
         if not product.is_order_ready():
             transaction.set_rollback(True)
             messages.error(request, "Product is still missing required information and was not published.")
-            return redirect(reverse("admin:core_product_change", args=[product.pk]))
+            return redirect(f"{reverse('profile')}?edit_product={product.pk}#quick-product-{product.pk}")
 
     messages.success(request, f"{product.name} is now live on the homepage.")
     return redirect("profile")

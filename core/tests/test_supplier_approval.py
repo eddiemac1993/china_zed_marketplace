@@ -99,3 +99,30 @@ class StaffQuickPublishTests(TestCase):
         self.assertEqual(product.status, "active")
         self.assertTrue(product.is_available)
         self.assertTrue(product.gallery_images.filter(visibility="public", is_primary=True).exists())
+
+    def test_invalid_quick_publish_returns_to_open_profile_draft(self):
+        staff = get_user_model().objects.create_user("admin", password="pass", is_staff=True)
+        product = Product.objects.create(
+            name="Draft shoe",
+            description="Draft",
+            rmb_price="100.00",
+            status="draft",
+            is_available=False,
+        )
+        self.client.force_login(staff)
+
+        response = self.client.post(
+            reverse("staff_quick_publish_product", args=[product.pk]),
+            {
+                "product-%s-name" % product.pk: "Draft shoe",
+                "product-%s-description" % product.pk: "Draft",
+                "product-%s-product_type" % product.pk: "preorder",
+                "product-%s-rmb_price" % product.pk: "100.00",
+                "product-%s-stock_quantity" % product.pk: "0",
+            },
+        )
+
+        expected = f"{reverse('profile')}?edit_product={product.pk}#quick-product-{product.pk}"
+        self.assertRedirects(response, expected, fetch_redirect_response=False)
+        product.refresh_from_db()
+        self.assertEqual(product.status, "draft")
