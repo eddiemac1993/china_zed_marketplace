@@ -1,7 +1,11 @@
+{% load static %}
 <!-- MOBILE MARKETPLACE HEADER -->
 <header class="relative z-[1] bg-white shadow-md lg:hidden" style="z-index:1;background-color:#fff">
     <div class="flex h-14 items-center justify-between px-4">
-        <a href="{% url 'home' %}" class="font-display text-[28px] font-black leading-none tracking-tight text-brand-orange" style="font-size:28px;font-weight:900;color:#ff5000">ChinaZed</a>
+        <a href="{% url 'home' %}" class="flex items-center gap-2" aria-label="ChinaZed home">
+            <img src="{% static 'core/images/market-icon-64.png' %}" alt="" class="h-9 w-9 object-contain">
+            <span class="font-display text-[28px] font-black leading-none tracking-tight text-brand-orange" style="font-size:28px;font-weight:900;color:#ff5000">ChinaZed</span>
+        </a>
         <button type="button" @click="menuOpen = true" class="flex items-center gap-1.5 rounded-full px-2.5 py-2 text-xs font-bold text-brand-ink" aria-label="Open menu">
             <i class="fa-solid fa-location-dot text-brand-orange"></i> Zambia <i class="fa-solid fa-chevron-down text-[9px]"></i>
         </button>
@@ -35,7 +39,7 @@
         </button>
 
         <a href="{% url 'home' %}" class="flex shrink-0 items-center gap-2" aria-label="ChinaZed home">
-            <svg class="h-9 w-9 flex-none drop-shadow" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
+            <img src="{% static 'core/images/market-icon-64.png' %}" alt="" class="h-9 w-9 flex-none object-contain drop-shadow">
             <span class="font-display text-2xl font-black leading-none tracking-tight text-brand-orange lg:text-white">ChinaZed</span>
         </a>
 

@@ -1,3 +1,4 @@
+{% load static %}
 <div x-show="menuOpen" x-cloak class="fixed inset-0 z-[1000]" aria-hidden="true">
     <div class="absolute inset-0 bg-black/50"
          x-show="menuOpen" x-transition:enter="transition-opacity ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
@@ -11,7 +12,7 @@
          @keydown.escape.window="menuOpen = false">
 
         <div class="flex items-center justify-between bg-brand-red px-4 py-4">
-            <svg class="h-11 w-11" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
+            <img src="{% static 'core/images/market-icon-64.png' %}" alt="" class="h-11 w-11 object-contain">
             <button type="button" @click="menuOpen = false" aria-label="Close menu" class="grid h-10 w-10 place-items-center rounded-full text-lg text-white/85 transition hover:bg-white/15"><i class="fa-solid fa-xmark"></i></button>
         </div>
 

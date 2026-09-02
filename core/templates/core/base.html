@@ -107,7 +107,7 @@
 <footer class="mt-6 bg-neutral-900 print:hidden {% if request.resolver_match.url_name == 'assistant' %}hidden{% endif %}">
     <div class="mx-auto grid max-w-[1300px] gap-9 px-5 py-7 sm:grid-cols-3">
         <div>
-            <svg class="h-[70px] w-[70px]" viewBox="0 0 64 64" role="img" aria-label="ChinaZed marketplace"><path d="M17 23h30l-2.5 27h-25z" fill="#ff6a00"/><path d="M24 25v-4a8 8 0 0 1 16 0v4" fill="none" stroke="#ff6a00" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="36" r="8" fill="#fff"/><path d="M24 36h16M32 28c3 3 4 5 4 8s-1 5-4 8c-3-3-4-5-4-8s1-5 4-8z" fill="none" stroke="#ff6a00" stroke-width="1.8"/></svg>
+            <img src="{% static 'core/images/market-icon-64.png' %}" alt="ChinaZed marketplace" class="h-[70px] w-[70px] object-contain">
             <div class="mt-2.5 text-[10px] uppercase tracking-widest text-neutral-500">中赞商城 · Marketplace</div>
             <p class="mt-2.5 text-xs leading-relaxed text-neutral-400">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</p>
             <div class="mt-3.5 space-y-1.5 text-xs text-neutral-400">

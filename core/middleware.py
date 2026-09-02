@@ -37,7 +37,7 @@ class MobileAppHeadMiddleware:
     <meta name="apple-mobile-web-app-title" content="ChinaZed">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="{static('core/manifest.webmanifest')}">
-    <link rel="apple-touch-icon" href="{static('core/images/chinazed-icon-192.png')}">
+    <link rel="apple-touch-icon" href="{static('core/images/market-icon-180.png')}">
     <script>
         if ("serviceWorker" in navigator) {{
             window.addEventListener("load", function () {{
