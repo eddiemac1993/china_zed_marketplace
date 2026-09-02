@@ -10,8 +10,8 @@
             <span class="grid h-7 w-7 place-items-center"><i class="fa-solid fa-plane-departure text-base leading-none"></i></span>China
         </a>
         {% if request.user.is_authenticated %}
-        <button type="button" @click="cartOpen = true; $dispatch('cartDrawerOpen')" class="relative flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-muted">
-            <span class="relative"><i class="fa-solid fa-cart-shopping text-lg leading-none"></i>{% if nav_cart_count %}<span class="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-red px-0.5 text-[9px] font-bold text-white">{{ nav_cart_count }}</span>{% endif %}</span>Cart
+        <button type="button" @click="cartOpen = true; $dispatch('cartDrawerOpen')" class="relative flex w-full flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-muted">
+            <span class="relative grid h-7 w-7 place-items-center"><i class="fa-solid fa-cart-shopping text-base leading-none"></i>{% if nav_cart_count %}<span class="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-red px-0.5 text-[9px] font-bold text-white">{{ nav_cart_count }}</span>{% endif %}</span>Cart
         </button>
         <a href="{% url 'profile' %}" class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold text-brand-muted">
             <span class="grid h-7 w-7 place-items-center rounded-full"><i class="fa-solid fa-circle-user text-lg leading-none"></i></span>Account
