@@ -1581,6 +1581,9 @@ def supplier_submit_product(request):
                         product_image.original_image.save(request_image.image.name.rsplit("/", 1)[-1], ContentFile(source.read()), save=False)
                     product_image.save()
 
+                supplier_request.converted_product = product
+                supplier_request.save(update_fields=["converted_product", "updated_at"])
+
                 edit_url = reverse("admin:core_product_change", args=[product.id])
                 messages.success(request, format_html(
                     'Photos saved safely as a draft. <a class="font-bold underline" href="{}">Complete this product</a> when you are ready to add its name, category, price, variants and customer-facing images.',

@@ -1,6 +1,9 @@
 import logging
 
+from allauth.account.signals import user_signed_up
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from webpush import send_user_notification
@@ -8,6 +11,32 @@ from webpush import send_user_notification
 from .models import Product, Order, OrderCheckpoint, DeliveryJob, Biker, MarketplaceEvent, calculate_biker_payout
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(user_signed_up)
+def notify_owner_about_google_signup(sender, request, user, **kwargs):
+    sociallogin = kwargs.get("sociallogin")
+    if not sociallogin or sociallogin.account.provider != "google":
+        return
+    if not settings.SITE_OWNER_EMAIL:
+        return
+
+    try:
+        send_mail(
+            subject="New Google signup on ChinaZed",
+            message=(
+                "A new customer joined ChinaZed using Google.\n\n"
+                f"Name: {user.get_full_name() or 'Not provided'}\n"
+                f"Email: {user.email}\n"
+                f"Username: {user.get_username()}\n"
+                f"Joined: {user.date_joined:%Y-%m-%d %H:%M %Z}\n"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.SITE_OWNER_EMAIL],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception("Could not notify site owner about Google signup for user %s", user.pk)
 
 
 @receiver(post_save, sender=Order)

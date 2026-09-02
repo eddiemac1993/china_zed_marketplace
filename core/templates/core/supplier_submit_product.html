@@ -281,10 +281,11 @@
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     {% with status=item.review_status %}
                                         <span class="rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide {% if status == 'pending' %}bg-amber-50 text-amber-800{% elif status == 'approved' %}bg-emerald-50 text-emerald-700{% else %}bg-red-50 text-red-700{% endif %}">
-                                            {% if status == 'pending' %}Under review{% elif status == 'approved' %}Approved{% else %}Not approved{% endif %}
+                                            {% if status == 'pending' %}Under review{% elif status == 'approved' %}{% if item.converted_product_id %}Draft created{% else %}Approved{% endif %}{% else %}Not approved{% endif %}
                                         </span>
                                     {% endwith %}
                                     <span class="text-[10px] text-brand-muted">{{ item.created_at|date:"j M" }}</span>
+                                    {% if request.user.is_staff and item.converted_product_id %}<a href="{% url 'admin:core_product_change' item.converted_product_id %}" class="text-[10px] font-black text-brand-orange underline">Finish &amp; publish</a>{% endif %}
                                 </div>
                             </div>
                         </div>

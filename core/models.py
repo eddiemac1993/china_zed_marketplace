@@ -680,6 +680,14 @@ class SupplierProductRequest(TimeStampedModel):
         related_name="supplier_submissions",
         help_text="The approved supplier account that submitted this product.",
     )
+    converted_product = models.OneToOneField(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="supplier_request",
+        help_text="Draft product created from this approved submission.",
+    )
 
     supplier_name = models.CharField(max_length=150)
     supplier_contact = models.CharField(max_length=100, blank=True)

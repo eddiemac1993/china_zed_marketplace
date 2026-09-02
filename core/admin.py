@@ -322,6 +322,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     prepopulated_fields = {"slug": ("name",)}
     inlines = [ProductColorInline, ProductVariantInline, ProductImageInline, StockMovementInline]
+    actions = ["publish_ready_products"]
 
     fieldsets = (
         ("Basic Product Details", {
@@ -424,6 +425,28 @@ class ProductAdmin(admin.ModelAdmin):
         return f"K{obj.balance_amount()}"
 
     balance_display.short_description = "Balance"
+
+    @admin.action(description="Publish selected ready products on the homepage")
+    def publish_ready_products(self, request, queryset):
+        published = 0
+        skipped = []
+        for product in queryset:
+            if not product.is_order_ready():
+                skipped.append(product.name)
+                continue
+            product.status = "active"
+            product.is_available = True
+            product.save(update_fields=["status", "is_available", "updated_at"])
+            published += 1
+
+        if published:
+            messages.success(request, f"{published} product(s) published and visible on the homepage.")
+        if skipped:
+            messages.error(
+                request,
+                "Not published because required details or a public customer image are missing: "
+                + ", ".join(skipped[:5]),
+            )
 
 
 # =========================
@@ -776,7 +799,7 @@ def approve_supplier_requests(modeladmin, request, queryset):
     skipped_count = 0
 
     for supplier_request in queryset:
-        if supplier_request.is_approved:
+        if supplier_request.converted_product_id:
             skipped_count += 1
             continue
 
@@ -837,6 +860,7 @@ def approve_supplier_requests(modeladmin, request, queryset):
 
         supplier_request.is_reviewed = True
         supplier_request.is_approved = True
+        supplier_request.converted_product = product
         supplier_request.admin_note = "Approved and converted to a draft product. Add approved customer images before publishing."
         supplier_request.save()
 
@@ -865,13 +889,11 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
         "stock_quantity",
         "is_reviewed",
         "is_approved",
+        "converted_product",
         "created_at",
     )
 
-    list_editable = (
-        "is_reviewed",
-        "is_approved",
-    )
+    list_editable = ("is_reviewed",)
 
     list_filter = (
         "product_type",
@@ -895,6 +917,8 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "image_preview_large",
+        "is_approved",
+        "converted_product",
     )
 
     fieldsets = (
@@ -929,6 +953,7 @@ class SupplierProductRequestAdmin(admin.ModelAdmin):
             "fields": (
                 "is_reviewed",
                 "is_approved",
+                "converted_product",
                 "admin_note",
             )
         }),

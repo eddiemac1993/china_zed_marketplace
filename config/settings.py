@@ -171,6 +171,7 @@ else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "no-reply@chinatozambia.org"
+SITE_OWNER_EMAIL = os.getenv("SITE_OWNER_EMAIL", "chinatozambia.zm@gmail.com").strip()
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
