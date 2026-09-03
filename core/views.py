@@ -69,7 +69,7 @@ from .models import (
     money,
     calculate_delivery_fee,
 )
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 from io import BytesIO
 from django.http import HttpResponse
 from django.http import FileResponse, Http404
@@ -2286,7 +2286,10 @@ def draw_centered_text(draw, box, text, font, fill):
     draw.text((x, y), text, font=font, fill=fill)
 
 
-def draw_wrapped_text(draw, text, x, y, font, fill, max_width, line_gap, max_lines):
+def draw_wrapped_text(
+    draw, text, x, y, font, fill, max_width, line_gap, max_lines,
+    stroke_width=0, stroke_fill=None,
+):
     words = safe_text(text).split()
     lines = []
     current = ""
@@ -2315,7 +2318,10 @@ def draw_wrapped_text(draw, text, x, y, font, fill, max_width, line_gap, max_lin
         lines[-1] = truncate_to_width(draw, lines[-1] + "...", font, max_width)
 
     for line in lines:
-        draw.text((x, y), line, font=font, fill=fill)
+        draw.text(
+            (x, y), line, font=font, fill=fill,
+            stroke_width=stroke_width, stroke_fill=stroke_fill or fill,
+        )
         y += line_gap
 
     return y
@@ -2950,18 +2956,26 @@ def save_product_image_view(request, slug):
     def px(value):
         return int(value * scale)
 
-    poster = Image.new("RGB", (width, height), "#F3F4F6")
-    draw = ImageDraw.Draw(poster)
+    poster = Image.new("RGB", (width, height), "#F7F7F7")
     regular = load_system_font("DejaVuSans.ttf", px(25))
-    small_bold = load_system_font("DejaVuSans-Bold.ttf", px(25))
-    title_font = load_system_font("DejaVuSans-Bold.ttf", px(55))
-    price_font = load_system_font("DejaVuSans-Bold.ttf", px(92))
-    cta_font = load_system_font("DejaVuSans-Bold.ttf", px(30))
+    small_bold = load_system_font("DejaVuSans-Bold.ttf", px(28))
+    brand_font = load_system_font("DejaVuSans-Bold.ttf", px(38))
+    title_font = load_system_font("DejaVuSans-Bold.ttf", px(58))
+    price_font = load_system_font("DejaVuSans-Bold.ttf", px(96))
+    cta_font = load_system_font("DejaVuSans-Bold.ttf", px(31))
 
     margin = px(28)
     card_right = width - margin
     card_bottom = height - margin
     radius = px(30)
+    shadow = Image.new("RGBA", poster.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (margin + px(3), margin + px(8), card_right + px(3), card_bottom + px(8)),
+        radius=radius, fill=(15, 23, 42, 70),
+    )
+    shadow = shadow.filter(ImageFilter.GaussianBlur(px(16)))
+    poster = Image.alpha_composite(poster.convert("RGBA"), shadow).convert("RGB")
+    draw = ImageDraw.Draw(poster)
     draw.rounded_rectangle(
         (margin, margin, card_right, card_bottom), radius=radius, fill="#FFFFFF"
     )
@@ -3004,52 +3018,108 @@ def save_product_image_view(request, slug):
         draw_centered_text(draw, image_box, "Product image", title_font, "#6B7280")
 
     # Small brand and fulfilment labels stay readable without competing with the product.
-    draw.rounded_rectangle(
-        (px(55), px(55), px(300), px(120)), radius=px(18), fill="#FFFFFF"
+    label_shadow = Image.new("RGBA", poster.size, (0, 0, 0, 0))
+    label_draw = ImageDraw.Draw(label_shadow)
+    label_draw.rounded_rectangle(
+        (px(51), px(57), px(320), px(137)), radius=px(19), fill=(15, 23, 42, 65)
     )
-    draw.text((px(78), px(70)), "ChinaZed", font=small_bold, fill="#E5141A")
+    label_shadow = label_shadow.filter(ImageFilter.GaussianBlur(px(10)))
+    poster = Image.alpha_composite(poster.convert("RGBA"), label_shadow).convert("RGB")
+    draw = ImageDraw.Draw(poster)
+    draw.rounded_rectangle(
+        (px(48), px(48), px(317), px(128)), radius=px(19), fill="#FFFFFF"
+    )
+    draw.text(
+        (px(72), px(61)), "ChinaZed", font=brand_font, fill="#E5141A",
+        stroke_width=px(1), stroke_fill="#E5141A",
+    )
     if product.product_type == "local":
         badge = "ZAMBIA STOCK"
         badge_color = "#059669"
     else:
         badge = "CHINA PRE-ORDER"
         badge_color = "#2563EB"
-    badge_left = px(720 if product.product_type == "local" else 655)
+    badge_left = px(700 if product.product_type == "local" else 620)
     draw.rounded_rectangle(
-        (badge_left, px(55), px(1025), px(120)), radius=px(18), fill=badge_color
+        (badge_left, px(55), px(1025), px(125)), radius=px(18), fill=badge_color
     )
     draw_centered_text(
-        draw, (badge_left, px(55), px(1025), px(120)), badge, small_bold, "#FFFFFF"
+        draw, (badge_left, px(55), px(1025), px(125)), badge, small_bold, "#FFFFFF"
     )
 
     panel_top = px(995)
-    draw.rounded_rectangle(
-        (margin, panel_top, card_right, card_bottom), radius=radius, fill="#111827"
+    panel_width = card_right - margin
+    panel_height = card_bottom - panel_top
+    panel = Image.new("RGB", (panel_width, panel_height), "#061426")
+    panel_draw = ImageDraw.Draw(panel)
+    for y in range(panel_height):
+        blend = y / max(panel_height - 1, 1)
+        color = (int(8 + 6 * blend), int(24 + 7 * blend), int(43 + 12 * blend))
+        panel_draw.line((0, y, panel_width, y), fill=color)
+    panel_mask = Image.new("L", (panel_width, panel_height), 0)
+    ImageDraw.Draw(panel_mask).rounded_rectangle(
+        (0, 0, panel_width - 1, panel_height - 1), radius=radius, fill=255
     )
-    draw.rectangle((margin, panel_top, card_right, panel_top + radius), fill="#111827")
+    poster.paste(panel, (margin, panel_top), panel_mask)
+    draw = ImageDraw.Draw(poster)
+    draw.rounded_rectangle(
+        (margin, panel_top, card_right, card_bottom), radius=radius,
+        outline="#E5E7EB", width=px(2),
+    )
+    for row in range(8):
+        for column in range(7):
+            dot_x = px(895 + column * 18)
+            dot_y = px(1045 + row * 18)
+            draw.ellipse(
+                (dot_x, dot_y, dot_x + px(3), dot_y + px(3)), fill="#17304B"
+            )
 
     product_name = safe_text(product.name, "Product")
     title_bottom = draw_wrapped_text(
         draw, product_name, px(75), px(1050), title_font, "#FFFFFF",
-        px(930), px(65), max_lines=2,
+        px(930), px(65), max_lines=2, stroke_width=px(1), stroke_fill="#FFFFFF",
     )
 
     price_label_y = max(title_bottom + px(18), px(1200))
-    draw.text((px(78), price_label_y), "PRICE", font=regular, fill="#D1D5DB")
+    draw.text((px(78), price_label_y), "PRICE", font=small_bold, fill="#B8C0CC")
     price = f"K{format_currency(product.selling_price())}"
     price = truncate_to_width(draw, price, price_font, px(900))
     draw.text((px(72), price_label_y + px(28)), price, font=price_font, fill="#FF5A00")
 
     cta_top = px(1405)
     draw.rounded_rectangle(
-        (px(70), cta_top, px(1010), px(1510)), radius=px(25), fill="#10B981"
+        (px(70), cta_top, px(1010), px(1510)), radius=px(52),
+        fill="#08AD61", outline="#20E283", width=px(3),
+    )
+    draw.ellipse(
+        (px(105), px(1427), px(166), px(1488)), outline="#FFFFFF", width=px(4)
+    )
+    # A simple handset mark avoids depending on icon fonts on the server.
+    draw.arc(
+        (px(119), px(1438), px(153), px(1478)), 125, 315,
+        fill="#FFFFFF", width=px(5),
+    )
+    draw.line(
+        (px(121), px(1465), px(113), px(1480), px(130), px(1476)),
+        fill="#FFFFFF", width=px(4), joint="curve",
+    )
+    draw.line(
+        (px(123), px(1443), px(130), px(1452), px(142), px(1465), px(151), px(1470)),
+        fill="#FFFFFF", width=px(5), joint="curve",
     )
     draw_centered_text(
-        draw, (px(70), cta_top, px(1010), px(1510)),
-        "Order on WhatsApp  +260 766 491 002", cta_font, "#FFFFFF",
+        draw, (px(165), cta_top, px(995), px(1510)),
+        "Order on WhatsApp   +260 766 491 002", cta_font, "#FFFFFF",
     )
+    draw.line((px(100), px(1543), px(310), px(1543)), fill="#10B981", width=px(2))
+    draw.line((px(770), px(1543), px(980), px(1543)), fill="#10B981", width=px(2))
+    draw.ellipse((px(342), px(1527), px(374), px(1559)), outline="#10B981", width=px(2))
+    draw.line((px(358), px(1528), px(358), px(1558)), fill="#10B981", width=px(2))
+    draw.arc((px(346), px(1527), px(370), px(1559)), 90, 270, fill="#10B981", width=px(1))
+    draw.arc((px(346), px(1527), px(370), px(1559)), 270, 90, fill="#10B981", width=px(1))
+    draw.line((px(343), px(1543), px(373), px(1543)), fill="#10B981", width=px(1))
     draw_centered_text(
-        draw, (px(70), px(1522), px(1010), px(1562)),
+        draw, (px(375), px(1522), px(705), px(1564)),
         "chinatozambia.org", regular, "#D1D5DB",
     )
 
