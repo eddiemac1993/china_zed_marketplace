@@ -412,7 +412,7 @@ class Product(TimeStampedModel):
         return "Out of stock"
 
     def whatsapp_link(self):
-        phone = "260766491002"
+        phone = "260970949531"
         message = (
             "Hello, I want to ask about this product:\n"
             f"Product: {self.name}\n"
