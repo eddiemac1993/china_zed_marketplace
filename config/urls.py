@@ -72,6 +72,7 @@ urlpatterns = [
     path("events/", include("events.urls")),
     path("price-list/", include("pricelist.urls")),
     path("communinity/", include("communinity.urls")),
+    path("loans/", include("loans.urls")),
 
     path(
         "password-reset/",

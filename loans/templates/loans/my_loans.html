@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}My Loans · ChinaZed{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260904">
+{% endblock %}
+
+{% block content %}
+<div class="lm">
+  <div class="lm-public">
+    <div class="lm-hero">
+      <h1>💸 My Loans</h1>
+      <p>Track your outstanding balance and request a new Quick Loan whenever you're eligible.</p>
+      <div class="lm-limit-row">
+        <div class="lm-limit-chip"><div class="k">Outstanding balance</div><div class="v">K{{ outstanding|floatformat:2 }}</div></div>
+        <div class="lm-limit-chip"><div class="k">Eligible up to</div><div class="v">K{{ eligible_limit|floatformat:2 }}</div></div>
+      </div>
+    </div>
+
+    {% if blocking_reason %}
+      <div class="lm-block-notice">⚠️ {{ blocking_reason }}</div>
+    {% else %}
+      <a href="{% url 'loans:apply' %}" class="lm-btn lm-btn-primary" style="margin-bottom:16px">+ Request a loan (min K{{ min_amount|floatformat:2 }})</a>
+    {% endif %}
+
+    {% if requests %}
+    <div class="lm-card" style="margin-bottom:16px">
+      <strong>Recent requests</strong>
+      <ul class="lm-timeline">
+        {% for r in requests %}
+        <li>
+          <span>
+            {% if r.status == 'pending' %}⏳{% elif r.status == 'approved' %}✅{% else %}✕{% endif %}
+          </span>
+          <span>K{{ r.amount|floatformat:2 }} · {{ r.get_period_weeks_display }} · {{ r.requested_at|date:"d M Y" }} —
+            <strong>{{ r.get_status_display }}</strong>
+            {% if r.status == 'declined' and r.decision_notes %} ({{ r.decision_notes }}){% endif %}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="lm-card">
+      <strong>My loans</strong>
+      <div class="lm-table-wrap" style="margin-top:10px">
+        <table class="lm-table">
+          <thead><tr><th>Ref</th><th>Issued</th><th>Due</th><th class="lm-num">Repayment</th><th class="lm-num">Balance</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for loan in loans %}
+            <tr onclick="window.location='{% url 'loans:my_loan_detail' loan.pk %}'" style="cursor:pointer">
+              <td>{{ loan.reference }}</td>
+              <td>{{ loan.issue_date|date:"d M Y" }}</td>
+              <td>{{ loan.due_date|date:"d M Y" }}</td>
+              <td class="lm-num">K{{ loan.total_repayment|floatformat:2 }}</td>
+              <td class="lm-num">K{{ loan.balance|floatformat:2 }}</td>
+              <td><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.get_status_display }}</span></td>
+              <td><a class="lm-btn lm-btn-sm" href="{% url 'loans:my_loan_detail' loan.pk %}">View</a></td>
+            </tr>
+            {% empty %}<tr><td colspan="7"><div class="lm-empty">You haven't taken a loan yet.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

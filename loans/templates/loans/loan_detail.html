@@ -1,0 +1,100 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Loan {{ loan.reference }}{% endblock %}
+
+{% block lm_actions %}
+  {% if can_manage and loan.status != 'paid' %}
+  <a href="{% url 'loans:payment_create' loan.pk %}" class="lm-btn lm-btn-primary">💵 Receive Payment</a>
+  <a href="{% url 'loans:loan_topup' loan.pk %}" class="lm-btn">➕ Top Up Loan</a>
+  {% endif %}
+  {% if can_manage %}
+  <a href="{% url 'loans:loan_edit' loan.pk %}" class="lm-btn">✏️ Edit</a>
+  <a href="{% url 'loans:loan_delete' loan.pk %}" class="lm-btn lm-btn-danger">Delete</a>
+  {% endif %}
+{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <div class="lm-cols">
+    <dl class="lm-kv">
+      <dt>Customer</dt><dd><a href="{% url 'loans:customer_detail' loan.customer.pk %}">{{ loan.customer.full_name }}</a> · {{ loan.customer.phone }}</dd>
+      <dt>Status</dt><dd><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.status_meta.label }}</span></dd>
+      <dt>Issue date</dt><dd>{{ loan.issue_date|date:"d M Y" }}</dd>
+      <dt>Due date</dt><dd>{{ loan.due_date|date:"d M Y" }} ({{ loan.period_weeks }} week period)</dd>
+      <dt>Payment method</dt><dd>{{ loan.get_payment_method_display }}</dd>
+      <dt>Original principal</dt><dd>K{{ loan.original_principal|floatformat:2 }}</dd>
+      <dt>Current principal</dt><dd>K{{ loan.principal|floatformat:2 }}</dd>
+      <dt>Interest</dt><dd>{{ loan.interest_rate }}% · K{{ loan.interest_amount|floatformat:2 }}</dd>
+      {% if loan.notes %}<dt>Notes</dt><dd>{{ loan.notes|linebreaksbr }}</dd>{% endif %}
+      {% if loan.status == 'paid' %}
+        <dt>Paid date</dt><dd>{{ loan.paid_date|date:"d M Y" }}</dd>
+        <dt>Paid by</dt><dd>{{ loan.paid_by|default:"—" }}</dd>
+        <dt>Receipt number</dt><dd>{{ loan.receipt_number }}</dd>
+      {% endif %}
+    </dl>
+    <div class="lm-grid" style="align-content:start">
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Total repayment</div><div class="lm-stat-value">K{{ loan.total_repayment|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Amount paid</div><div class="lm-stat-value">K{{ loan.amount_paid|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Balance</div><div class="lm-stat-value">K{{ loan.balance|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Remaining interest</div><div class="lm-stat-value">K{{ loan.remaining_interest|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Outstanding amount</div><div class="lm-stat-value">K{{ loan.outstanding_amount|floatformat:2 }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="lm-section">
+  <h3>Payments</h3>
+  <div class="lm-table-wrap">
+    <table class="lm-table">
+      <thead><tr><th>Receipt</th><th>Date</th><th class="lm-num">Amount</th><th>Method</th><th>Reference</th><th class="lm-num">Balance after</th><th></th></tr></thead>
+      <tbody>
+        {% for p in loan.payments.all %}
+        <tr>
+          <td>{{ p.receipt_number }}</td>
+          <td>{{ p.payment_date|date:"d M Y" }} {% if p.paid_late %}<span class="lm-badge amber">late</span>{% endif %}</td>
+          <td class="lm-num">K{{ p.amount_paid|floatformat:2 }}</td>
+          <td>{{ p.get_method_display }}</td>
+          <td>{{ p.reference|default:"—" }}</td>
+          <td class="lm-num">K{{ p.balance_after|floatformat:2 }}</td>
+          <td><a class="lm-btn lm-btn-sm" href="{% url 'loans:payment_receipt' p.pk %}">Receipt PDF</a></td>
+        </tr>
+        {% empty %}<tr><td colspan="7"><div class="lm-empty">No payments yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="lm-section">
+  <h3>Top-up history</h3>
+  <div class="lm-table-wrap">
+    <table class="lm-table">
+      <thead><tr><th>Date</th><th class="lm-num">Top-up</th><th class="lm-num">Principal before</th><th class="lm-num">Principal after</th><th class="lm-num">Repayment after</th><th>Note</th></tr></thead>
+      <tbody>
+        {% for t in loan.topups.all %}
+        <tr>
+          <td>{{ t.date|date:"d M Y" }}</td>
+          <td class="lm-num">K{{ t.amount|floatformat:2 }}</td>
+          <td class="lm-num">K{{ t.principal_before|floatformat:2 }}</td>
+          <td class="lm-num">K{{ t.principal_after|floatformat:2 }}</td>
+          <td class="lm-num">K{{ t.repayment_after|floatformat:2 }}</td>
+          <td>{{ t.note|default:"—" }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="6"><div class="lm-empty">No top-ups.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if loan.reminders.all %}
+<div class="lm-section">
+  <h3>Reminders sent</h3>
+  <ul class="lm-timeline">
+    {% for r in loan.reminders.all %}
+    <li><span>🔔</span><span>{{ r.get_kind_display }} · {{ r.channel }} · {{ r.sent_at|date:"d M Y H:i" }}</span></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

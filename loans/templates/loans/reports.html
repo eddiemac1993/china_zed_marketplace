@@ -1,0 +1,62 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Reports{% endblock %}
+
+{% block lm_content %}
+<form method="get" class="lm-filters lm-no-print">
+  <div class="lm-field"><label>Period</label>
+    <select name="period">
+      <option value="daily" {% if period == 'daily' %}selected{% endif %}>Daily</option>
+      <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>Weekly</option>
+      <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly</option>
+      <option value="yearly" {% if period == 'yearly' %}selected{% endif %}>Yearly</option>
+    </select>
+  </div>
+  <div class="lm-field"><label>Date in period</label><input type="date" name="date" value="{{ anchor|date:'Y-m-d' }}"></div>
+  <div class="lm-field"><label>Loans</label>
+    <select name="paid">
+      <option value="" {% if paid_filter == '' %}selected{% endif %}>All loans</option>
+      <option value="paid" {% if paid_filter == 'paid' %}selected{% endif %}>Paid only</option>
+      <option value="unpaid" {% if paid_filter == 'unpaid' %}selected{% endif %}>Unpaid only</option>
+    </select>
+  </div>
+  <button class="lm-btn lm-btn-primary">Generate</button>
+</form>
+
+<div class="lm-actions lm-no-print" style="margin-bottom:14px">
+  <a class="lm-btn" href="?period={{ period }}&date={{ anchor|date:'Y-m-d' }}&paid={{ paid_filter }}&export=pdf">⬇ PDF</a>
+  <a class="lm-btn" href="?period={{ period }}&date={{ anchor|date:'Y-m-d' }}&paid={{ paid_filter }}&export=csv">⬇ Excel (CSV)</a>
+  <a class="lm-btn" href="?period={{ period }}&date={{ anchor|date:'Y-m-d' }}&paid={{ paid_filter }}&export=print" onclick="setTimeout(function(){window.print()},400)">🖨 Print</a>
+</div>
+
+<div class="lm-section">
+  <h3>{{ period|title }} report — {{ label }}</h3>
+  <p class="lm-muted">{{ start|date:"d M Y" }} → {{ end|date:"d M Y" }} · {{ loan_count }} loan(s) issued · {{ payment_count }} payment(s) · <strong>{{ paid_label }}</strong></p>
+  <div class="lm-grid">
+    {% for name, value in rows %}
+    <div class="lm-card lm-stat"><div class="lm-stat-label">{{ name }}</div><div class="lm-stat-value">K{{ value|floatformat:2 }}</div></div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="lm-section">
+  <h3>Loans issued in period — {{ paid_label }}</h3>
+  <div class="lm-table-wrap">
+    <table class="lm-table">
+      <thead><tr><th>Ref</th><th>Customer</th><th>Issued</th><th class="lm-num">Principal</th><th class="lm-num">Interest</th><th class="lm-num">Repayment</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for loan in loans_in %}
+        <tr>
+          <td>{{ loan.reference }}</td><td>{{ loan.customer.full_name }}</td><td>{{ loan.issue_date|date:"d M Y" }}</td>
+          <td class="lm-num">K{{ loan.principal|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan.interest_amount|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan.total_repayment|floatformat:2 }}</td>
+          <td><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.get_status_display }}</span></td>
+        </tr>
+        {% empty %}<tr><td colspan="7"><div class="lm-empty">No {% if paid_filter %}{{ paid_filter }} {% endif %}loans issued in this period.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

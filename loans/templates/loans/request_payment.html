@@ -1,0 +1,30 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Make a Payment · ChinaZed{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260904">
+{% endblock %}
+
+{% block content %}
+<div class="lm">
+  <div class="lm-public">
+    <div class="lm-hero">
+      <h1>💵 I've made a payment</h1>
+      <p>Loan {{ loan.reference }} — outstanding balance K{{ loan.balance|floatformat:2 }}. Tell us what you sent, in any amount; we'll confirm once it's received.</p>
+    </div>
+
+    <div class="lm-card">
+      <form method="post">
+        {% csrf_token %}
+        {% include "loans/_form_fields.html" with full_fields="notes" %}
+        <div class="lm-form-actions" style="margin-top:14px">
+          <button type="submit" class="lm-btn lm-btn-primary">Submit payment claim</button>
+          <a href="{% url 'loans:my_loan_detail' loan.pk %}" class="lm-btn">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Delete loan {{ loan.reference }}?{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <p>You are about to permanently delete loan <strong>{{ loan.reference }}</strong> for
+  <strong>{{ loan.customer.full_name }}</strong>, including its
+  {{ loan.payments.count }} payment(s) and {{ loan.topups.count }} top-up(s).</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="lm-form-actions" style="border:none">
+      <button type="submit" class="lm-btn lm-btn-danger">Yes, delete</button>
+      <a href="{% url 'loans:loan_detail' loan.pk %}" class="lm-btn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

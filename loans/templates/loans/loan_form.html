@@ -1,0 +1,72 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}{% if is_edit %}Edit {{ loan.reference }}{% else %}New Loan{% endif %}{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <form method="post" class="lm-form" id="loanForm">
+    {% csrf_token %}
+    {% include "loans/_form_fields.html" with full_fields="notes" %}
+
+    <div class="lm-field full">
+      <label>Auto calculation</label>
+      <div class="lm-calc">
+        <div><div class="k">Loan amount</div><div class="v" id="cPrincipal">K0.00</div></div>
+        <div><div class="k">Interest amount</div><div class="v" id="cInterest">K0.00</div></div>
+        <div><div class="k">Total repayment</div><div class="v" id="cTotal">K0.00</div></div>
+      </div>
+      <div class="lm-help">Example: K500 at 35% &rarr; interest K175 &rarr; repayment K675.</div>
+    </div>
+
+    <div class="lm-form-actions">
+      <button type="submit" class="lm-btn lm-btn-primary">{% if is_edit %}Save changes{% else %}Create loan{% endif %}</button>
+      <a href="{% if is_edit %}{% url 'loans:loan_detail' loan.pk %}{% else %}{% url 'loans:loan_list' %}{% endif %}" class="lm-btn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block lm_js %}
+{{ rate_map|json_script:"rate-map" }}
+<script>
+(function () {
+  var form = document.getElementById('loanForm');
+  var rateMap = JSON.parse(document.getElementById('rate-map').textContent);
+  var amount = form.querySelector('[name="original_principal"]');
+  var rate = form.querySelector('[name="interest_rate"]');
+  var period = form.querySelector('[name="period_weeks"]');
+  var issue = form.querySelector('[name="issue_date"]');
+  var due = form.querySelector('[name="due_date"]');
+  var rateTouched = {{ form.interest_rate.value|yesno:"true,false" }};
+
+  function fmt(v) { return 'K' + (Number(v) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
+  function syncRate() {
+    if (rateTouched) return;
+    var r = rateMap[period.value];
+    if (r != null) rate.value = r;
+  }
+  var GRACE_DAYS = 5;
+  function syncDue() {
+    if (!issue.value || !period.value) return;
+    var d = new Date(issue.value + 'T00:00:00');
+    d.setDate(d.getDate() + parseInt(period.value, 10) * 7 + GRACE_DAYS);
+    due.value = d.toISOString().slice(0, 10);
+  }
+  function recalc() {
+    var p = parseFloat(amount.value) || 0;
+    var r = parseFloat(rate.value) || 0;
+    var interest = p * r / 100;
+    document.getElementById('cPrincipal').textContent = fmt(p);
+    document.getElementById('cInterest').textContent = fmt(interest);
+    document.getElementById('cTotal').textContent = fmt(p + interest);
+  }
+
+  rate.addEventListener('input', function () { rateTouched = true; recalc(); });
+  period.addEventListener('change', function () { syncRate(); syncDue(); recalc(); });
+  issue.addEventListener('change', syncDue);
+  amount.addEventListener('input', recalc);
+  syncRate(); syncDue(); recalc();
+})();
+</script>
+{% endblock %}

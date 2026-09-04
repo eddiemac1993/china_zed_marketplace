@@ -1,0 +1,46 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Top Up · {{ loan.reference }}{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <form method="post" class="lm-form" id="topupForm">
+    {% csrf_token %}
+    {% include "loans/_form_fields.html" with full_fields="note" %}
+    <div class="lm-field full">
+      <label>Auto calculation</label>
+      <div class="lm-calc">
+        <div><div class="k">Existing loan</div><div class="v">K{{ loan.principal|floatformat:2 }}</div></div>
+        <div><div class="k">Top up</div><div class="v" id="cTop">K0.00</div></div>
+        <div><div class="k">Total principal</div><div class="v" id="cPrincipal">K{{ loan.principal|floatformat:2 }}</div></div>
+        <div><div class="k">Total repayment</div><div class="v" id="cRepay">K{{ loan.total_repayment|floatformat:2 }}</div></div>
+      </div>
+      <div class="lm-help">Interest rate stays at {{ loan.interest_rate }}%. Every top-up is kept in history.</div>
+    </div>
+    <div class="lm-form-actions">
+      <button type="submit" class="lm-btn lm-btn-primary">Add top-up</button>
+      <a href="{% url 'loans:loan_detail' loan.pk %}" class="lm-btn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block lm_js %}
+<script>
+(function () {
+  var base = {{ loan.principal }};
+  var rate = {{ loan.interest_rate }};
+  var input = document.querySelector('#topupForm [name="amount"]');
+  function fmt(v) { return 'K' + (Number(v) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function recalc() {
+    var top = parseFloat(input.value) || 0;
+    var principal = base + top;
+    document.getElementById('cTop').textContent = fmt(top);
+    document.getElementById('cPrincipal').textContent = fmt(principal);
+    document.getElementById('cRepay').textContent = fmt(principal * (1 + rate / 100));
+  }
+  input.addEventListener('input', recalc);
+  recalc();
+})();
+</script>
+{% endblock %}

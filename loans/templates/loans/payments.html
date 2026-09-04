@@ -1,0 +1,38 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Payments{% endblock %}
+
+{% block lm_content %}
+<form method="get" class="lm-filters">
+  <div class="lm-field"><label>Search</label><input type="search" name="q" value="{{ q }}" placeholder="Customer, receipt, loan ref"></div>
+  <button class="lm-btn">Filter</button>
+  <a href="{% url 'loans:payment_list' %}" class="lm-btn">Clear</a>
+</form>
+
+<div class="lm-card lm-stat" style="margin-bottom:14px">
+  <div class="lm-stat-label">Total collected (filtered)</div>
+  <div class="lm-stat-value">K{{ total|floatformat:2 }}</div>
+</div>
+
+<div class="lm-table-wrap">
+  <table class="lm-table">
+    <thead><tr><th>Receipt</th><th>Date</th><th>Customer</th><th>Loan</th><th class="lm-num">Amount</th><th>Method</th><th class="lm-num">Balance after</th><th></th></tr></thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>{{ p.receipt_number }}</td>
+        <td>{{ p.payment_date|date:"d M Y" }} {% if p.paid_late %}<span class="lm-badge amber">late</span>{% endif %}</td>
+        <td><a href="{% url 'loans:customer_detail' p.loan.customer.pk %}">{{ p.loan.customer.full_name }}</a></td>
+        <td><a href="{% url 'loans:loan_detail' p.loan.pk %}">{{ p.loan.reference }}</a></td>
+        <td class="lm-num">K{{ p.amount_paid|floatformat:2 }}</td>
+        <td>{{ p.get_method_display }}</td>
+        <td class="lm-num">K{{ p.balance_after|floatformat:2 }}</td>
+        <td><a class="lm-btn lm-btn-sm" href="{% url 'loans:payment_receipt' p.pk %}">PDF</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8"><div class="lm-empty">No payments recorded.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -59,7 +59,13 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     "pricelist",
     "communinity",
+    "loans",
 ]
+
+# Optional SMS / WhatsApp gateways for loan reminders. Point these at a callable
+# ``fn(phone: str, message: str) -> bool``; unset means reminders are audit-logged only.
+LOAN_SMS_SENDER = os.getenv("LOAN_SMS_SENDER", "")
+LOAN_WHATSAPP_SENDER = os.getenv("LOAN_WHATSAPP_SENDER", "")
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

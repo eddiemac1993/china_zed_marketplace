@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Loan Management · ChinaZed{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260904">
+{% endblock %}
+
+{% block content %}
+<div class="lm">
+  <div class="lm-shell">
+    <aside class="lm-side lm-no-print">
+      <h2>💰 Loan Management</h2>
+      <nav class="lm-nav">
+        <a href="{% url 'loans:dashboard' %}" class="{% if section == 'dashboard' %}is-active{% endif %}">📊 Dashboard</a>
+        <a href="{% url 'loans:customer_list' %}" class="{% if section == 'customers' %}is-active{% endif %}">👥 Customers</a>
+        <a href="{% url 'loans:loan_list' %}" class="{% if section == 'loans' %}is-active{% endif %}">📄 Loans</a>
+        <a href="{% url 'loans:payment_list' %}" class="{% if section == 'payments' %}is-active{% endif %}">📥 Payments</a>
+        <a href="{% url 'loans:request_queue' %}" class="{% if section == 'requests' %}is-active{% endif %}">🙋 Requests</a>
+        <a href="{% url 'loans:reports' %}" class="{% if section == 'reports' %}is-active{% endif %}">📈 Reports</a>
+        <a href="{% url 'loans:settings' %}" class="{% if section == 'settings' %}is-active{% endif %}">⚙️ Settings</a>
+      </nav>
+    </aside>
+
+    <div class="lm-main">
+      <div class="lm-topbar">
+        <h1>{% block lm_title %}Loan Management{% endblock %}</h1>
+        <div class="lm-actions">
+          <div class="lm-bell lm-no-print" id="lmBell">
+            <button type="button" class="lm-btn lm-btn-sm" id="lmBellBtn">🔔 Notifications
+              <span class="lm-bell-count" id="lmBellCount" hidden>0</span>
+            </button>
+            <div class="lm-dropdown" id="lmBellMenu" hidden></div>
+          </div>
+          {% block lm_actions %}{% endblock %}
+        </div>
+      </div>
+
+      {% block lm_content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function () {
+  var btn = document.getElementById('lmBellBtn');
+  var menu = document.getElementById('lmBellMenu');
+  var count = document.getElementById('lmBellCount');
+  if (!btn) return;
+
+  function render(data) {
+    if (data.count > 0) { count.hidden = false; count.textContent = data.count; }
+    else { count.hidden = true; }
+    if (!data.items.length) { menu.innerHTML = '<div class="lm-empty">Nothing new</div>'; return; }
+    menu.innerHTML = data.items.map(function (i) {
+      return '<a href="' + i.url + '"><span>' + i.icon + '</span><span>' + i.text + '</span></a>';
+    }).join('');
+  }
+
+  fetch('{% url "loans:notifications_feed" %}', {headers: {'X-Requested-With': 'fetch'}})
+    .then(function (r) { return r.json(); }).then(render).catch(function () {});
+
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+  });
+  document.addEventListener('click', function () { menu.hidden = true; });
+  menu.addEventListener('click', function (e) { e.stopPropagation(); });
+})();
+</script>
+{% block lm_js %}{% endblock %}
+{% endblock %}

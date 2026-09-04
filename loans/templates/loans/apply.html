@@ -1,0 +1,111 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Quick Loan · ChinaZed{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260904">
+{% endblock %}
+
+{% block content %}
+<div class="lm">
+  <div class="lm-public">
+    <div class="lm-hero">
+      <h1>💸 Quick Loan</h1>
+      <p>Borrow in-app at low rates. Choose how many weeks you need, we tell you the interest before you apply.</p>
+      <div class="lm-limit-row">
+        <div class="lm-limit-chip"><div class="k">Minimum</div><div class="v">K{{ min_amount|floatformat:2 }}</div></div>
+        <div class="lm-limit-chip"><div class="k">You're eligible for up to</div><div class="v">K{{ max_amount|floatformat:2 }}</div></div>
+        <div class="lm-limit-chip"><div class="k">Deposit number</div><div class="v">{{ profile_phone }}</div></div>
+      </div>
+    </div>
+
+    {% if blocking_reason %}
+      <div class="lm-block-notice">⚠️ {{ blocking_reason }}</div>
+      <a href="{% url 'loans:my_loans' %}" class="lm-btn">View my loans</a>
+    {% else %}
+      <div class="lm-card">
+        <form method="post" id="applyForm">
+          {% csrf_token %}
+          <div class="lm-field">
+            <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
+            {{ form.amount }}
+            {{ form.amount.errors }}
+          </div>
+
+          <div class="lm-field" style="margin-top:14px">
+            <label>{{ form.period_weeks.label }}</label>
+            <div class="lm-week-picker" id="weekPicker">
+              {% for value, label in form.fields.period_weeks.choices %}
+              <label>
+                <input type="radio" name="period_weeks" value="{{ value }}" {% if form.period_weeks.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %}>
+                <span>{{ label }}<span class="rate"></span></span>
+              </label>
+              {% endfor %}
+            </div>
+            {{ form.period_weeks.errors }}
+          </div>
+
+          <div class="lm-field" style="margin-top:14px">
+            <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+            {{ form.notes }}
+          </div>
+
+          <div class="lm-field full" style="margin-top:14px">
+            <label>You'll get</label>
+            <div class="lm-calc">
+              <div><div class="k">Amount</div><div class="v" id="cAmount">K0.00</div></div>
+              <div><div class="k">Interest</div><div class="v" id="cInterest">K0.00</div></div>
+              <div><div class="k">Total repayment</div><div class="v" id="cTotal">K0.00</div></div>
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}<div class="lm-field full">{{ form.non_field_errors }}</div>{% endif %}
+
+          <div class="lm-form-actions" style="margin-top:16px">
+            <button type="submit" class="lm-btn lm-btn-primary">Submit request</button>
+            <a href="{% url 'loans:my_loans' %}" class="lm-btn">Cancel</a>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ rate_map|json_script:"rate-map" }}
+<script>
+(function () {
+  var form = document.getElementById('applyForm');
+  if (!form) return;
+  var rateMap = JSON.parse(document.getElementById('rate-map').textContent);
+  var amount = form.querySelector('[name="amount"]');
+  var weekInputs = form.querySelectorAll('[name="period_weeks"]');
+
+  // annotate each week option with its live rate
+  weekInputs.forEach(function (input) {
+    var rateEl = input.parentElement.querySelector('.rate');
+    var rate = rateMap[input.value];
+    if (rateEl && rate != null) rateEl.textContent = rate + '% interest';
+  });
+
+  function fmt(v) { return 'K' + (Number(v) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function selectedRate() {
+    var checked = form.querySelector('[name="period_weeks"]:checked');
+    return checked ? (parseFloat(rateMap[checked.value]) || 0) : 0;
+  }
+  function recalc() {
+    var a = parseFloat(amount.value) || 0;
+    var r = selectedRate();
+    var interest = a * r / 100;
+    document.getElementById('cAmount').textContent = fmt(a);
+    document.getElementById('cInterest').textContent = fmt(interest);
+    document.getElementById('cTotal').textContent = fmt(a + interest);
+  }
+  amount.addEventListener('input', recalc);
+  weekInputs.forEach(function (i) { i.addEventListener('change', recalc); });
+  recalc();
+})();
+</script>
+{% endblock %}

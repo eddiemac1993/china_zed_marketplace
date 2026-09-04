@@ -1,0 +1,104 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}{{ customer.full_name }}{% endblock %}
+
+{% block lm_actions %}
+  {% if can_manage %}
+  <a href="{% url 'loans:loan_create' %}?customer={{ customer.pk }}" class="lm-btn lm-btn-primary">+ New Loan</a>
+  <a href="{% url 'loans:customer_edit' customer.pk %}" class="lm-btn">Edit</a>
+  {% endif %}
+{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <div class="lm-cols">
+    <div style="display:flex;gap:16px;align-items:flex-start">
+      {% if customer.profile_picture %}
+        <img class="lm-avatar lm-avatar-lg" src="{{ customer.profile_picture.url }}" alt="">
+      {% else %}
+        <span class="lm-avatar lm-avatar-lg">{{ customer.full_name.0 }}</span>
+      {% endif %}
+      <dl class="lm-kv">
+        <dt>Full name</dt><dd>{{ customer.full_name }}</dd>
+        <dt>Phone</dt><dd>{{ customer.phone|default:"—" }}</dd>
+        <dt>NRC number</dt><dd>{{ customer.nrc_number|default:"—" }}</dd>
+        <dt>Employer</dt><dd>{{ customer.employer|default:"—" }}</dd>
+        <dt>Department</dt><dd>{{ customer.department|default:"—" }}</dd>
+        <dt>Employee number</dt><dd>{{ customer.employee_number|default:"—" }}</dd>
+        <dt>Salary date</dt><dd>{{ customer.salary_date|default:"—" }}</dd>
+        <dt>Next of kin</dt><dd>{{ customer.next_of_kin|default:"—" }}</dd>
+        <dt>Next of kin phone</dt><dd>{{ customer.next_of_kin_phone|default:"—" }}</dd>
+        <dt>Address</dt><dd>{{ customer.address|default:"—"|linebreaksbr }}</dd>
+        <dt>Status</dt><dd>
+          {% if customer.status == 'good' %}<span class="lm-badge green">Good customer</span>
+          {% elif customer.status == 'late' %}<span class="lm-badge amber">Late</span>
+          {% else %}<span class="lm-badge red">Blacklisted</span>{% endif %}
+        </dd>
+      </dl>
+    </div>
+    <div class="lm-grid" style="align-content:start">
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Total borrowed</div><div class="lm-stat-value">K{{ customer.total_borrowed|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Total repaid</div><div class="lm-stat-value">K{{ customer.total_repaid|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Outstanding</div><div class="lm-stat-value">K{{ customer.total_outstanding|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Profit generated</div><div class="lm-stat-value">K{{ customer.profit_generated|floatformat:2 }}</div></div>
+      <div class="lm-card lm-stat"><div class="lm-stat-label">Late payments</div><div class="lm-stat-value">{{ customer.late_payment_count }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="lm-section">
+  <h3>Loan history</h3>
+  <div class="lm-table-wrap">
+    <table class="lm-table">
+      <thead><tr><th>Ref</th><th>Issued</th><th>Due</th><th class="lm-num">Principal</th><th class="lm-num">Repayment</th><th class="lm-num">Balance</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for loan in loans %}
+        <tr onclick="window.location='{% url 'loans:loan_detail' loan.pk %}'" style="cursor:pointer">
+          <td>{{ loan.reference }}</td>
+          <td>{{ loan.issue_date|date:"d M Y" }}</td>
+          <td>{{ loan.due_date|date:"d M Y" }}</td>
+          <td class="lm-num">K{{ loan.principal|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan.total_repayment|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan.balance|floatformat:2 }}</td>
+          <td><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.status_meta.label }}</span></td>
+        </tr>
+        {% empty %}<tr><td colspan="7"><div class="lm-empty">No loans yet.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="lm-section">
+  <div class="lm-cols">
+    <div>
+      <h3>Payments</h3>
+      <ul class="lm-timeline">
+        {% for p in payments %}
+        <li><span>📥</span><span>K{{ p.amount_paid|floatformat:2 }} · {{ p.payment_date|date:"d M Y" }} · {{ p.loan.reference }}
+          {% if p.paid_late %}<span class="lm-badge amber">late</span>{% endif %}
+          — <a href="{% url 'loans:payment_receipt' p.pk %}">{{ p.receipt_number }}</a></span></li>
+        {% empty %}<li class="lm-muted">No payments recorded.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h3>Top-ups</h3>
+      <ul class="lm-timeline">
+        {% for t in topups %}
+        <li><span>➕</span><span>K{{ t.amount|floatformat:2 }} · {{ t.date|date:"d M Y" }} · {{ t.loan.reference }}
+          (K{{ t.principal_before|floatformat:2 }} → K{{ t.principal_after|floatformat:2 }})</span></li>
+        {% empty %}<li class="lm-muted">No top-ups.</li>
+        {% endfor %}
+      </ul>
+      <h3 style="margin-top:16px">Late payments</h3>
+      <ul class="lm-timeline">
+        {% for p in late_payments %}
+        <li><span>⚠️</span><span>{{ p.loan.reference }} · paid {{ p.payment_date|date:"d M Y" }} (due {{ p.loan.due_date|date:"d M Y" }})</span></li>
+        {% empty %}<li class="lm-muted">None — pays on time.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

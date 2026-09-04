@@ -1,0 +1,48 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Receive Payment · {{ loan.reference }}{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <form method="post" class="lm-form" id="payForm">
+    {% csrf_token %}
+    {% include "loans/_form_fields.html" with full_fields="notes" %}
+    <div class="lm-field full">
+      <label>Auto calculation</label>
+      <div class="lm-calc">
+        <div><div class="k">Outstanding now</div><div class="v">K{{ loan.balance|floatformat:2 }}</div></div>
+        <div><div class="k">This payment</div><div class="v" id="cPay">K0.00</div></div>
+        <div><div class="k">Balance after</div><div class="v" id="cBal">K{{ loan.balance|floatformat:2 }}</div></div>
+        <div><div class="k">Remaining interest</div><div class="v" id="cInt">K{{ loan.remaining_interest|floatformat:2 }}</div></div>
+      </div>
+      <div class="lm-help">When the payment clears the full balance the loan is automatically marked <strong>PAID</strong> and a receipt number is issued.</div>
+    </div>
+    <div class="lm-form-actions">
+      <button type="submit" class="lm-btn lm-btn-primary">Record payment</button>
+      <a href="{% url 'loans:loan_detail' loan.pk %}" class="lm-btn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block lm_js %}
+<script>
+(function () {
+  var balance = {{ loan.balance }};
+  var intRatio = {{ loan.interest_ratio }};
+  var remainingInterest = {{ loan.remaining_interest }};
+  var input = document.querySelector('#payForm [name="amount_paid"]');
+  function fmt(v) { return 'K' + (Number(v) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function recalc() {
+    var pay = parseFloat(input.value) || 0;
+    var after = Math.max(0, balance - pay);
+    var intPaid = pay * intRatio;
+    document.getElementById('cPay').textContent = fmt(pay);
+    document.getElementById('cBal').textContent = fmt(after);
+    document.getElementById('cInt').textContent = fmt(Math.max(0, remainingInterest - intPaid));
+  }
+  input.addEventListener('input', recalc);
+  recalc();
+})();
+</script>
+{% endblock %}

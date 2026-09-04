@@ -35,10 +35,14 @@
     </div>
 
     <section class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
-        <div class="grid gap-px bg-neutral-100 sm:grid-cols-3">
+        <div class="grid gap-px bg-neutral-100 sm:grid-cols-2 lg:grid-cols-4">
             <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-100 text-lg text-emerald-700"><i class="fa-solid fa-mobile-screen-button"></i></div><div><div class="text-xs font-black text-brand-ink">Pay with Mobile Money</div><div class="mt-0.5 text-[11px] text-brand-muted">MTN MoMo · Airtel Money · Zamtel</div></div></div>
             <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-amber-100 text-lg text-amber-700"><i class="fa-solid fa-shield-halved"></i></div><div><div class="text-xs font-black text-brand-ink">Only 35% to order</div><div class="mt-0.5 text-[11px] text-brand-muted">Pay the remaining balance on arrival</div></div></div>
-            <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blue-100 text-lg text-blue-700"><i class="fa-solid fa-location-dot"></i></div><div><div class="text-xs font-black text-brand-ink">Track every order</div><div class="mt-0.5 text-[11px] text-brand-muted">Delivery and collection updates online</div></div></div>
+            <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blue-100 text-lg text-blue-700"><i class="fa-solid fa-location-dot"></i></div><div><div class="text-xs font-black text-brand-ink">Track every order</div><div class="mt-0.5 text-[11px] text-brand-muted">Delivery and collection updates online and push</div></div></div>
+            <a href="{% if request.user.is_authenticated %}{% url 'loans:my_loans' %}{% else %}{% url 'login' %}?next={% url 'loans:my_loans' %}{% endif %}" class="flex items-center gap-3 bg-white p-3.5 transition hover:bg-neutral-50">
+                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg" style="background:#d1fae5;color:#059669"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div><div class="text-xs font-black text-brand-ink">Quick Loan</div><div class="mt-0.5 text-[11px] text-brand-muted">From K10, low in-app rates{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
+            </a>
         </div>
     </section>
 

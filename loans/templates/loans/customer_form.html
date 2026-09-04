@@ -1,0 +1,16 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}{% if is_edit %}Edit {{ customer.full_name }}{% else %}New Customer{% endif %}{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <form method="post" enctype="multipart/form-data" class="lm-form">
+    {% csrf_token %}
+    {% include "loans/_form_fields.html" with full_fields="address,notes" %}
+    <div class="lm-form-actions">
+      <button type="submit" class="lm-btn lm-btn-primary">{% if is_edit %}Save changes{% else %}Add customer{% endif %}</button>
+      <a href="{% if is_edit %}{% url 'loans:customer_detail' customer.pk %}{% else %}{% url 'loans:customer_list' %}{% endif %}" class="lm-btn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Dashboard{% endblock %}
+
+{% block lm_actions %}
+  {% if can_manage %}
+  <a href="{% url 'loans:loan_create' %}" class="lm-btn lm-btn-primary">+ New Loan</a>
+  <a href="{% url 'loans:customer_create' %}" class="lm-btn">+ New Customer</a>
+  {% endif %}
+{% endblock %}
+
+{% block lm_content %}
+{% if pending_loan_requests or pending_payment_requests %}
+<a href="{% url 'loans:request_queue' %}" class="lm-section" style="display:flex;align-items:center;gap:10px;border-color:#fbbf24;background:#fffbeb;margin-top:0">
+  <span style="font-size:20px">🙋</span>
+  <span>
+    <strong>{{ pending_loan_requests }} loan request{{ pending_loan_requests|pluralize }}</strong> and
+    <strong>{{ pending_payment_requests }} payment claim{{ pending_payment_requests|pluralize }}</strong> waiting for review —
+    <span style="color:#4f46e5;font-weight:700">open the Requests queue →</span>
+  </span>
+</a>
+{% endif %}
+<div class="lm-grid">
+  {% for card in cards %}
+  <div class="lm-card lm-stat">
+    <div class="lm-stat-icon">{{ card.icon }}</div>
+    <div class="lm-stat-label">{{ card.label }}</div>
+    <div class="lm-stat-value">{% if card.is_count %}{{ card.value }}{% else %}K{{ card.value|floatformat:2 }}{% endif %}</div>
+    {% if card.sub %}<div class="lm-stat-sub">{{ card.sub }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="lm-section">
+  <div class="lm-cols">
+    <div>
+      <h3>Loans Due Today</h3>
+      {% include "loans/_loan_mini_table.html" with rows=due_today empty="No loans due today." %}
+    </div>
+    <div>
+      <h3>Loans Due This Week</h3>
+      {% include "loans/_loan_mini_table.html" with rows=due_week empty="Nothing due in the next 7 days." %}
+    </div>
+  </div>
+</div>
+
+<div class="lm-section">
+  <h3>Recently Paid Loans</h3>
+  {% include "loans/_loan_mini_table.html" with rows=recently_paid empty="No loans paid off yet." paid=1 %}
+</div>
+
+<div class="lm-section">
+  <h3>Charts</h3>
+  <div class="lm-cols">
+    <div class="lm-card"><strong>Monthly Profit</strong><canvas class="lm-chart" id="chartProfit"></canvas></div>
+    <div class="lm-card"><strong>Outstanding Loans</strong><canvas class="lm-chart" id="chartOutstanding"></canvas></div>
+    <div class="lm-card"><strong>Collections</strong><canvas class="lm-chart" id="chartCollections"></canvas></div>
+  </div>
+</div>
+
+{{ charts|json_script:"lm-charts" }}
+{% endblock %}
+
+{% block lm_js %}
+<script>
+(function () {
+  var d = JSON.parse(document.getElementById('lm-charts').textContent);
+  var money = function (v) { return 'K' + Number(v).toLocaleString(); };
+  var gridOpts = { plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: money } } } };
+
+  new Chart(document.getElementById('chartProfit'), {
+    type: 'bar',
+    data: { labels: d.labels, datasets: [{ data: d.profit, backgroundColor: '#4f46e5' }] },
+    options: gridOpts,
+  });
+  new Chart(document.getElementById('chartCollections'), {
+    type: 'bar',
+    data: { labels: d.labels, datasets: [{ data: d.collections, backgroundColor: '#16a34a' }] },
+    options: gridOpts,
+  });
+  new Chart(document.getElementById('chartOutstanding'), {
+    type: 'doughnut',
+    data: {
+      labels: d.outstanding_labels,
+      datasets: [{ data: d.outstanding_values, backgroundColor: ['#16a34a', '#d97706', '#dc2626'] }],
+    },
+    options: { plugins: { legend: { position: 'bottom' } } },
+  });
+})();
+</script>
+{% endblock %}

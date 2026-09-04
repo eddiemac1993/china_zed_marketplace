@@ -1,0 +1,69 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Loan {{ loan.reference }} · ChinaZed{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260904">
+{% endblock %}
+
+{% block content %}
+<div class="lm">
+  <div class="lm-public">
+    <div class="lm-hero">
+      <h1>Loan {{ loan.reference }}</h1>
+      <p>Issued {{ loan.issue_date|date:"d M Y" }} · due {{ loan.due_date|date:"d M Y" }}</p>
+      <div class="lm-limit-row">
+        <div class="lm-limit-chip"><div class="k">Total repayment</div><div class="v">K{{ loan.total_repayment|floatformat:2 }}</div></div>
+        <div class="lm-limit-chip"><div class="k">Amount paid</div><div class="v">K{{ loan.amount_paid|floatformat:2 }}</div></div>
+        <div class="lm-limit-chip"><div class="k">Balance</div><div class="v">K{{ loan.balance|floatformat:2 }}</div></div>
+      </div>
+    </div>
+
+    <div class="lm-card" style="margin-bottom:16px">
+      <span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.get_status_display }}</span>
+      <dl class="lm-kv" style="margin-top:12px">
+        <dt>Amount borrowed</dt><dd>K{{ loan.principal|floatformat:2 }}</dd>
+        <dt>Interest</dt><dd>{{ loan.interest_rate }}% · K{{ loan.interest_amount|floatformat:2 }}</dd>
+        {% if loan.status == 'paid' %}
+          <dt>Paid on</dt><dd>{{ loan.paid_date|date:"d M Y" }}</dd>
+          <dt>Receipt</dt><dd>{{ loan.receipt_number }}</dd>
+        {% endif %}
+      </dl>
+      {% if loan.status != 'paid' %}
+        {% if payment_requests.0.status == 'pending' %}
+          <div class="lm-block-notice" style="margin-top:14px">⏳ Your payment claim of K{{ payment_requests.0.amount|floatformat:2 }} is waiting for review.</div>
+        {% else %}
+          <a href="{% url 'loans:request_payment' loan.pk %}" class="lm-btn lm-btn-primary" style="margin-top:14px">💵 I've made a payment</a>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <div class="lm-card">
+      <strong>Payment history</strong>
+      <div class="lm-table-wrap" style="margin-top:10px">
+        <table class="lm-table">
+          <thead><tr><th>Date</th><th class="lm-num">Amount</th><th>Method</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for p in loan.payments.all %}
+            <tr><td>{{ p.payment_date|date:"d M Y" }}</td><td class="lm-num">K{{ p.amount_paid|floatformat:2 }}</td><td>{{ p.get_method_display }}</td><td><span class="lm-badge green">confirmed</span></td></tr>
+            {% endfor %}
+            {% for r in payment_requests %}
+              {% if r.status == 'pending' %}
+              <tr><td>{{ r.requested_at|date:"d M Y" }}</td><td class="lm-num">K{{ r.amount|floatformat:2 }}</td><td>{{ r.get_method_display }}</td><td><span class="lm-badge amber">pending review</span></td></tr>
+              {% elif r.status == 'declined' %}
+              <tr><td>{{ r.requested_at|date:"d M Y" }}</td><td class="lm-num">K{{ r.amount|floatformat:2 }}</td><td>{{ r.get_method_display }}</td><td><span class="lm-badge red">declined{% if r.decision_notes %} — {{ r.decision_notes }}{% endif %}</span></td></tr>
+              {% endif %}
+            {% endfor %}
+            {% if not loan.payments.all and not payment_requests %}
+            <tr><td colspan="4"><div class="lm-empty">No payments yet.</div></td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p style="margin-top:16px"><a href="{% url 'loans:my_loans' %}" class="lm-btn">← Back to my loans</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Settings{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <form method="post" class="lm-form">
+    {% csrf_token %}
+
+    <div class="lm-field full"><h3 style="margin:0">Business & capital</h3></div>
+    <div class="lm-field">
+      <label for="{{ form.business_name.id_for_label }}">{{ form.business_name.label }}</label>
+      {{ form.business_name }}{{ form.business_name.errors }}
+    </div>
+    <div class="lm-field">
+      <label for="{{ form.total_capital.id_for_label }}">{{ form.total_capital.label }}</label>
+      {{ form.total_capital }}{{ form.total_capital.errors }}
+    </div>
+
+    <div class="lm-field full"><h3 style="margin:12px 0 0">Interest by loan period</h3>
+      <div class="lm-help">Defaults: 1 week 20% · 2 weeks 30% · 3 weeks 35% · 4 weeks 45%. New loans pre-fill from these; officers can still override per loan.</div>
+    </div>
+    <div class="lm-field"><label>1 Week %</label>{{ form.interest_1_week }}{{ form.interest_1_week.errors }}</div>
+    <div class="lm-field"><label>2 Weeks %</label>{{ form.interest_2_weeks }}{{ form.interest_2_weeks.errors }}</div>
+    <div class="lm-field"><label>3 Weeks %</label>{{ form.interest_3_weeks }}{{ form.interest_3_weeks.errors }}</div>
+    <div class="lm-field"><label>4 Weeks %</label>{{ form.interest_4_weeks }}{{ form.interest_4_weeks.errors }}</div>
+
+    <div class="lm-field full"><h3 style="margin:12px 0 0">Reminders (SMS / WhatsApp)</h3>
+      <div class="lm-help">Run <code>python manage.py loan_reminders</code> daily (cron / scheduled task). Delivery uses the audit log until an SMS/WhatsApp gateway is wired via <code>LOAN_SMS_SENDER</code> / <code>LOAN_WHATSAPP_SENDER</code>.</div>
+    </div>
+    <div class="lm-field"><label>{{ form.remind_3_days_before }} 3 days before due</label></div>
+    <div class="lm-field"><label>{{ form.remind_1_day_before }} 1 day before due</label></div>
+    <div class="lm-field"><label>{{ form.remind_on_due_date }} On due date</label></div>
+    <div class="lm-field"><label>{{ form.remind_when_overdue }} After overdue</label></div>
+    <div class="lm-field"><label>{{ form.sms_enabled }} SMS enabled</label></div>
+    <div class="lm-field"><label>{{ form.whatsapp_enabled }} WhatsApp enabled</label></div>
+    <div class="lm-field full"><label for="{{ form.reminder_signature.id_for_label }}">{{ form.reminder_signature.label }}</label>{{ form.reminder_signature }}</div>
+
+    <div class="lm-field full"><h3 style="margin:12px 0 0">💸 In-app Quick Loan (customer self-service)</h3>
+      <div class="lm-help">Rates here should stay well below the manual ladder above — this is the self-serve product on the homepage/profile. A first-time borrower can request up to the starting limit; repaying in full unlocks a higher limit next time.</div>
+    </div>
+    <div class="lm-field"><label>{{ form.app_loans_enabled }} Quick Loan enabled</label></div>
+    <div class="lm-field"><label>Minimum request</label>{{ form.app_loan_min_amount }}</div>
+    <div class="lm-field"><label>Starting limit (first loan)</label>{{ form.app_loan_starting_limit }}</div>
+    <div class="lm-field"><label>Growth multiplier after repaying</label>{{ form.app_loan_growth_multiplier }}</div>
+    <div class="lm-field"><label>Maximum limit (cap)</label>{{ form.app_loan_max_limit }}</div>
+    <div class="lm-field"><label>1 Week %</label>{{ form.app_interest_1_week }}{{ form.app_interest_1_week.errors }}</div>
+    <div class="lm-field"><label>2 Weeks %</label>{{ form.app_interest_2_weeks }}{{ form.app_interest_2_weeks.errors }}</div>
+    <div class="lm-field"><label>3 Weeks %</label>{{ form.app_interest_3_weeks }}{{ form.app_interest_3_weeks.errors }}</div>
+    <div class="lm-field"><label>4 Weeks %</label>{{ form.app_interest_4_weeks }}{{ form.app_interest_4_weeks.errors }}</div>
+
+    <div class="lm-form-actions">
+      <button type="submit" class="lm-btn lm-btn-primary">Save settings</button>
+      <a href="{% url 'loans:dashboard' %}" class="lm-btn">Back to dashboard</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

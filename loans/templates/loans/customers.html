@@ -1,0 +1,61 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Customers{% endblock %}
+
+{% block lm_actions %}
+  {% if can_manage %}<a href="{% url 'loans:customer_create' %}" class="lm-btn lm-btn-primary">+ New Customer</a>{% endif %}
+{% endblock %}
+
+{% block lm_content %}
+<form method="get" class="lm-filters">
+  <div class="lm-field">
+    <label>Search</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="Name, phone, NRC, employer">
+  </div>
+  <div class="lm-field">
+    <label>Status</label>
+    <select name="status">
+      <option value="">All</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="lm-btn">Filter</button>
+  <a href="{% url 'loans:customer_list' %}" class="lm-btn">Clear</a>
+</form>
+
+<div class="lm-table-wrap">
+  <table class="lm-table">
+    <thead>
+      <tr>
+        <th></th><th>Full name</th><th>Phone</th><th>NRC</th><th>Employer</th>
+        <th class="lm-num">Loans</th><th class="lm-num">Outstanding</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in customers %}
+      <tr onclick="window.location='{% url 'loans:customer_detail' c.pk %}'" style="cursor:pointer">
+        <td>
+          {% if c.profile_picture %}<img class="lm-avatar" src="{{ c.profile_picture.url }}" alt="">
+          {% else %}<span class="lm-avatar">{{ c.full_name.0 }}</span>{% endif %}
+        </td>
+        <td>{{ c.full_name }}</td>
+        <td>{{ c.phone }}</td>
+        <td>{{ c.nrc_number|default:"—" }}</td>
+        <td>{{ c.employer|default:"—" }}</td>
+        <td class="lm-num">{{ c.loan_count }}</td>
+        <td class="lm-num">K{{ c.total_outstanding|floatformat:2 }}</td>
+        <td>
+          {% if c.status == 'good' %}<span class="lm-badge green">Good</span>
+          {% elif c.status == 'late' %}<span class="lm-badge amber">Late</span>
+          {% else %}<span class="lm-badge red">Blacklisted</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8"><div class="lm-empty">No customers found.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

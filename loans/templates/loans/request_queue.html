@@ -1,0 +1,69 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}Requests{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <h3>🙋 Loan requests waiting for review ({{ loan_requests|length }})</h3>
+  <p class="lm-help">Approving deposits the amount to the customer's number and creates the loan. Declining leaves nothing behind.</p>
+  <div class="lm-table-wrap">
+    <table class="lm-table">
+      <thead><tr><th>Requested</th><th>Customer</th><th>Payout number</th><th class="lm-num">Amount</th><th>Period</th><th class="lm-num">Repayment</th><th>Notes</th><th></th></tr></thead>
+      <tbody>
+        {% for r in loan_requests %}
+        <tr>
+          <td>{{ r.requested_at|date:"d M Y H:i" }}</td>
+          <td><a href="{% url 'loans:customer_detail' r.customer.pk %}">{{ r.customer.full_name }}</a><br><span class="lm-muted">{{ r.user.email|default:r.user.username }}</span></td>
+          <td>{{ r.payout_number }}</td>
+          <td class="lm-num">K{{ r.amount|floatformat:2 }} @ {{ r.interest_rate }}%</td>
+          <td>{{ r.get_period_weeks_display }}</td>
+          <td class="lm-num">K{{ r.total_repayment|floatformat:2 }}</td>
+          <td>{{ r.notes|default:"—" }}</td>
+          <td style="white-space:nowrap">
+            <form method="post" action="{% url 'loans:approve_loan_request' r.pk %}" style="display:inline" onsubmit="return confirm('Confirm you have deposited K{{ r.amount|floatformat:2 }} to {{ r.payout_number }}?');">
+              {% csrf_token %}<button class="lm-btn lm-btn-sm lm-btn-primary" type="submit">✅ Approve</button>
+            </form>
+            <form method="post" action="{% url 'loans:decline_loan_request' r.pk %}" style="display:inline" onsubmit="return confirm('Decline this request?');">
+              {% csrf_token %}<button class="lm-btn lm-btn-sm lm-btn-danger" type="submit">✕ Decline</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="8"><div class="lm-empty">No loan requests pending.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="lm-section">
+  <h3>🙋 Payment claims waiting for review ({{ payment_requests|length }})</h3>
+  <p class="lm-help">Approving records the payment as received and updates the loan balance. Declining leaves the loan unchanged.</p>
+  <div class="lm-table-wrap">
+    <table class="lm-table">
+      <thead><tr><th>Requested</th><th>Customer</th><th>Loan</th><th class="lm-num">Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th></th></tr></thead>
+      <tbody>
+        {% for r in payment_requests %}
+        <tr>
+          <td>{{ r.requested_at|date:"d M Y H:i" }}</td>
+          <td><a href="{% url 'loans:customer_detail' r.loan.customer.pk %}">{{ r.loan.customer.full_name }}</a></td>
+          <td><a href="{% url 'loans:loan_detail' r.loan.pk %}">{{ r.loan.reference }}</a> (balance K{{ r.loan.balance|floatformat:2 }})</td>
+          <td class="lm-num">K{{ r.amount|floatformat:2 }}</td>
+          <td>{{ r.get_method_display }}</td>
+          <td>{{ r.reference|default:"—" }}</td>
+          <td>{{ r.notes|default:"—" }}</td>
+          <td style="white-space:nowrap">
+            <form method="post" action="{% url 'loans:approve_payment_request' r.pk %}" style="display:inline" onsubmit="return confirm('Confirm you have received K{{ r.amount|floatformat:2 }}?');">
+              {% csrf_token %}<button class="lm-btn lm-btn-sm lm-btn-primary" type="submit">✅ Approve</button>
+            </form>
+            <form method="post" action="{% url 'loans:decline_payment_request' r.pk %}" style="display:inline" onsubmit="return confirm('Decline this payment claim?');">
+              {% csrf_token %}<button class="lm-btn lm-btn-sm lm-btn-danger" type="submit">✕ Decline</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}<tr><td colspan="8"><div class="lm-empty">No payment claims pending.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

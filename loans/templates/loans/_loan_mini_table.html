@@ -1,0 +1,31 @@
+{% if rows %}
+<div class="lm-table-wrap">
+  <table class="lm-table">
+    <thead>
+      <tr>
+        <th>Ref</th><th>Customer</th>
+        {% if paid %}<th>Paid date</th><th class="lm-num">Repayment</th>{% else %}<th>Due</th><th class="lm-num">Balance</th>{% endif %}
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for loan in rows %}
+      <tr onclick="window.location='{% url 'loans:loan_detail' loan.pk %}'" style="cursor:pointer">
+        <td>{{ loan.reference }}</td>
+        <td>{{ loan.customer.full_name }}</td>
+        {% if paid %}
+          <td>{{ loan.paid_date|date:"d M Y" }}</td>
+          <td class="lm-num">K{{ loan.total_repayment|floatformat:2 }}</td>
+        {% else %}
+          <td>{{ loan.due_date|date:"d M Y" }}</td>
+          <td class="lm-num">K{{ loan.balance|floatformat:2 }}</td>
+        {% endif %}
+        <td><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.status_meta.label }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="lm-empty">{{ empty }}</div>
+{% endif %}

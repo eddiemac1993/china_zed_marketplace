@@ -77,6 +77,32 @@
     </a>
     {% endif %}
 
+    {% if request.user.is_staff %}
+    <!-- LOAN MANAGEMENT (staff only) -->
+    <a href="{% url 'loans:dashboard' %}" class="mb-3.5 flex items-center gap-3.5 rounded-lg px-4.5 py-4 text-white shadow-lg transition hover:shadow-xl"
+       style="background:linear-gradient(135deg,#4338ca,#6d28d9)">
+        <span class="shrink-0 text-2xl">💰</span>
+        <div class="min-w-0 flex-1">
+            <strong class="block text-sm font-black tracking-wide">Loan Management</strong>
+            <span class="text-[11px] leading-relaxed text-white/75">Customers, loans, top-ups, payments, receipts, reminders and reports.</span>
+        </div>
+        <span class="whitespace-nowrap rounded-md bg-white px-3.5 py-2.5 text-xs font-black" style="color:#4338ca">Open dashboard →</span>
+    </a>
+    {% endif %}
+
+    {% if request.user.is_authenticated %}
+    <!-- QUICK LOAN (all logged-in customers) -->
+    <a href="{% url 'loans:my_loans' %}" class="mb-3.5 flex items-center gap-3.5 rounded-lg px-4.5 py-4 text-white shadow-lg transition hover:shadow-xl"
+       style="background:linear-gradient(135deg,#0f766e,#059669)">
+        <span class="shrink-0 text-2xl">💸</span>
+        <div class="min-w-0 flex-1">
+            <strong class="block text-sm font-black tracking-wide">Quick Loan</strong>
+            <span class="text-[11px] leading-relaxed text-white/75">Borrow from as little as K10, low in-app rates. Check your balance and request a loan.</span>
+        </div>
+        <span class="whitespace-nowrap rounded-md bg-white px-3.5 py-2.5 text-xs font-black" style="color:#0f766e">My loans →</span>
+    </a>
+    {% endif %}
+
     {% if request.user.is_staff and staff_draft_products %}
     <section class="mb-3.5 overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
         <div class="flex items-center justify-between bg-amber-50 px-4 py-3 sm:px-5">
