@@ -171,6 +171,7 @@ class LoanSettingsForm(forms.ModelForm):
             "app_loan_growth_multiplier", "app_loan_max_limit",
             "app_interest_1_week", "app_interest_2_weeks",
             "app_interest_3_weeks", "app_interest_4_weeks",
+            "auto_blacklist_enabled", "auto_blacklist_overdue_days",
         ]
 
     def __init__(self, *args, **kwargs):

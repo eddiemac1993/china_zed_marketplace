@@ -71,6 +71,15 @@ class LoanSettings(models.Model):
     app_interest_3_weeks = models.DecimalField(max_digits=5, decimal_places=2, default=12)
     app_interest_4_weeks = models.DecimalField(max_digits=5, decimal_places=2, default=15)
 
+    auto_blacklist_enabled = models.BooleanField(
+        default=True,
+        help_text="Automatically blacklist a customer once a loan is this overdue.",
+    )
+    auto_blacklist_overdue_days = models.PositiveSmallIntegerField(
+        default=30,
+        help_text="Days past due before a customer is auto-blacklisted.",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -190,10 +199,27 @@ class LoanCustomer(models.Model):
         ).count()
 
     def recalc_status(self, *, save=True):
-        """Nudge the customer label from their repayment behaviour."""
+        """Nudge the customer label from their repayment behaviour.
+
+        Blacklisting here is automatic and reversible only by a human: once a
+        staff member sets the status away from Blacklisted, it will only be
+        set back if a loan is (still, or again) overdue past the threshold.
+        """
         if self.status == self.BLACKLISTED:
             return
-        if self.open_loans.filter(status=Loan.OVERDUE).exists() or self.late_payment_count:
+
+        cfg = LoanSettings.load()
+        severely_overdue = False
+        if cfg.auto_blacklist_enabled:
+            severely_overdue = any(
+                loan.status == Loan.OVERDUE
+                and -loan.days_until_due >= cfg.auto_blacklist_overdue_days
+                for loan in self.open_loans
+            )
+
+        if severely_overdue:
+            new_status = self.BLACKLISTED
+        elif self.open_loans.filter(status=Loan.OVERDUE).exists() or self.late_payment_count:
             new_status = self.LATE
         else:
             new_status = self.GOOD

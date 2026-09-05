@@ -78,10 +78,19 @@ def due_kind_for(loan, cfg):
 
 
 def run_reminders(*, dry_run=False):
-    """Send every reminder that is due today. Returns a list of result dicts."""
+    """Send every reminder that is due today. Returns a list of result dicts.
+
+    Also refreshes every open loan's status first (active/due soon/overdue),
+    which in turn re-evaluates each customer's Good/Late/Blacklisted label -
+    without this, a loan that quietly crosses its due date only gets
+    re-checked the next time someone edits it or takes a payment on it.
+    """
     cfg = LoanSettings.load()
     results = []
     open_loans = Loan.objects.exclude(status=Loan.PAID).select_related("customer")
+    if not dry_run:
+        for loan in open_loans:
+            loan.refresh_status()
     for loan in open_loans:
         if loan.is_fully_paid:
             continue

@@ -470,7 +470,9 @@ def loan_delete(request, pk):
     )
     if request.method == "POST":
         ref = loan.reference
+        customer = loan.customer
         loan.delete()
+        customer.recalc_status()
         messages.success(request, f"Loan {ref} deleted.")
         return redirect(safe_next or "loans:loan_list")
     return render(request, "loans/confirm_delete.html", {

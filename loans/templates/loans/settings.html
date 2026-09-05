@@ -49,6 +49,12 @@
     <div class="lm-field"><label>3 Weeks %</label>{{ form.app_interest_3_weeks }}{{ form.app_interest_3_weeks.errors }}</div>
     <div class="lm-field"><label>4 Weeks %</label>{{ form.app_interest_4_weeks }}{{ form.app_interest_4_weeks.errors }}</div>
 
+    <div class="lm-field full"><h3 style="margin:12px 0 0">Auto-blacklist</h3>
+      <div class="lm-help">A customer is flagged 🔴 Blacklisted automatically once a loan is this many days overdue. Staff can always change a customer's status back manually - it only gets auto-reapplied if a loan is (still, or again) overdue past this threshold.</div>
+    </div>
+    <div class="lm-field"><label>{{ form.auto_blacklist_enabled }} Auto-blacklist enabled</label></div>
+    <div class="lm-field"><label>Days overdue before blacklisting</label>{{ form.auto_blacklist_overdue_days }}{{ form.auto_blacklist_overdue_days.errors }}</div>
+
     <div class="lm-form-actions">
       <button type="submit" class="lm-btn lm-btn-primary">Save settings</button>
       <a href="{% url 'loans:dashboard' %}" class="lm-btn">Back to dashboard</a>

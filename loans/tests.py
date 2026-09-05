@@ -97,6 +97,74 @@ class LoanMathTests(TestCase):
         self.assertEqual(loan.interest_collected, Decimal("175.00"))
 
 
+class AutoBlacklistTests(TestCase):
+    def setUp(self):
+        self.customer = LoanCustomer.objects.create(
+            full_name="Habitual Late Payer", phone="0970000001", nrc_number="444444/44/4"
+        )
+
+    def make_severely_overdue_loan(self, days_overdue=35, weeks=1):
+        issue = timezone.localdate() - timedelta(weeks=weeks, days=5 + days_overdue)
+        loan = Loan(
+            customer=self.customer, original_principal=Decimal("200"),
+            principal=Decimal("200"), interest_rate=Decimal("20"),
+            period_weeks=weeks, issue_date=issue,
+        )
+        loan.save()
+        return loan
+
+    def test_severely_overdue_customer_auto_blacklisted(self):
+        loan = self.make_severely_overdue_loan(days_overdue=35)
+        loan.refresh_status()
+        self.assertEqual(loan.status, Loan.OVERDUE)
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.BLACKLISTED)
+
+    def test_moderately_overdue_customer_stays_late_not_blacklisted(self):
+        loan = self.make_severely_overdue_loan(days_overdue=10)
+        loan.refresh_status()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.LATE)
+
+    def test_auto_blacklist_can_be_disabled(self):
+        cfg = LoanSettings.load()
+        cfg.auto_blacklist_enabled = False
+        cfg.save()
+        loan = self.make_severely_overdue_loan(days_overdue=60)
+        loan.refresh_status()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.LATE)
+
+    def test_blacklist_is_sticky_until_manually_cleared(self):
+        loan = self.make_severely_overdue_loan(days_overdue=35)
+        loan.refresh_status()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.BLACKLISTED)
+
+        # staff manually clears it
+        self.customer.status = LoanCustomer.GOOD
+        self.customer.save(update_fields=["status"])
+
+        # but the loan is still just as overdue, so the next recalculation
+        # (e.g. from an unrelated event on the same loan) re-applies it
+        loan.refresh_status()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.BLACKLISTED)
+
+    def test_deleting_the_overdue_loan_lifts_auto_blacklist(self):
+        loan = self.make_severely_overdue_loan(days_overdue=35)
+        loan.refresh_status()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.BLACKLISTED)
+
+        self.customer.status = LoanCustomer.GOOD
+        self.customer.save(update_fields=["status"])
+        loan.delete()
+        self.customer.recalc_status()
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, LoanCustomer.GOOD)
+
+
 class ReminderTests(TestCase):
     def test_reminder_sent_once_per_kind(self):
         cfg = LoanSettings.load()
@@ -117,6 +185,27 @@ class ReminderTests(TestCase):
         self.assertEqual(LoanReminderLog.objects.count(), 1)
         second = run_reminders()
         self.assertEqual(len(second), 0)
+
+    def test_run_reminders_refreshes_stale_statuses(self):
+        customer = LoanCustomer.objects.create(
+            full_name="Stale Status", phone="0966000001", nrc_number="555555/55/5"
+        )
+        old_issue = timezone.localdate() - timedelta(days=60)
+        loan = Loan.objects.create(
+            customer=customer, original_principal=Decimal("100"), principal=Decimal("100"),
+            interest_rate=Decimal("20"), period_weeks=1, issue_date=old_issue,
+        )
+        # force the stored status stale, as if it was never touched since issue
+        Loan.objects.filter(pk=loan.pk).update(status=Loan.ACTIVE)
+        loan.refresh_from_db()
+        self.assertEqual(loan.status, Loan.ACTIVE)
+
+        run_reminders()
+
+        loan.refresh_from_db()
+        self.assertEqual(loan.status, Loan.OVERDUE)
+        customer.refresh_from_db()
+        self.assertEqual(customer.status, LoanCustomer.BLACKLISTED)
 
 
 class AccessControlTests(TestCase):
