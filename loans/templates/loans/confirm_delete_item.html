@@ -1,0 +1,16 @@
+{% extends "loans/base.html" %}
+
+{% block lm_title %}{{ title }}{% endblock %}
+
+{% block lm_content %}
+<div class="lm-section">
+  <p>{{ body }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="lm-form-actions" style="border:none">
+      <button type="submit" class="lm-btn lm-btn-danger">Yes, delete</button>
+      <a href="{{ cancel_url }}" class="lm-btn">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

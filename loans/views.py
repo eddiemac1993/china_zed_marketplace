@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
 
@@ -231,6 +232,29 @@ def customer_edit(request, pk):
     })
 
 
+@loan_admin_required
+def customer_delete(request, pk):
+    customer = get_object_or_404(LoanCustomer, pk=pk)
+    if customer.loans.exists():
+        messages.error(
+            request,
+            f"{customer.full_name} has {customer.loans.count()} loan(s) on record. "
+            f"Delete those loans first before deleting the customer.",
+        )
+        return redirect("loans:customer_detail", pk=customer.pk)
+    if request.method == "POST":
+        name = customer.full_name
+        customer.delete()
+        messages.success(request, f"Customer {name} deleted.")
+        return redirect("loans:customer_list")
+    return render(request, "loans/confirm_delete_item.html", {
+        "section": "customers",
+        "title": f"Delete {customer.full_name}?",
+        "body": f"You are about to permanently delete the customer record for {customer.full_name}. They have no loans on file, so this is safe.",
+        "cancel_url": reverse("loans:customer_detail", args=[customer.pk]),
+    })
+
+
 # --------------------------------------------------------------------------- #
 #  loans                                                                       #
 # --------------------------------------------------------------------------- #
@@ -363,15 +387,44 @@ def loan_topup(request, pk):
 
 
 @loan_admin_required
+def topup_delete(request, pk):
+    topup = get_object_or_404(LoanTopUp, pk=pk)
+    loan = topup.loan
+    if request.method == "POST":
+        amount = topup.amount
+        topup.delete()
+        loan.resync_topup_snapshots()
+        loan.refresh_status()
+        messages.success(request, f"Top-up of K{amount} removed. Principal is now K{loan.principal}.")
+        return redirect("loans:loan_detail", pk=loan.pk)
+    return render(request, "loans/confirm_delete_item.html", {
+        "section": "loans",
+        "title": f"Delete top-up of K{topup.amount}?",
+        "body": (
+            f"You are about to permanently delete the K{topup.amount} top-up "
+            f"({topup.date}) on loan {loan.reference}. The loan's principal and "
+            f"repayment will drop back accordingly."
+        ),
+        "cancel_url": reverse("loans:loan_detail", args=[loan.pk]),
+    })
+
+
+@loan_admin_required
 def loan_delete(request, pk):
     loan = get_object_or_404(Loan, pk=pk)
+    next_url = request.POST.get("next") or request.GET.get("next", "")
+    safe_next = (
+        next_url
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()})
+        else ""
+    )
     if request.method == "POST":
         ref = loan.reference
         loan.delete()
         messages.success(request, f"Loan {ref} deleted.")
-        return redirect("loans:loan_list")
+        return redirect(safe_next or "loans:loan_list")
     return render(request, "loans/confirm_delete.html", {
-        "section": "loans", "loan": loan,
+        "section": "loans", "loan": loan, "next": safe_next,
     })
 
 
@@ -430,6 +483,32 @@ def payment_create(request, loan_pk):
     })
 
 
+@loan_admin_required
+def payment_delete(request, pk):
+    payment = get_object_or_404(LoanPayment, pk=pk)
+    loan = payment.loan
+    if request.method == "POST":
+        receipt = payment.receipt_number
+        amount = payment.amount_paid
+        payment.delete()
+        loan.refresh_status()
+        messages.success(
+            request,
+            f"Payment {receipt} (K{amount}) deleted. Loan balance is now K{loan.balance}.",
+        )
+        return redirect("loans:loan_detail", pk=loan.pk)
+    return render(request, "loans/confirm_delete_item.html", {
+        "section": "loans",
+        "title": f"Delete payment {payment.receipt_number}?",
+        "body": (
+            f"You are about to permanently delete payment {payment.receipt_number} "
+            f"(K{payment.amount_paid}, {payment.payment_date}) on loan {loan.reference}. "
+            f"The loan's balance and status will be recalculated."
+        ),
+        "cancel_url": reverse("loans:loan_detail", args=[loan.pk]),
+    })
+
+
 @loan_staff_required
 def payment_receipt_pdf(request, pk):
     payment = get_object_or_404(
@@ -478,17 +557,28 @@ def report_data(period, anchor, paid_filter=""):
         loans_in = loans_in.filter(status=Loan.PAID)
     elif paid_filter == "unpaid":
         loans_in = loans_in.exclude(status=Loan.PAID)
+    loans_in = loans_in.select_related("customer")
+    loans_in_list = list(loans_in)
     payments_in = LoanPayment.objects.filter(
         payment_date__gte=start, payment_date__lte=end
     ).select_related("loan")
 
-    loans_given = _sum(loans_in, "principal")
-    interest_expected = money(sum((l.interest_amount for l in loans_in), ZERO))
+    loans_given = money(sum((l.principal for l in loans_in_list), ZERO))
+    interest_expected = money(sum((l.interest_amount for l in loans_in_list), ZERO))
     collections = _sum(payments_in, "amount_paid")
     profit = money(sum((p.interest_part for p in payments_in), ZERO))
     outstanding = money(
         sum((l.balance for l in Loan.objects.exclude(status=Loan.PAID)), ZERO)
     )
+
+    # totals for exactly the filtered "Loans issued in period" list below
+    loan_totals = {
+        "principal": loans_given,
+        "interest": interest_expected,
+        "repayment": money(sum((l.total_repayment for l in loans_in_list), ZERO)),
+        "paid": money(sum((l.amount_paid for l in loans_in_list), ZERO)),
+        "balance": money(sum((l.balance for l in loans_in_list), ZERO)),
+    }
 
     rows = [
         ("Capital", cfg.total_capital),
@@ -501,10 +591,11 @@ def report_data(period, anchor, paid_filter=""):
     return {
         "period": period, "label": label, "start": start, "end": end,
         "paid_filter": paid_filter,
-        "loan_count": loans_in.count(),
+        "loan_totals": loan_totals,
+        "loan_count": len(loans_in_list),
         "payment_count": payments_in.count(),
         "rows": rows,
-        "loans_in": loans_in.select_related("customer"),
+        "loans_in": loans_in_list,
         "payments_in": payments_in,
     }
 
@@ -544,13 +635,22 @@ def reports(request):
             writer.writerow([name, value])
         writer.writerow([])
         writer.writerow([f"Loans issued in period ({paid_label})"])
-        writer.writerow(["Reference", "Customer", "Issue date", "Principal", "Interest", "Repayment", "Status"])
+        writer.writerow([
+            "Reference", "Customer", "Issue date", "Principal", "Interest",
+            "Repayment", "Paid", "Balance", "Status",
+        ])
         for loan in data["loans_in"]:
             writer.writerow([
                 loan.reference, loan.customer.full_name, loan.issue_date,
                 loan.principal, loan.interest_amount, loan.total_repayment,
-                loan.get_status_display(),
+                loan.amount_paid, loan.balance, loan.get_status_display(),
             ])
+        totals = data["loan_totals"]
+        writer.writerow([
+            f"Total ({data['loan_count']})", "", "",
+            totals["principal"], totals["interest"], totals["repayment"],
+            totals["paid"], totals["balance"], "",
+        ])
         return response
 
     if export == "pdf":
@@ -573,6 +673,7 @@ def reports(request):
         "anchor": anchor,
         "paid_label": paid_label,
         "print_mode": export == "print",
+        "can_manage": is_loan_admin(request.user),
         **data,
     })
 

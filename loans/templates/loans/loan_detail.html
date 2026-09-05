@@ -56,7 +56,10 @@
           <td>{{ p.get_method_display }}</td>
           <td>{{ p.reference|default:"—" }}</td>
           <td class="lm-num">K{{ p.balance_after|floatformat:2 }}</td>
-          <td><a class="lm-btn lm-btn-sm" href="{% url 'loans:payment_receipt' p.pk %}">Receipt PDF</a></td>
+          <td style="white-space:nowrap">
+            <a class="lm-btn lm-btn-sm" href="{% url 'loans:payment_receipt' p.pk %}">Receipt PDF</a>
+            {% if can_manage %}<a class="lm-btn lm-btn-sm lm-btn-danger" href="{% url 'loans:payment_delete' p.pk %}">Delete</a>{% endif %}
+          </td>
         </tr>
         {% empty %}<tr><td colspan="7"><div class="lm-empty">No payments yet.</div></td></tr>
         {% endfor %}
@@ -69,7 +72,7 @@
   <h3>Top-up history</h3>
   <div class="lm-table-wrap">
     <table class="lm-table">
-      <thead><tr><th>Date</th><th class="lm-num">Top-up</th><th class="lm-num">Principal before</th><th class="lm-num">Principal after</th><th class="lm-num">Repayment after</th><th>Note</th></tr></thead>
+      <thead><tr><th>Date</th><th class="lm-num">Top-up</th><th class="lm-num">Principal before</th><th class="lm-num">Principal after</th><th class="lm-num">Repayment after</th><th>Note</th><th></th></tr></thead>
       <tbody>
         {% for t in loan.topups.all %}
         <tr>
@@ -79,8 +82,9 @@
           <td class="lm-num">K{{ t.principal_after|floatformat:2 }}</td>
           <td class="lm-num">K{{ t.repayment_after|floatformat:2 }}</td>
           <td>{{ t.note|default:"—" }}</td>
+          <td>{% if can_manage %}<a class="lm-btn lm-btn-sm lm-btn-danger" href="{% url 'loans:topup_delete' t.pk %}">Delete</a>{% endif %}</td>
         </tr>
-        {% empty %}<tr><td colspan="6"><div class="lm-empty">No top-ups.</div></td></tr>
+        {% empty %}<tr><td colspan="7"><div class="lm-empty">No top-ups.</div></td></tr>
         {% endfor %}
       </tbody>
     </table>

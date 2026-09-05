@@ -6,6 +6,7 @@
   {% if can_manage %}
   <a href="{% url 'loans:loan_create' %}?customer={{ customer.pk }}" class="lm-btn lm-btn-primary">+ New Loan</a>
   <a href="{% url 'loans:customer_edit' customer.pk %}" class="lm-btn">Edit</a>
+  {% if not loans %}<a href="{% url 'loans:customer_delete' customer.pk %}" class="lm-btn lm-btn-danger">Delete</a>{% endif %}
   {% endif %}
 {% endblock %}
 

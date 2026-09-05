@@ -9,9 +9,10 @@
   {{ loan.payments.count }} payment(s) and {{ loan.topups.count }} top-up(s).</p>
   <form method="post">
     {% csrf_token %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
     <div class="lm-form-actions" style="border:none">
       <button type="submit" class="lm-btn lm-btn-danger">Yes, delete</button>
-      <a href="{% url 'loans:loan_detail' loan.pk %}" class="lm-btn">Cancel</a>
+      <a href="{{ next|default:'' }}{% if not next %}{% url 'loans:loan_detail' loan.pk %}{% endif %}" class="lm-btn">Cancel</a>
     </div>
   </form>
 </div>

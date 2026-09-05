@@ -28,18 +28,31 @@
 
   <h3>Loans issued in period ({{ loan_count }}) — {{ paid_label }}</h3>
   <table>
-    <tr><th>Ref</th><th>Customer</th><th>Issued</th><th class="num">Principal</th><th class="num">Interest</th><th class="num">Repayment</th><th>Status</th></tr>
+    <tr><th>Ref</th><th>Customer</th><th>Issued</th><th class="num">Principal</th><th class="num">Interest</th><th class="num">Repayment</th><th class="num">Paid</th><th class="num">Balance</th><th>Status</th></tr>
     {% for loan in loans_in %}
     <tr>
       <td>{{ loan.reference }}</td><td>{{ loan.customer.full_name }}</td><td>{{ loan.issue_date|date:"d M Y" }}</td>
       <td class="num">{{ loan.principal|floatformat:2 }}</td>
       <td class="num">{{ loan.interest_amount|floatformat:2 }}</td>
       <td class="num">{{ loan.total_repayment|floatformat:2 }}</td>
+      <td class="num">{{ loan.amount_paid|floatformat:2 }}</td>
+      <td class="num">{{ loan.balance|floatformat:2 }}</td>
       <td>{{ loan.get_status_display }}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="7">No loans issued in this period.</td></tr>
+    <tr><td colspan="9">No loans issued in this period.</td></tr>
     {% endfor %}
+    {% if loans_in %}
+    <tr class="totals" style="font-weight:bold;background:#f0f0f0">
+      <td colspan="3">Total ({{ loan_count }})</td>
+      <td class="num">{{ loan_totals.principal|floatformat:2 }}</td>
+      <td class="num">{{ loan_totals.interest|floatformat:2 }}</td>
+      <td class="num">{{ loan_totals.repayment|floatformat:2 }}</td>
+      <td class="num">{{ loan_totals.paid|floatformat:2 }}</td>
+      <td class="num">{{ loan_totals.balance|floatformat:2 }}</td>
+      <td></td>
+    </tr>
+    {% endif %}
   </table>
 </body>
 </html>

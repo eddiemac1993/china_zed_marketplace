@@ -258,3 +258,72 @@ class QuickLoanFlowTests(TestCase):
         self.client.force_login(self.user)
         resp = self.client.get(reverse("loans:my_loan_detail", args=[loan.pk]))
         self.assertRedirects(resp, reverse("loans:my_loans"))
+
+
+class DeleteFeatureTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("boss3", password="pw", is_staff=True)
+        self.admin.groups.add(Group.objects.create(name=LOAN_ADMIN_GROUP))
+        self.staff = User.objects.create_user("staff3", password="pw", is_staff=True)
+        self.customer = LoanCustomer.objects.create(
+            full_name="Delete Test", phone="0970000000", nrc_number="333333/33/3"
+        )
+
+    def make_loan(self, principal="500", rate="35", weeks=1):
+        return Loan.objects.create(
+            customer=self.customer,
+            original_principal=Decimal(principal), principal=Decimal(principal),
+            interest_rate=Decimal(rate), period_weeks=weeks, issue_date=timezone.localdate(),
+        )
+
+    def test_deleting_last_payment_reverts_paid_status(self):
+        loan = self.make_loan("500", "35")
+        payment = LoanPayment.objects.create(loan=loan, amount_paid=loan.total_repayment)
+        loan.refresh_from_db()
+        self.assertEqual(loan.status, Loan.PAID)
+        self.assertIsNotNone(loan.paid_date)
+        self.assertTrue(loan.receipt_number)
+
+        self.client.force_login(self.admin)
+        resp = self.client.post(reverse("loans:payment_delete", args=[payment.pk]))
+        self.assertRedirects(resp, reverse("loans:loan_detail", args=[loan.pk]))
+        loan.refresh_from_db()
+        self.assertNotEqual(loan.status, Loan.PAID)
+        self.assertIsNone(loan.paid_date)
+        self.assertEqual(loan.receipt_number, "")
+        self.assertEqual(loan.amount_paid, Decimal("0.00"))
+
+    def test_deleting_topup_shrinks_principal_back(self):
+        loan = self.make_loan("600", "15")
+        topup = loan.add_topup(amount=Decimal("500"), user=self.admin)
+        loan.refresh_from_db()
+        self.assertEqual(loan.principal, Decimal("1100.00"))
+
+        self.client.force_login(self.admin)
+        resp = self.client.post(reverse("loans:topup_delete", args=[topup.pk]))
+        self.assertRedirects(resp, reverse("loans:loan_detail", args=[loan.pk]))
+        loan.refresh_from_db()
+        self.assertEqual(loan.principal, Decimal("600.00"))
+        self.assertEqual(loan.total_repayment, Decimal("690.00"))
+        self.assertEqual(loan.topups.count(), 0)
+
+    def test_customer_delete_blocked_when_loans_exist(self):
+        self.make_loan()
+        self.client.force_login(self.admin)
+        resp = self.client.post(reverse("loans:customer_delete", args=[self.customer.pk]))
+        self.assertRedirects(resp, reverse("loans:customer_detail", args=[self.customer.pk]))
+        self.assertTrue(LoanCustomer.objects.filter(pk=self.customer.pk).exists())
+
+    def test_customer_delete_allowed_with_no_loans(self):
+        self.client.force_login(self.admin)
+        resp = self.client.post(reverse("loans:customer_delete", args=[self.customer.pk]))
+        self.assertRedirects(resp, reverse("loans:customer_list"))
+        self.assertFalse(LoanCustomer.objects.filter(pk=self.customer.pk).exists())
+
+    def test_non_admin_staff_cannot_delete(self):
+        loan = self.make_loan()
+        payment = LoanPayment.objects.create(loan=loan, amount_paid=Decimal("10"))
+        self.client.force_login(self.staff)
+        resp = self.client.post(reverse("loans:payment_delete", args=[payment.pk]))
+        self.assertRedirects(resp, reverse("loans:dashboard"))
+        self.assertTrue(LoanPayment.objects.filter(pk=payment.pk).exists())

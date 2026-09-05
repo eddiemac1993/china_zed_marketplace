@@ -11,6 +11,7 @@ urlpatterns = [
     path("customers/new/", views.customer_create, name="customer_create"),
     path("customers/<int:pk>/", views.customer_detail, name="customer_detail"),
     path("customers/<int:pk>/edit/", views.customer_edit, name="customer_edit"),
+    path("customers/<int:pk>/delete/", views.customer_delete, name="customer_delete"),
 
     path("loans/", views.loan_list, name="loan_list"),
     path("loans/new/", views.loan_create, name="loan_create"),
@@ -19,9 +20,11 @@ urlpatterns = [
     path("loans/<int:pk>/top-up/", views.loan_topup, name="loan_topup"),
     path("loans/<int:pk>/delete/", views.loan_delete, name="loan_delete"),
     path("loans/<int:loan_pk>/payment/", views.payment_create, name="payment_create"),
+    path("topups/<int:pk>/delete/", views.topup_delete, name="topup_delete"),
 
     path("payments/", views.payment_list, name="payment_list"),
     path("payments/<int:pk>/receipt.pdf", views.payment_receipt_pdf, name="payment_receipt"),
+    path("payments/<int:pk>/delete/", views.payment_delete, name="payment_delete"),
 
     path("reports/", views.reports, name="reports"),
     path("settings/", views.settings_view, name="settings"),

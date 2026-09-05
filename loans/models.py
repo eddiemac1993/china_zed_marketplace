@@ -357,12 +357,18 @@ class Loan(models.Model):
             last_payment = self.payments.order_by("-payment_date", "-id").first()
             if last_payment and not self.paid_by:
                 self.paid_by = last_payment.officer
-        elif timezone.localdate() > self.due_date:
-            self.status = self.OVERDUE
-        elif 0 <= self.days_until_due <= 3:
-            self.status = self.DUE_SOON
         else:
-            self.status = self.ACTIVE
+            # no longer fully paid (e.g. a payment or top-up was edited/removed) -
+            # clear the paid-off markers so they don't linger from a past state
+            self.paid_date = None
+            self.receipt_number = ""
+            self.paid_by = ""
+            if timezone.localdate() > self.due_date:
+                self.status = self.OVERDUE
+            elif 0 <= self.days_until_due <= 3:
+                self.status = self.DUE_SOON
+            else:
+                self.status = self.ACTIVE
         if save and (self.status != old or self.pk):
             self.save(update_fields=[
                 "status", "paid_date", "paid_by", "receipt_number", "updated_at",

@@ -43,7 +43,7 @@
   <h3>Loans issued in period — {{ paid_label }}</h3>
   <div class="lm-table-wrap">
     <table class="lm-table">
-      <thead><tr><th>Ref</th><th>Customer</th><th>Issued</th><th class="lm-num">Principal</th><th class="lm-num">Interest</th><th class="lm-num">Repayment</th><th>Status</th></tr></thead>
+      <thead><tr><th>Ref</th><th>Customer</th><th>Issued</th><th class="lm-num">Principal</th><th class="lm-num">Interest</th><th class="lm-num">Repayment</th><th class="lm-num">Paid</th><th class="lm-num">Balance</th><th>Status</th><th class="lm-no-print"></th></tr></thead>
       <tbody>
         {% for loan in loans_in %}
         <tr>
@@ -51,11 +51,28 @@
           <td class="lm-num">K{{ loan.principal|floatformat:2 }}</td>
           <td class="lm-num">K{{ loan.interest_amount|floatformat:2 }}</td>
           <td class="lm-num">K{{ loan.total_repayment|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan.amount_paid|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan.balance|floatformat:2 }}</td>
           <td><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.get_status_display }}</span></td>
+          <td class="lm-no-print">{% if can_manage %}<a class="lm-btn lm-btn-sm lm-btn-danger" href="{% url 'loans:loan_delete' loan.pk %}?next={{ request.get_full_path|urlencode }}">Delete</a>{% endif %}</td>
         </tr>
-        {% empty %}<tr><td colspan="7"><div class="lm-empty">No {% if paid_filter %}{{ paid_filter }} {% endif %}loans issued in this period.</div></td></tr>
+        {% empty %}<tr><td colspan="10"><div class="lm-empty">No {% if paid_filter %}{{ paid_filter }} {% endif %}loans issued in this period.</div></td></tr>
         {% endfor %}
       </tbody>
+      {% if loans_in %}
+      <tfoot>
+        <tr style="font-weight:800;background:#f8fafc">
+          <td colspan="3">Total ({{ loan_count }} loan{{ loan_count|pluralize }})</td>
+          <td class="lm-num">K{{ loan_totals.principal|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan_totals.interest|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan_totals.repayment|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan_totals.paid|floatformat:2 }}</td>
+          <td class="lm-num">K{{ loan_totals.balance|floatformat:2 }}</td>
+          <td></td>
+          <td class="lm-no-print"></td>
+        </tr>
+      </tfoot>
+      {% endif %}
     </table>
   </div>
 </div>
