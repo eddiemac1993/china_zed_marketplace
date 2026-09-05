@@ -9,6 +9,12 @@ venv/
 .venv/
 .env
 
+# Editor lock/swap files (vim, nano) - can appear anywhere, e.g. ..env.swp
+*.swp
+*.swo
+.*.swp
+.*.swo
+
 # Database
 db.sqlite3
 db.sqlite3.bak-*
