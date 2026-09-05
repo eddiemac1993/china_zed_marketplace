@@ -6,6 +6,9 @@
   {% if can_manage %}
   <a href="{% url 'loans:loan_create' %}" class="lm-btn lm-btn-primary">+ New Loan</a>
   <a href="{% url 'loans:customer_create' %}" class="lm-btn">+ New Customer</a>
+  <form method="post" action="{% url 'loans:send_reminders_now' %}" style="display:inline" onsubmit="return confirm('Send every reminder due today right now?');">
+    {% csrf_token %}<button type="submit" class="lm-btn">🔔 Send reminders now</button>
+  </form>
   {% endif %}
 {% endblock %}
 
