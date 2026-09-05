@@ -29,6 +29,7 @@ urlpatterns = [
     path("reports/", views.reports, name="reports"),
     path("settings/", views.settings_view, name="settings"),
     path("notifications/", views.notifications_feed, name="notifications_feed"),
+    path("reminders/send/", views.send_reminders_now, name="send_reminders_now"),
 
     # customer-facing Quick Loan
     path("apply/", views.apply_loan, name="apply"),

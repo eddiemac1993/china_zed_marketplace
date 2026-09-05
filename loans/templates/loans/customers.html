@@ -3,6 +3,7 @@
 {% block lm_title %}Customers{% endblock %}
 
 {% block lm_actions %}
+  <a href="?{{ qs }}{% if qs %}&{% endif %}export=csv" class="lm-btn">⬇ Export CSV</a>
   {% if can_manage %}<a href="{% url 'loans:customer_create' %}" class="lm-btn lm-btn-primary">+ New Customer</a>{% endif %}
 {% endblock %}
 
@@ -58,4 +59,5 @@
     </tbody>
   </table>
 </div>
+{% include "loans/_pagination.html" %}
 {% endblock %}

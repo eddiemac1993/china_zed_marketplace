@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,7 +15,10 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
 
+from .capital import capital_status, capital_warning_text
 from .eligibility import blocking_reason, eligible_limit, get_or_create_customer
+from .notifications import notify_loan_admins, notify_user
+from .reminders import run_reminders
 from .forms import (
     LoanApplicationForm,
     LoanCustomerForm,
@@ -58,6 +62,15 @@ def _sum(qs, field):
     return money(qs.aggregate(t=Sum(field))["t"] or 0)
 
 
+def _paginate(request, queryset, per_page=25):
+    """Return (page_obj, querystring) - querystring is the current GET params
+    with `page` stripped, so pagination links can append their own page=N."""
+    page_obj = Paginator(queryset, per_page).get_page(request.GET.get("page"))
+    qs = request.GET.copy()
+    qs.pop("page", None)
+    return page_obj, qs.urlencode()
+
+
 def dashboard_metrics():
     cfg = LoanSettings.load()
     loans = list(Loan.objects.select_related("customer"))
@@ -75,8 +88,16 @@ def dashboard_metrics():
         .count()
     )
 
+    cap = capital_status()
+    if cap["utilization_pct"] is not None:
+        cap_sub = f"{cap['utilization_pct']}% lent out"
+        if cap["over_capital"]:
+            cap_sub += f" · ⚠️ K{cap['over_amount']} over"
+    else:
+        cap_sub = "Set your capital in Settings"
+
     cards = [
-        {"label": "Total Capital", "value": cfg.total_capital, "icon": "🏦"},
+        {"label": "Total Capital", "value": cfg.total_capital, "icon": "🏦", "sub": cap_sub},
         {"label": "Money Lent Out", "value": money_lent, "icon": "📤"},
         {"label": "Money Collected", "value": money_collected, "icon": "📥"},
         {"label": "Interest Earned", "value": interest_earned, "icon": "📈"},
@@ -167,7 +188,7 @@ def dashboard(request):
 def customer_list(request):
     q = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
-    customers = LoanCustomer.objects.annotate(loan_count=Count("loans"))
+    customers = LoanCustomer.objects.annotate(loan_count=Count("loans")).order_by("full_name")
     if q:
         customers = customers.filter(
             Q(full_name__icontains=q)
@@ -177,9 +198,31 @@ def customer_list(request):
         )
     if status:
         customers = customers.filter(status=status)
+
+    if request.GET.get("export") == "csv":
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="loan-customers.csv"'
+        writer = csv.writer(response)
+        writer.writerow([
+            "Full name", "Phone", "NRC", "Employer", "Department", "Employee number",
+            "Salary date", "Next of kin", "Next of kin phone", "Address", "Status",
+            "Total borrowed", "Total repaid", "Outstanding", "Profit generated",
+        ])
+        for c in customers:
+            writer.writerow([
+                c.full_name, c.phone, c.nrc_number or "", c.employer, c.department,
+                c.employee_number, c.salary_date, c.next_of_kin, c.next_of_kin_phone,
+                c.address, c.get_status_display(),
+                c.total_borrowed, c.total_repaid, c.total_outstanding, c.profit_generated,
+            ])
+        return response
+
+    page_obj, qs = _paginate(request, customers, per_page=25)
     return render(request, "loans/customers.html", {
         "section": "customers",
-        "customers": customers,
+        "customers": page_obj,
+        "page_obj": page_obj,
+        "qs": qs,
         "q": q,
         "status": status,
         "status_choices": LoanCustomer.STATUS_CHOICES,
@@ -291,9 +334,12 @@ def loan_list(request):
         except Exception:
             pass
 
+    page_obj, qs = _paginate(request, loans, per_page=25)
     return render(request, "loans/loans.html", {
         "section": "loans",
-        "loans": loans,
+        "loans": page_obj,
+        "page_obj": page_obj,
+        "qs": qs,
         "q": q, "status": status, "customer_id": customer_id,
         "month": month, "rate": rate,
         "status_choices": Loan.STATUS_CHOICES,
@@ -330,7 +376,11 @@ def loan_create(request):
         loan.created_by = request.user
         loan.save()
         loan.refresh_status()
-        messages.success(request, f"Loan {loan.reference} created for {loan.customer.full_name}.")
+        messages.success(
+            request,
+            f"Loan {loan.reference} created for {loan.customer.full_name}."
+            + capital_warning_text(),
+        )
         return redirect("loans:loan_detail", pk=loan.pk)
     return render(request, "loans/loan_form.html", {
         "section": "loans",
@@ -441,9 +491,12 @@ def payment_list(request):
             | Q(receipt_number__icontains=q)
             | Q(loan__reference__icontains=q)
         )
+    page_obj, qs = _paginate(request, payments, per_page=50)
     return render(request, "loans/payments.html", {
         "section": "payments",
-        "payments": payments[:300],
+        "payments": page_obj,
+        "page_obj": page_obj,
+        "qs": qs,
         "q": q,
         "total": _sum(payments, "amount_paid"),
         "can_manage": is_loan_admin(request.user),
@@ -694,6 +747,17 @@ def settings_view(request):
     })
 
 
+@loan_admin_required
+@require_POST
+def send_reminders_now(request):
+    results = run_reminders()
+    if results:
+        messages.success(request, f"{len(results)} reminder(s) sent just now.")
+    else:
+        messages.info(request, "No reminders were due today.")
+    return redirect("loans:dashboard")
+
+
 @loan_staff_required
 def notifications_feed(request):
     today = timezone.localdate()
@@ -767,7 +831,7 @@ def apply_loan(request):
     if request.method == "POST" and not reason and form.is_valid():
         customer = get_or_create_customer(request.user)
         rate = cfg.app_rate_for_period(int(form.cleaned_data["period_weeks"]))
-        LoanRequest.objects.create(
+        loan_request = LoanRequest.objects.create(
             user=request.user,
             customer=customer,
             amount=form.cleaned_data["amount"],
@@ -775,6 +839,11 @@ def apply_loan(request):
             interest_rate=rate,
             payout_number=profile_phone,
             notes=form.cleaned_data.get("notes", ""),
+        )
+        notify_loan_admins(
+            head="New Quick Loan request",
+            body=f"K{loan_request.amount} from {customer.full_name}",
+            url="/loans/requests/",
         )
         messages.success(
             request,
@@ -835,13 +904,18 @@ def request_payment(request, pk):
 
     form = LoanPaymentRequestForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        LoanPaymentRequest.objects.create(
+        payment_request = LoanPaymentRequest.objects.create(
             loan=loan,
             user=request.user,
             amount=form.cleaned_data["amount"],
             method=form.cleaned_data["method"],
             reference=form.cleaned_data.get("reference", ""),
             notes=form.cleaned_data.get("notes", ""),
+        )
+        notify_loan_admins(
+            head="New payment claim",
+            body=f"K{payment_request.amount} on {loan.reference} — {loan.customer.full_name}",
+            url="/loans/requests/",
         )
         messages.success(request, "Payment request submitted. We'll confirm once we've received it.")
         return redirect("loans:my_loan_detail", pk=loan.pk)
@@ -869,10 +943,16 @@ def request_queue(request):
 def approve_loan_request(request, pk):
     req = get_object_or_404(LoanRequest, pk=pk, status=LoanRequest.PENDING)
     loan = req.approve(request.user)
+    notify_user(
+        req.user,
+        head="Loan approved 🎉",
+        body=f"Your K{req.amount} loan was approved — check {req.payout_number} for the deposit.",
+        url=f"/loans/my/{loan.pk}/",
+    )
     messages.success(
         request,
         f"Approved. {loan.reference} created for {req.customer.full_name} — "
-        f"deposit K{req.amount} to {req.payout_number}.",
+        f"deposit K{req.amount} to {req.payout_number}." + capital_warning_text(),
     )
     return redirect("loans:request_queue")
 
@@ -881,7 +961,14 @@ def approve_loan_request(request, pk):
 @require_POST
 def decline_loan_request(request, pk):
     req = get_object_or_404(LoanRequest, pk=pk, status=LoanRequest.PENDING)
-    req.decline(request.user, request.POST.get("reason", ""))
+    reason = request.POST.get("reason", "")
+    req.decline(request.user, reason)
+    notify_user(
+        req.user,
+        head="Loan request declined",
+        body=reason or f"Your K{req.amount} loan request was declined.",
+        url="/loans/my/",
+    )
     messages.success(request, "Loan request declined.")
     return redirect("loans:request_queue")
 
@@ -891,6 +978,12 @@ def decline_loan_request(request, pk):
 def approve_payment_request(request, pk):
     req = get_object_or_404(LoanPaymentRequest, pk=pk, status=LoanPaymentRequest.PENDING)
     payment = req.approve(request.user)
+    notify_user(
+        req.user,
+        head="Payment confirmed ✅",
+        body=f"We received your K{req.amount} payment. Balance: K{req.loan.balance}.",
+        url=f"/loans/my/{req.loan_id}/",
+    )
     messages.success(request, f"Payment confirmed. Receipt {payment.receipt_number}.")
     return redirect("loans:request_queue")
 
@@ -899,6 +992,13 @@ def approve_payment_request(request, pk):
 @require_POST
 def decline_payment_request(request, pk):
     req = get_object_or_404(LoanPaymentRequest, pk=pk, status=LoanPaymentRequest.PENDING)
-    req.decline(request.user, request.POST.get("reason", ""))
+    reason = request.POST.get("reason", "")
+    req.decline(request.user, reason)
+    notify_user(
+        req.user,
+        head="Payment claim declined",
+        body=reason or f"Your K{req.amount} payment claim on {req.loan.reference} was declined.",
+        url=f"/loans/my/{req.loan_id}/",
+    )
     messages.success(request, "Payment request declined.")
     return redirect("loans:request_queue")
