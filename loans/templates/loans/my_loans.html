@@ -4,39 +4,90 @@
 {% block title %}My Loans · ChinaZed{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260904">
+<link rel="stylesheet" href="{% static 'loans/loans.css' %}?v=20260906">
 {% endblock %}
 
 {% block content %}
 <div class="lm">
   <div class="lm-public">
+
     <div class="lm-hero">
-      <h1>💸 My Loans</h1>
-      <p>Track your outstanding balance and request a new Quick Loan whenever you're eligible.</p>
+      <h1>💸 Quick Loan</h1>
+      <p>Borrow small, repay on time, and your limit grows every time.</p>
       <div class="lm-limit-row">
         <div class="lm-limit-chip"><div class="k">Outstanding balance</div><div class="v">K{{ outstanding|floatformat:2 }}</div></div>
-        <div class="lm-limit-chip"><div class="k">Eligible up to</div><div class="v">K{{ eligible_limit|floatformat:2 }}</div></div>
+        <div class="lm-limit-chip"><div class="k">You can borrow up to</div><div class="v">K{{ stats.limit|floatformat:2 }}</div></div>
       </div>
+    </div>
+
+    {# ---- borrowing power ---- #}
+    <div class="lm-power">
+      <div class="lm-power-top">
+        <div class="amount">K{{ stats.limit|floatformat:2 }} <small>your current limit</small></div>
+        <div class="cap">Cap K{{ stats.max_limit|floatformat:0 }}</div>
+      </div>
+      <div class="lm-meter"><span style="width:{{ stats.progress_pct }}%"></span></div>
+
+      {% if stats.at_max %}
+        <div class="unlock max">🏆 You're at the maximum borrowing limit. Keep repaying on time to stay here.</div>
+      {% elif active_loan %}
+        <div class="unlock">✅ Repay <strong>{{ active_loan.reference }}</strong> on time (by {{ active_loan.due_date|date:"d M Y" }}) and your limit rises to <strong>K{{ stats.next_limit|floatformat:2 }}</strong>.</div>
+      {% elif stats.loans_repaid %}
+        <div class="unlock">✅ Your next on-time repayment lifts your limit toward K{{ stats.max_limit|floatformat:0 }}.</div>
+      {% else %}
+        <div class="unlock">🌱 First-timers start at K{{ stats.starting_limit|floatformat:2 }}. Repay it on time and your limit grows {{ stats.multiplier }}×.</div>
+      {% endif %}
+
+      <div class="lm-track">
+        <span class="pill">📄 {{ stats.loans_repaid }} loan{{ stats.loans_repaid|pluralize }} repaid</span>
+        <span class="pill">⏱️ {{ stats.loans_repaid_on_time }} on time</span>
+      </div>
+
+      <ul class="lm-steps">
+        <li><span class="n">1</span><span>Request from <b>K{{ min_amount|floatformat:2 }}</b>. We deposit to your profile mobile-money number.</span></li>
+        <li><span class="n">2</span><span>Repay the total (loan + interest) by the due date via a payment request.</span></li>
+        <li><span class="n">3</span><span>An on-time repayment <b>raises your limit to {{ stats.multiplier }}× that loan</b> — a late repayment clears the debt but doesn't raise it.</span></li>
+      </ul>
     </div>
 
     {% if blocking_reason %}
       <div class="lm-block-notice">⚠️ {{ blocking_reason }}</div>
     {% else %}
-      <a href="{% url 'loans:apply' %}" class="lm-btn lm-btn-primary" style="margin-bottom:16px">+ Request a loan (min K{{ min_amount|floatformat:2 }})</a>
+      <a href="{% url 'loans:apply' %}" class="lm-btn lm-btn-primary" style="width:100%;justify-content:center;margin-bottom:16px">Request a loan →</a>
     {% endif %}
 
+    {# ---- active loan ---- #}
+    {% if active_loan %}
+    <div class="lm-activeloan">
+      <div class="head">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#047857;text-transform:uppercase;letter-spacing:.04em">Active loan · {{ active_loan.reference }}</div>
+          <div class="big">K{{ active_loan.balance|floatformat:2 }} <span style="font-size:13px;font-weight:600;color:#047857">to repay</span></div>
+        </div>
+        <span class="lm-badge {{ active_loan.status_meta.css }}">{{ active_loan.status_meta.dot }} {{ active_loan.get_status_display }}</span>
+      </div>
+      <div class="due {% if active_loan.is_overdue %}late{% endif %}" style="margin-top:6px">
+        {% if active_loan.is_overdue %}⏰ Was due {{ active_loan.due_date|date:"d M Y" }} — please settle now
+        {% else %}Due {{ active_loan.due_date|date:"d M Y" }} · {{ active_loan.days_until_due }} day{{ active_loan.days_until_due|pluralize }} left{% endif %}
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <a class="lm-btn lm-btn-primary lm-btn-sm" href="{% url 'loans:request_payment' active_loan.pk %}">Make a payment</a>
+        <a class="lm-btn lm-btn-sm" href="{% url 'loans:my_loan_detail' active_loan.pk %}">Loan details</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ---- request history ---- #}
     {% if requests %}
     <div class="lm-card" style="margin-bottom:16px">
-      <strong>Recent requests</strong>
-      <ul class="lm-timeline">
+      <strong>Request history</strong>
+      <ul class="lm-timeline" style="margin-top:8px">
         {% for r in requests %}
         <li>
-          <span>
-            {% if r.status == 'pending' %}⏳{% elif r.status == 'approved' %}✅{% else %}✕{% endif %}
-          </span>
+          <span>{% if r.status == 'pending' %}⏳{% elif r.status == 'approved' %}✅{% else %}✕{% endif %}</span>
           <span>K{{ r.amount|floatformat:2 }} · {{ r.get_period_weeks_display }} · {{ r.requested_at|date:"d M Y" }} —
             <strong>{{ r.get_status_display }}</strong>
-            {% if r.status == 'declined' and r.decision_notes %} ({{ r.decision_notes }}){% endif %}
+            {% if r.status == 'declined' and r.decision_notes %}<br><span class="lm-muted">{{ r.decision_notes }}</span>{% endif %}
           </span>
         </li>
         {% endfor %}
@@ -44,11 +95,12 @@
     </div>
     {% endif %}
 
+    {# ---- all loans ---- #}
     <div class="lm-card">
       <strong>My loans</strong>
       <div class="lm-table-wrap" style="margin-top:10px">
         <table class="lm-table">
-          <thead><tr><th>Ref</th><th>Issued</th><th>Due</th><th class="lm-num">Repayment</th><th class="lm-num">Balance</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Ref</th><th>Issued</th><th>Due</th><th class="lm-num">Repayment</th><th class="lm-num">Balance</th><th>Status</th></tr></thead>
           <tbody>
             {% for loan in loans %}
             <tr onclick="window.location='{% url 'loans:my_loan_detail' loan.pk %}'" style="cursor:pointer">
@@ -58,14 +110,14 @@
               <td class="lm-num">K{{ loan.total_repayment|floatformat:2 }}</td>
               <td class="lm-num">K{{ loan.balance|floatformat:2 }}</td>
               <td><span class="lm-badge {{ loan.status_meta.css }}">{{ loan.status_meta.dot }} {{ loan.get_status_display }}</span></td>
-              <td><a class="lm-btn lm-btn-sm" href="{% url 'loans:my_loan_detail' loan.pk %}">View</a></td>
             </tr>
-            {% empty %}<tr><td colspan="7"><div class="lm-empty">You haven't taken a loan yet.</div></td></tr>
+            {% empty %}<tr><td colspan="6"><div class="lm-empty">You haven't taken a loan yet — request your first one above.</div></td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}

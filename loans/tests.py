@@ -242,7 +242,7 @@ class QuickLoanEligibilityTests(TestCase):
     def test_no_history_no_blocking_reason(self):
         self.assertEqual(blocking_reason(self.user), "")
 
-    def test_limit_grows_after_full_repayment(self):
+    def test_on_time_repayment_grows_limit(self):
         customer = get_or_create_customer(self.user)
         loan = Loan.objects.create(
             customer=customer, original_principal=Decimal("100"), principal=Decimal("100"),
@@ -255,6 +255,21 @@ class QuickLoanEligibilityTests(TestCase):
         cfg = LoanSettings.load()
         expected = min(cfg.app_loan_max_limit, Decimal("100") * cfg.app_loan_growth_multiplier)
         self.assertEqual(eligible_limit(self.user), expected)
+
+    def test_late_repayment_does_not_grow_limit(self):
+        customer = get_or_create_customer(self.user)
+        old_issue = timezone.localdate() - timedelta(days=40)
+        loan = Loan.objects.create(
+            customer=customer, original_principal=Decimal("100"), principal=Decimal("100"),
+            interest_rate=Decimal("5"), period_weeks=1, issue_date=old_issue,
+            source=Loan.APP,
+        )
+        # paid today, well after the (old) due date -> paid_late
+        LoanPayment.objects.create(loan=loan, amount_paid=loan.total_repayment)
+        loan.refresh_from_db()
+        self.assertEqual(loan.status, Loan.PAID)
+        self.assertTrue(loan.payments.first().paid_late)
+        self.assertEqual(eligible_limit(self.user), LoanSettings.load().app_loan_starting_limit)
 
     def test_open_loan_blocks_new_request(self):
         customer = get_or_create_customer(self.user)

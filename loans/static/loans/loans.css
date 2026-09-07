@@ -182,9 +182,44 @@ canvas.lm-chart { max-height: 240px; }
 .lm-week-picker label:has(input:checked) { border-color: var(--lm-primary); background: #eef2ff; }
 .lm-week-picker .rate { display: block; font-size: 11px; font-weight: 600; color: var(--lm-muted); margin-top: 2px; }
 
+.lm-hero .lm-limit-chip.wide { flex: 1 1 100%; }
+
+/* limit / borrowing-power card */
+.lm-power { border: 1px solid var(--lm-border); border-radius: 16px; padding: 18px; background: #fff; margin-bottom: 16px; }
+.lm-power-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.lm-power-top .amount { font-size: 28px; font-weight: 800; color: var(--lm-ink); }
+.lm-power-top .amount small { font-size: 13px; font-weight: 700; color: var(--lm-muted); }
+.lm-power .cap { font-size: 12px; color: var(--lm-muted); font-weight: 600; }
+.lm-meter { height: 10px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin: 12px 0 6px; }
+.lm-meter > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #0f766e, #10b981); }
+.lm-power .unlock {
+  margin-top: 12px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+  border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 600;
+}
+.lm-power .unlock.max { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.lm-track { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.lm-track .pill { background: #f1f5f9; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 700; color: #334155; }
+
+/* how-it-works steps */
+.lm-steps { display: grid; gap: 8px; margin-top: 10px; }
+.lm-steps li { list-style: none; display: flex; gap: 10px; font-size: 13px; color: var(--lm-muted); line-height: 1.5; }
+.lm-steps li b { color: var(--lm-ink); }
+.lm-steps .n {
+  flex: none; width: 20px; height: 20px; border-radius: 999px; background: var(--lm-primary); color: #fff;
+  font-size: 11px; font-weight: 800; display: grid; place-items: center; margin-top: 1px;
+}
+
+/* active loan highlight */
+.lm-activeloan { border: 2px solid #10b981; border-radius: 16px; padding: 16px; margin-bottom: 16px; background: #f0fdf4; }
+.lm-activeloan .head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lm-activeloan .big { font-size: 24px; font-weight: 800; }
+.lm-activeloan .due { font-size: 12px; color: #047857; font-weight: 700; }
+.lm-activeloan .due.late { color: var(--lm-red); }
+
 @media (max-width: 480px) {
   .lm-public { padding: 12px; }
   .lm-hero { padding: 18px 16px; }
   .lm-hero h1 { font-size: 19px; }
   .lm-limit-chip { flex: 1 1 100%; }
+  .lm-power-top .amount { font-size: 24px; }
 }

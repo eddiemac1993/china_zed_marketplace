@@ -16,7 +16,12 @@ from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
 
 from .capital import capital_status, capital_warning_text
-from .eligibility import blocking_reason, eligible_limit, get_or_create_customer
+from .eligibility import (
+    blocking_reason,
+    eligible_limit,
+    get_or_create_customer,
+    repayment_stats,
+)
 from .notifications import notify_loan_admins, notify_user
 from .reminders import run_reminders
 from .forms import (
@@ -863,19 +868,22 @@ def apply_loan(request):
 @login_required
 def my_loans(request):
     customer = LoanCustomer.objects.filter(user=request.user).first()
-    loans = (
-        Loan.objects.filter(customer=customer, source=Loan.APP).order_by("-issue_date")
+    loans = list(
+        Loan.objects.filter(customer=customer, source=Loan.APP)
+        .prefetch_related("payments").order_by("-issue_date")
         if customer else Loan.objects.none()
     )
     requests_qs = LoanRequest.objects.filter(user=request.user).order_by("-requested_at")[:10]
     outstanding = money(sum((l.balance for l in loans if l.status != Loan.PAID), ZERO))
+    active_loan = next((l for l in loans if l.status != Loan.PAID), None)
     return render(request, "loans/my_loans.html", {
         "loans": loans,
         "requests": requests_qs,
         "outstanding": outstanding,
-        "eligible_limit": eligible_limit(request.user),
+        "active_loan": active_loan,
         "blocking_reason": blocking_reason(request.user),
         "min_amount": LoanSettings.load().app_loan_min_amount,
+        "stats": repayment_stats(request.user),
     })
 
 
