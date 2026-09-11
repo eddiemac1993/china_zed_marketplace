@@ -215,6 +215,7 @@ class Product(TimeStampedModel):
 
     is_available = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
+    show_on_homepage = models.BooleanField(default=True)
 
     delivery_min_days = models.PositiveIntegerField(default=24)
     delivery_max_days = models.PositiveIntegerField(default=60)
@@ -412,16 +413,15 @@ class Product(TimeStampedModel):
         return "Out of stock"
 
     def whatsapp_link(self):
-        phone = "260766491002"
         message = (
-            "Hello, I want to ask about this product:\n"
+            "Check out this product on ChinaZed:\n"
             f"Product: {self.name}\n"
             f"Price: K{self.selling_price()}\n"
             f"Deposit: K{self.deposit_amount()}\n"
             f"Balance: K{self.balance_amount()}\n"
             f"View product: {settings.SITE_URL}/product/{self.slug}/"
         )
-        return f"https://api.whatsapp.com/send/?{urlencode({'phone': phone, 'text': message, 'type': 'phone_number', 'app_absent': '0'})}"
+        return f"https://api.whatsapp.com/send/?{urlencode({'text': message})}"
 
     def __str__(self):
         return self.name
@@ -660,10 +660,10 @@ class CustomerProfile(TimeStampedModel):
     photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
 
     def is_complete(self):
-        return bool(self.user.first_name.strip() and self.user.last_name.strip() and self.phone.strip() and self.photo)
+        return bool(self.user.first_name.strip() and self.user.last_name.strip() and self.phone.strip())
 
     def completion_percentage(self):
-        fields = [self.user.first_name.strip(), self.user.last_name.strip(), self.phone.strip(), self.photo]
+        fields = [self.user.first_name.strip(), self.user.last_name.strip(), self.phone.strip()]
         return int(sum(bool(value) for value in fields) / len(fields) * 100)
 
     def __str__(self):
@@ -1283,6 +1283,7 @@ class BroadcastNotification(models.Model):
 
 class MarketplaceEvent(models.Model):
     EVENT_CHOICES = [
+        ("page_view", "Page view"),
         ("search", "Search"),
         ("zero_search", "Search with no results"),
         ("product_view", "Product view"),

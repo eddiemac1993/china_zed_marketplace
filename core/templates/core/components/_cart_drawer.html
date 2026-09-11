@@ -1,4 +1,4 @@
-<div x-show="cartOpen" x-cloak class="fixed inset-0 z-[1000]" aria-hidden="true">
+<div x-show="cartOpen" x-cloak class="fixed inset-0 z-[1000]" :aria-hidden="!cartOpen" role="dialog" aria-modal="true" aria-label="Shopping cart" tabindex="-1" data-a11y-dialog>
     <div class="absolute inset-0 bg-black/50"
          x-show="cartOpen" x-transition:enter="transition-opacity ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
          x-transition:leave="transition-opacity ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"

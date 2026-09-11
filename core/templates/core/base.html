@@ -6,17 +6,17 @@
     <meta name="description" content="{% block meta_description %}Shop products from China and Zambia with ChinaZed. Browse local stock, pre-order from China, pay a 35% deposit, and track delivery online.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
     <title>{% block title %}ChinaZed · 中赞商城{% endblock %}</title>
+{% block social_meta %}{% endblock %}
     <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{% static 'core/vendor/fontawesome/css/all.min.css' %}" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
     <link rel="stylesheet" href="{% static 'core/css/tailwind.css' %}?v=20260902-3">
-    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
-    <script src="https://unpkg.com/@alpinejs/collapse@3.14.9/dist/cdn.min.js" defer></script>
-    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="https://unpkg.com/swiper@11/swiper-bundle.min.css">
-    <script src="https://unpkg.com/swiper@11/swiper-bundle.min.js" defer></script>
+    <script src="{% static 'core/vendor/htmx.min.js' %}" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
+    <script src="{% static 'core/vendor/alpine-collapse.min.js' %}" defer></script>
+    <script src="{% static 'core/vendor/alpine.min.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'core/vendor/swiper-bundle.min.css' %}">
+    <script src="{% static 'core/vendor/swiper-bundle.min.js' %}" defer></script>
 
     {# ── Legacy compatibility layer: product_detail.html, cart.html, and the #}
     {# static info pages (about/faq/terms/privacy/order_policy/supplier_*) still #}
@@ -76,9 +76,13 @@
         {% block extra_style %}{% endblock %}
     </style>
     {% block extra_head %}{% endblock %}
+<link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260909">
+<script src="{% static 'core/js/privacy-choices.js' %}?v=20260909-2"></script>
+<meta name="referrer" content="strict-origin-when-cross-origin">
 </head>
 <body x-data="{ cartOpen: false, menuOpen: false }" class="{% if request.resolver_match.url_name == 'assistant' %}h-[100dvh] overflow-hidden{% endif %} bg-brand-bg font-sans text-[13px] text-brand-ink antialiased">
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
 {% include "core/components/_mobile_menu.html" %}
 {% if request.user.is_authenticated %}
     {% include "core/components/_cart_drawer.html" %}
@@ -99,11 +103,12 @@
 </div>
 {% endif %}
 
-<main id="main-content" class="pb-20 lg:pb-0">
+<main tabindex="-1" id="main-content" class="pb-20 lg:pb-0">
 {% block content %}{% endblock %}
 </main>
 
 <!-- FOOTER -->
+{% include "core/components/_cookie_choices.html" %}
 <footer class="mt-6 bg-neutral-900 print:hidden {% if request.resolver_match.url_name == 'assistant' %}hidden{% endif %}">
     <div class="mx-auto grid max-w-[1300px] gap-9 px-5 py-7 sm:grid-cols-3">
         <div>
@@ -113,7 +118,7 @@
             <div class="mt-3.5 space-y-1.5 text-xs text-neutral-400">
                 <div><i class="fa-solid fa-phone mr-1.5 text-neutral-500"></i> <a href="tel:+260766491002" class="transition hover:text-brand-red">+260 766 491 002</a></div>
                 <div><i class="fa-solid fa-phone mr-1.5 text-neutral-500"></i> <a href="tel:+260970949531" class="transition hover:text-brand-red">+260 970 949 531</a></div>
-                <div><i class="fa-solid fa-envelope mr-1.5 text-neutral-500"></i> chinatozambia.zm@gmail.com</div>
+                <div><i class="fa-solid fa-envelope mr-1.5 text-neutral-500"></i> <a href="mailto:swiftfindzm@gmail.com">swiftfindzm@gmail.com</a></div>
             </div>
         </div>
         <div>
@@ -164,7 +169,7 @@
     </div>
 
     <div class="border-t border-neutral-800 px-5 py-3.5 text-center text-[11px] text-neutral-600">
-        © 2026 ChinaZed · China to Zambia Marketplace. All rights reserved. &nbsp;|&nbsp; 中赞商城版权所有
+        <p>ChinaZed is operated by SWIFTFIND VENTURES LIMITED · Local Company · Company ID 120261053220.</p><p>Lusaka, Zambia. No walk-in premises currently available.</p><nav aria-label="Legal and privacy" class="mt-3 flex flex-wrap justify-center gap-4"><a href="{% url 'terms' %}">Terms &amp; Conditions</a><a href="{% url 'privacy' %}">Privacy Policy</a><a href="{% url 'refunds' %}">Refund Policy</a><a href="{% url 'cookies' %}">Cookie Policy</a><a href="{% url 'business_details' %}">Business Details</a><button type="button" data-cookie-settings>Cookie settings</button></nav><p class="mt-3">© 2026 SWIFTFIND VENTURES LIMITED. Product and advertiser images remain subject to their owners' rights.</p>
     </div>
 </footer>
 
@@ -233,5 +238,6 @@
     })();
 </script>
 {% block extra_js %}{% endblock %}
+<script src="{% static 'core/js/accessibility.js' %}?v=20260909" defer></script>
 </body>
 </html>

@@ -10,17 +10,17 @@
 
     <!-- HERO -->
     <div class="relative mb-3 flex min-h-[155px] flex-col items-start justify-center gap-3 overflow-hidden rounded-xl bg-gradient-to-r from-red-950 via-brand-red to-orange-600 bg-cover bg-right p-4 sm:mb-3.5 sm:min-h-[220px] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-7"
-         style="background-image: linear-gradient(90deg, rgba(150,10,14,.6) 0%, rgba(200,16,22,.35) 45%, rgba(229,20,26,.05) 100%), url('{% static "core/images/china-zed-homepage-hero.jpeg" %}'); background-size: cover; background-position: right center;">
+         style="background-image: linear-gradient(90deg, rgba(55,8,12,.78) 0%, rgba(55,8,12,.66) 60%, rgba(55,8,12,.48) 100%), url('{% static "core/images/china-zed-homepage-hero.jpeg" %}'); background-size: cover; background-position: right center;">
         <div class="relative z-10 flex flex-col items-start gap-3.5 sm:flex-row sm:items-center">
             <div class="whitespace-nowrap rounded-lg bg-transparent px-4 py-2.5 text-center font-display text-xl font-black leading-tight text-white drop-shadow-lg sm:text-2xl">
-                <i class="fa-solid fa-fire"></i> HOT<small class="block font-sans text-[11px] font-bold">DEALS</small>
+                <i class="fa-solid fa-fire"></i> SHOP<small class="block font-sans text-[11px] font-bold">CHINAZED</small>
             </div>
             <div>
-                <h1 class="font-display text-xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:text-3xl">Buy Direct from China · Delivered to Zambia</h1>
+                <h1 class="font-display text-xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:text-3xl">Products from China · For Zambia</h1>
                 <ul class="mt-2.5 flex flex-wrap gap-1.5">
                     <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">35% deposit</li>
                     <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">Balance on arrival</li>
-                    <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">24–60 day shipping</li>
+                    <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">Estimated China shipping: 24–60 days</li>
                     <li class="rounded-full border border-white/25 bg-black/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">AI support</li>
                 </ul>
             </div>
@@ -41,7 +41,7 @@
             <div class="flex items-center gap-3 bg-white p-3.5"><div class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blue-100 text-lg text-blue-700"><i class="fa-solid fa-location-dot"></i></div><div><div class="text-xs font-black text-brand-ink">Track every order</div><div class="mt-0.5 text-[11px] text-brand-muted">Delivery and collection updates online and push</div></div></div>
             <a href="{% if request.user.is_authenticated %}{% url 'loans:my_loans' %}{% else %}{% url 'login' %}?next={% url 'loans:my_loans' %}{% endif %}" class="flex items-center gap-3 bg-white p-3.5 transition hover:bg-neutral-50">
                 <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg" style="background:#d1fae5;color:#059669"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                <div><div class="text-xs font-black text-brand-ink">Quick Loan</div><div class="mt-0.5 text-[11px] text-brand-muted">From K10, low in-app rates{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
+                <div><div class="text-xs font-black text-brand-ink">Quick Loan</div><div class="mt-0.5 text-[11px] text-brand-muted">View loan information{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
             </a>
         </div>
     </section>
@@ -53,18 +53,9 @@
         {% for category in categories|slice:":7" %}<a href="?category={{ category.id }}#results" class="shrink-0 rounded-full border border-brand-border bg-white px-3.5 py-2 text-xs font-bold text-brand-ink transition hover:border-brand-orange hover:text-brand-orange">{{ category.name }}</a>{% endfor %}
     </nav>
 
-    {% include "core/components/_flash_sale_banner.html" %}
 
-    {% comment %}Legacy simulated social proof removed: homepage now shows only real order data.
-    <!-- SOCIAL PROOF -->
-    <div class="mb-3.5 hidden items-center gap-2.5 rounded-xl border border-orange-100 bg-orange-50/60 px-4.5 py-3 text-[13px] text-amber-900 sm:flex"
-         x-data="{ orders: 1247, viewers: 38 }"
-         x-init="setInterval(() => orders += Math.floor(Math.random()*3), 15000); setInterval(() => { viewers += Math.floor(Math.random()*5)-2; if (viewers<20) viewers=20; if (viewers>80) viewers=80; }, 8000)">
-        <i class="fa-solid fa-box text-xl text-amber-700"></i>
-        <span><strong x-text="orders.toLocaleString()">1,247</strong> orders delivered this month · <strong x-text="viewers">38</strong> people browsing now</span>
-    </div>
 
-    {% endcomment %}
+
     <!-- TWO-COL -->
     <div class="mb-3.5 grid grid-cols-1 gap-3.5 lg:grid-cols-[190px_1fr]">
 
@@ -76,11 +67,11 @@
         <!-- MAIN COLUMN -->
         <div class="min-w-0 space-y-4">
 
-            <!-- HOT ITEMS -->
+            <!-- FEATURED PRODUCTS -->
             {% if not category_id and not product_type and not query %}
             <div class="reveal">
                 <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-100 pb-2.5">
-                    <div class="flex items-baseline gap-2.5"><span class="border-l-4 border-brand-red pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">TRENDING IN ZAMBIA</span><span class="text-[11px] text-brand-muted">Popular and frequently viewed</span></div>
+                    <div class="flex items-baseline gap-2.5"><span class="border-l-4 border-brand-red pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">EXPLORE PRODUCTS</span><span class="text-[11px] text-brand-muted">Browse selected products</span></div>
                 </div>
                 {% include "core/components/_product_grid.html" with products=trending_products empty_title="Popular products are coming soon" empty_note="Browse our newest China and Zambia listings below." %}
             </div>
@@ -97,9 +88,9 @@
             <div class="reveal">
                 <div class="mb-2.5 flex items-baseline gap-2.5 border-b border-neutral-100 pb-2.5">
                     <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl"><i class="fa-solid fa-fire text-brand-red"></i> HOT ITEMS</span>
-                    <span class="text-[11px] text-brand-muted">Most popular right now</span>
+                    <span class="text-[11px] text-brand-muted">Selected by ChinaZed</span>
                 </div>
-                {% include "core/components/_product_grid.html" with products=featured_products empty_title="No hot deals running right now" empty_note="New arrivals are added weekly — browse everything in stock meanwhile." empty_cta_url="?type=local#results" empty_cta_label="Browse Zambia stock" %}
+                {% include "core/components/_product_grid.html" with products=featured_products empty_title="No featured products currently listed" empty_note="Browse the available listings." empty_cta_url="?type=local#results" empty_cta_label="Browse Zambia stock" %}
             </div>
 
             <!-- ZAMBIA STOCK -->
@@ -107,7 +98,7 @@
                 <div class="mb-2.5 flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-100 pb-2.5">
                     <div class="flex items-baseline gap-2.5">
                         <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink sm:text-xl">🇿🇲 AVAILABLE IN ZAMBIA</span>
-                        <span class="text-[11px] text-brand-muted">Zambia stock · Ships within 10 days</span>
+                        <span class="text-[11px] text-brand-muted">Zambia stock · Estimated dispatch: up to 10 days</span>
                     </div>
                     <a href="?type=local#results" class="text-xs font-semibold text-brand-muted transition hover:text-brand-red">View All ›</a>
                 </div>
@@ -131,7 +122,7 @@
             <section id="recentlyViewed" class="hidden">
                 <div class="mb-2.5 flex items-center justify-between">
                     <span class="border-l-4 border-brand-orange pl-2.5 font-display text-lg font-black tracking-wide text-brand-ink">Recently Viewed</span>
-                    <button onclick="czClearRecentlyViewed()" class="text-[11px] font-bold text-brand-muted transition hover:text-brand-red">Clear</button>
+                    <button onclick="czClearRecentlyViewed()" class="text-[11px] font-bold text-brand-muted transition hover:text-brand-red">Clear browsing history</button>
                 </div>
                 <div class="no-scrollbar flex gap-2.5 overflow-x-auto pb-1" id="rvScroll"></div>
             </section>
@@ -156,7 +147,7 @@
                         </h3>
                         <p class="mt-0.5 text-xs text-amber-700">{{ products|length }} product{{ products|length|pluralize }} found</p>
                     </div>
-                    <a href="{% url 'home' %}" class="whitespace-nowrap rounded-full border border-amber-300 bg-white px-3.5 py-1.5 text-xs font-bold text-amber-800 transition hover:bg-brand-red hover:text-white hover:border-brand-red"><i class="fa-solid fa-xmark"></i> Clear</a>
+                    <a href="{% url 'home' %}" class="whitespace-nowrap rounded-full border border-amber-300 bg-white px-3.5 py-1.5 text-xs font-bold text-amber-800 transition hover:bg-brand-red hover:text-white hover:border-brand-red"><i class="fa-solid fa-xmark"></i> Clear filters</a>
                 </div>
                 {% endif %}
 
@@ -174,7 +165,7 @@
     <section class="mb-3.5 grid gap-3.5 rounded-xl border border-brand-border bg-white p-4 sm:grid-cols-3 sm:p-5">
         <div class="flex gap-3"><i class="fa-solid fa-circle-check mt-0.5 text-xl text-brand-green"></i><div><h3 class="text-sm font-black text-brand-ink">Clear payment breakdown</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">See the total, your 35% deposit, and the balance before ordering.</p></div></div>
         <div class="flex gap-3"><i class="fa-brands fa-whatsapp mt-0.5 text-xl text-emerald-500"></i><div><h3 class="text-sm font-black text-brand-ink">Talk to a real person</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">Ask about a product on WhatsApp before you pay.</p><a href="https://wa.me/260766491002" target="_blank" rel="noopener" class="mt-1.5 inline-block text-xs font-black text-emerald-600">Chat now →</a></div></div>
-        <div class="flex gap-3"><i class="fa-solid fa-box-open mt-0.5 text-xl text-brand-orange"></i><div><h3 class="text-sm font-black text-brand-ink">Tracked from order to arrival</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">Follow progress from your ChinaZed profile.{% if successful_order_count %} {{ successful_order_count }} order{{ successful_order_count|pluralize }} successfully completed.{% endif %}</p></div></div>
+        <div class="flex gap-3"><i class="fa-solid fa-box-open mt-0.5 text-xl text-brand-orange"></i><div><h3 class="text-sm font-black text-brand-ink">Tracked from order to arrival</h3><p class="mt-1 text-xs leading-relaxed text-brand-muted">Follow progress from your ChinaZed profile.</p></div></div>
         {% if collection_centres %}<div class="border-t border-neutral-100 pt-3 text-xs text-brand-muted sm:col-span-3"><strong class="text-brand-ink">Active collection centres:</strong> {% for centre in collection_centres %}{{ centre.name }} ({{ centre.town }}){% if not forloop.last %} · {% endif %}{% endfor %}</div>{% endif %}
     </section>
 
@@ -199,29 +190,12 @@
             </div>
             <div class="flex items-start gap-3">
                 <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-red font-display text-base font-black text-white">4</div>
-                <div><h4 class="text-[13px] font-extrabold">Track & Receive</h4><p class="mt-1 text-xs leading-relaxed text-brand-muted">Monitor your order in real-time. China orders delivered in 24–60 days.</p></div>
+                <div><h4 class="text-[13px] font-extrabold">Track & Receive</h4><p class="mt-1 text-xs leading-relaxed text-brand-muted">Check order status in your profile. China delivery estimates are shown with each product.</p></div>
             </div>
         </div>
     </div>
 
-    {% if testimonials %}
-    <div class="mb-3.5 rounded-xl border border-brand-border bg-white">
-        <div class="border-b border-neutral-100 px-4 py-3">
-            <span class="font-display text-lg font-black tracking-wide text-brand-ink">CUSTOMER REVIEWS</span>
-            <span class="ml-2 text-[11px] text-brand-muted">What buyers are saying</span>
-        </div>
-        <div class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-3">
-            {% for review in testimonials %}
-            <div class="rounded-lg border border-neutral-100 bg-neutral-50 p-4">
-                <div class="mb-2 space-x-0.5 text-amber-500"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                <p class="mb-2.5 text-xs leading-relaxed text-neutral-600">{{ review.comment|default:"Great service from ChinaZed." }}</p>
-                <strong class="block text-xs text-brand-ink">{{ review.user.username }}</strong>
-                <span class="text-[11px] text-brand-muted">{{ review.product.name }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
+
 
 </div>
 {% endblock %}
@@ -229,23 +203,25 @@
 {% block extra_js %}
 <script>
     // ── Recently Viewed render ──
-    function czRenderRecentlyViewed() {
+    async function czRenderRecentlyViewed() {
+        if (!window.czConsent || !window.czConsent.allows("personalization")) return;
         try {
-            var list = JSON.parse(localStorage.getItem('czRecentlyViewed') || '[]');
-            var wrap = document.getElementById('recentlyViewed');
-            var scroll = document.getElementById('rvScroll');
+            var list = JSON.parse(localStorage.getItem("czRecentlyViewed") || "[]").slice(0,12);
+            var wrap = document.getElementById("recentlyViewed"), scroll = document.getElementById("rvScroll");
             if (!wrap || !scroll || !list.length) return;
-            scroll.innerHTML = list.map(function (p) {
-                var media = p.img
-                    ? '<img class="h-[118px] w-full object-cover bg-neutral-100" loading="lazy" src="' + p.img + '" alt="">'
-                    : '<div class="grid h-[118px] w-full place-items-center bg-neutral-100 text-2xl text-neutral-400"><i class="fa-solid fa-box-open"></i></div>';
-                var name = (p.name || '').replace(/</g, '&lt;');
-                return '<a class="block w-[118px] flex-none overflow-hidden rounded-lg border border-neutral-200 bg-white transition hover:shadow-lg" href="' + p.url + '">' + media +
-                       '<div class="p-2"><div class="mb-1 h-[30px] overflow-hidden text-[11px] leading-tight text-brand-ink">' + name + '</div>' +
-                       '<div class="font-display text-sm font-black text-brand-orange">' + (p.price || '') + '</div></div></a>';
-            }).join('');
-            wrap.classList.remove('hidden');
-        } catch (e) {}
+            var response = await fetch("{% url 'visible_history_products' %}?slugs=" + encodeURIComponent(list.map(p => p.slug).join(",")), {credentials:"same-origin",cache:"no-store"});
+            if (!response.ok) return;
+            var allowed = (await response.json()).slugs;
+            scroll.replaceChildren();
+            list.filter(p => allowed.includes(p.slug)).forEach(function(p) {
+                var a = document.createElement("a");
+                a.className="block w-[118px] flex-none overflow-hidden rounded-lg border border-neutral-200 bg-white";
+                a.href="/product/"+encodeURIComponent(p.slug)+"/";
+                if(p.img) { var url=new URL(p.img,location.origin); if(["https:","http:"].includes(url.protocol)){var img=document.createElement("img");img.src=url.href;img.alt=p.name || "Product";img.loading="lazy";img.className="h-[118px] w-full object-cover";a.appendChild(img);} }
+                var label=document.createElement("div");label.className="p-2 text-sm text-brand-ink";label.textContent=p.name || "View product";a.appendChild(label);scroll.appendChild(a);
+            });
+            wrap.classList.toggle("hidden",!scroll.children.length);
+        } catch(e) {}
     }
     function czClearRecentlyViewed() {
         try { localStorage.removeItem('czRecentlyViewed'); } catch (e) {}
@@ -256,6 +232,7 @@
 
     // ── Recommended For You (based on recently viewed categories) ──
     (function () {
+        if (!window.czConsent || !window.czConsent.allows("personalization")) return;
         try {
             var list = JSON.parse(localStorage.getItem('czRecentlyViewed') || '[]');
             var categoryIds = [...new Set(list.map(function (p) { return p.category_id; }).filter(Boolean))].slice(0, 5);

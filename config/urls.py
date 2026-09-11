@@ -11,6 +11,7 @@ from django.urls import reverse
 from core.models import Product
 from core.forms import StyledPasswordResetForm, StyledSetPasswordForm
 from core import views
+from core.account_recovery import AccountPasswordResetView
 
 
 
@@ -76,7 +77,7 @@ urlpatterns = [
 
     path(
         "password-reset/",
-        auth_views.PasswordResetView.as_view(
+        AccountPasswordResetView.as_view(
             template_name="core/password_reset.html",
             email_template_name="core/password_reset_email.txt",
             html_email_template_name="core/password_reset_email.html",

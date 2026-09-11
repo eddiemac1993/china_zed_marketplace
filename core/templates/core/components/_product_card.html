@@ -17,14 +17,14 @@
             <span class="absolute left-2 top-2 rounded-full bg-brand-blue px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow">🇨🇳 China</span>
         {% endif %}
         {% if product.is_featured %}
-            <span class="absolute right-2 top-2 rounded-full bg-gradient-to-r from-brand-red to-brand-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow"><i class="fa-solid fa-fire"></i> Hot</span>
+            <span class="absolute right-2 top-2 rounded-full bg-gradient-to-r from-brand-red to-brand-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow"><i class="fa-solid fa-fire"></i> Featured</span>
         {% endif %}
     </a>
 
     {% if request.user.is_authenticated %}
     <form method="post" action="{% url 'toggle_wishlist' product.slug %}" class="absolute right-2 top-9 z-10">
         {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-        <button type="submit" aria-label="{% if product.id in saved_product_ids %}Remove from saved products{% else %}Save product for later{% endif %}" class="grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-md transition hover:scale-110 {% if product.id in saved_product_ids %}text-brand-red{% else %}text-neutral-400 hover:text-brand-red{% endif %}"><i class="{% if product.id in saved_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i></button>
+        <button type="submit" aria-label="{% if product.id in saved_product_ids %}Remove {{ product.name }} from saved products{% else %}Save {{ product.name }} for later{% endif %}" class="grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-md transition hover:scale-110 {% if product.id in saved_product_ids %}text-brand-red{% else %}text-neutral-400 hover:text-brand-red{% endif %}"><i class="{% if product.id in saved_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i></button>
     </form>
     {% endif %}
 
@@ -34,17 +34,10 @@
         </a>
 
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-brand-muted sm:text-[11px]">
-            {% if product.rating_count %}
-                <span class="inline-flex items-center gap-1 font-bold text-brand-gold-dark">
-                    <i class="fa-solid fa-star"></i>
-                    {{ product.rating_avg|floatformat:1 }}
-                </span>
-            {% endif %}
-            {% if product.sold_count %}
-                <span>{{ product.sold_count|intcomma }}+ sold</span>
-            {% endif %}
+
+
             {% if product.product_type == "local" %}
-                <span class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700"><i class="fa-solid fa-truck-fast"></i> Ships within 10 days</span>
+                <span class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-700"><i class="fa-solid fa-truck-fast"></i> Estimated dispatch: up to 10 days</span>
             {% elif product.delivery_range %}
                 <span class="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 font-semibold text-brand-orange"><i class="fa-solid fa-plane"></i> {{ product.delivery_range }}</span>
             {% endif %}
@@ -92,9 +85,9 @@
         {% endif %}
         <div class="mt-1.5 grid grid-cols-2 gap-1.5">
             <a href="{% url 'save_product_image' product.slug %}" download aria-label="Download a poster for {{ product.name }}" class="flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 px-1 py-2 text-[10px] font-black text-white transition hover:bg-brand-orange" style="color:#fff!important;background-color:#171717">
-                <i class="fa-solid fa-download text-xs" aria-hidden="true"></i><span>Poster</span>
+                <i class="fa-solid fa-download text-xs" aria-hidden="true"></i><span>Download poster</span>
             </a>
-            <a href="{% url 'product_whatsapp' product.slug %}" target="_blank" rel="noopener" aria-label="Share {{ product.name }} on WhatsApp" class="flex items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-1 py-2 text-[10px] font-black text-white transition hover:bg-emerald-600" style="color:#fff!important;background-color:#10b981">
+            <a href="{% url 'product_whatsapp' product.slug %}" target="_blank" rel="noopener" aria-label="Share {{ product.name }} on WhatsApp" class="flex items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-1 py-2 text-[10px] font-black text-white transition hover:bg-emerald-600" style="color:#fff!important;background-color:#047857">
                 <i class="fa-brands fa-whatsapp text-sm" aria-hidden="true"></i><span>WhatsApp</span>
             </a>
         </div>

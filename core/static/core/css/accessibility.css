@@ -1,0 +1,19 @@
+:root{--red:#b91c1c;--red-dark:#991b1b;--orange:#9a3412;--muted:#595959}
+.text-brand-red{color:#b91c1c!important}.text-brand-orange{color:#9a3412!important}.text-brand-muted{color:#595959!important}
+.bg-brand-red{background-color:#b91c1c!important}.bg-brand-orange{background-color:#9a3412!important}.bg-brand-green{background-color:#166534!important}
+.text-emerald-500,.text-emerald-600{color:#047857!important}.text-neutral-400,.text-neutral-500{color:#595959}
+footer .text-neutral-400,footer .text-neutral-500,footer .text-neutral-600{color:#d4d4d4!important}
+[class*="text-white/"]{color:#fff!important}
+input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea{border-color:#767676}
+input::placeholder,textarea::placeholder{color:#666!important;opacity:1}
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid #1d4ed8!important;outline-offset:3px!important;box-shadow:0 0 0 5px #fff!important}
+:where(button,a,input,select,textarea,summary){scroll-margin:110px 0 230px}
+button,summary,input[type=checkbox],input[type=radio]{touch-action:manipulation}
+input[type=checkbox],input[type=radio]{min-width:20px;min-height:20px;accent-color:#b91c1c}
+.skip-link{position:fixed;top:8px;left:8px;transform:translateY(-180%);z-index:20000;background:#fff;color:#111;padding:12px 20px;border:2px solid #111;font-weight:bold}
+.skip-link:focus{transform:none}
+.cookie-panel{position:fixed;z-index:15000;bottom:0;left:0;right:0;margin:0 auto;max-width:900px;padding:18px;background:#fff;color:#171717;border:2px solid #595959;border-radius:12px 12px 0 0;box-shadow:0 -4px 24px #0002;max-height:65vh;overflow:auto;font-size:14px;line-height:1.5}
+.cookie-panel[hidden]{display:none!important}.cookie-panel h2{font-size:18px;font-weight:800}.cookie-panel a,.policy-body a{text-decoration:underline;color:#991b1b}.cookie-options,.cookie-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}.cookie-options label{display:flex;align-items:center;gap:8px}.cookie-buttons button{background:#fff;color:#171717;border:1px solid #595959;border-radius:6px;min-height:44px;padding:10px 16px;font-weight:bold}.cookie-buttons button:hover{background:#eee}
+.policy-body{max-width:900px;margin:24px auto;padding:24px;background:#fff;color:#262626;line-height:1.7;font-size:16px;border-radius:12px}.policy-body h1{font-size:30px;font-weight:800}.policy-body h2{font-size:20px;font-weight:750;margin:24px 0 8px}.policy-body p,.policy-body ul{margin:12px 0}.policy-body ul{list-style:disc;padding-left:24px}.policy-body table{width:100%;border-collapse:collapse}.policy-body th,.policy-body td{border:1px solid #767676;padding:10px;text-align:left}
+.reveal{opacity:1!important;visibility:visible!important}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

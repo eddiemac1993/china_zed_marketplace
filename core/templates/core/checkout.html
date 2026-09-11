@@ -44,7 +44,7 @@
                     {% endif %}
 
                     <div class="mb-3.5">
-                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">{{ form.customer_phone.label }}</label>
+                        <label for="{{ form.customer_phone.id_for_label }}" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">{{ form.customer_phone.label }}</label>
                         {{ form.customer_phone }}
                         {% if form.customer_phone.errors %}
                             <div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.customer_phone.errors|striptags }}</div>
@@ -52,7 +52,7 @@
                     </div>
 
                     <div>
-                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Order Note</label>
+                        <label for="{{ form.customer_note.id_for_label }}" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Order Note</label>
                         {{ form.customer_note }}
                         {% if form.customer_note.errors %}
                             <div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.customer_note.errors|striptags }}</div>
@@ -100,7 +100,7 @@
 
                     {% if has_collection_centres %}
                     <div class="mt-3.5">
-                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">
+                        <label for="{{ form.collection_centre.id_for_label }}" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">
                             <span x-show="deliveryMethod === 'collection'" x-cloak>Which centre would you like to collect from?</span>
                             <span x-show="deliveryMethod === 'direct'" x-cloak>Which centre should we route your delivery through?</span>
                         </label>
@@ -113,7 +113,7 @@
                     {% endif %}
 
                     <div class="mt-3.5" x-show="deliveryMethod === 'direct'" {% if has_collection_centres %}x-cloak{% endif %}>
-                        <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">{{ form.delivery_address.label }}</label>
+                        <label for="{{ form.delivery_address.id_for_label }}" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">{{ form.delivery_address.label }}</label>
                         {{ form.delivery_address }}
                         {% if form.delivery_address.errors %}
                             <div class="mt-1 text-[11px] font-bold text-brand-red">{{ form.delivery_address.errors|striptags }}</div>
@@ -196,7 +196,8 @@
                     <i class="fa-solid fa-plane"></i> After submitting, your order is created and you can track it from your profile. Use the AI assistant if you need help.
                 </div>
 
-                <button type="submit" class="mt-3 block w-full rounded bg-emerald-500 py-3.5 text-center text-sm font-bold text-white transition hover:bg-emerald-600 active:scale-[0.98]"><i class="fa-brands fa-whatsapp"></i> Submit Order &amp; Track Order</button>
+                <div class="mt-3" style="font-size:13px;color:#333"><label for="{{ form.accept_order_terms.id_for_label }}" style="display:flex;gap:8px;align-items:flex-start">{{ form.accept_order_terms }}<span>I agree to the <a href="{% url 'terms' %}" style="text-decoration:underline">Terms &amp; Conditions</a> and <a href="{% url 'refunds' %}" style="text-decoration:underline">Refund Policy</a>, and have read the <a href="{% url 'privacy' %}" style="text-decoration:underline">Privacy Policy</a>.</span></label>{% for error in form.accept_order_terms.errors %}<p role="alert" class="text-brand-red">{{ error }}</p>{% endfor %}<p class="mt-2">Recipient and delivery details are used to fulfil your order. Do not include payment PINs or unrelated personal information in notes.</p></div>
+<button type="submit" class="mt-3 block w-full rounded bg-emerald-500 py-3.5 text-center text-sm font-bold text-white transition hover:bg-emerald-600 active:scale-[0.98]"><i class="fa-brands fa-whatsapp"></i> Submit Order &amp; Track Order</button>
                 <a href="{% url 'cart' %}" class="mt-2 block w-full rounded border border-brand-border bg-neutral-50 py-2.5 text-center text-[13px] font-bold text-brand-ink transition hover:bg-neutral-100"><i class="fa-solid fa-pen"></i> Edit Cart</a>
 
                 <div class="mt-3 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-3">

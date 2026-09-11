@@ -128,6 +128,7 @@ class CustomerProfileForm(forms.ModelForm):
 
 
 class AdvertisementSubmissionForm(forms.ModelForm):
+    rights_confirmed = forms.BooleanField(required=True, label="I own this image or have permission to publish it, and its claims are accurate.")
     input_class = "w-full rounded-lg border border-brand-border bg-white px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-orange-100"
 
     class Meta:
@@ -140,7 +141,7 @@ class AdvertisementSubmissionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            field.widget.attrs["class"] = self.input_class
+            field.widget.attrs["class"] = "h-5 w-5" if isinstance(field.widget, forms.CheckboxInput) else self.input_class
 
     def clean_image(self):
         image = self.cleaned_data.get("image")
@@ -195,6 +196,7 @@ class CustomUserRegistrationForm(UserCreationForm):
         required=True,
         widget=forms.EmailInput(attrs={
             "class": "form-control",
+            "autocomplete": "email",
             "placeholder": "Enter your email"
         })
     )
@@ -202,6 +204,7 @@ class CustomUserRegistrationForm(UserCreationForm):
     password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
+            "autocomplete": "new-password",
             "placeholder": "Enter password"
         })
     )
@@ -209,6 +212,7 @@ class CustomUserRegistrationForm(UserCreationForm):
     password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
+            "autocomplete": "new-password",
             "placeholder": "Confirm password"
         })
     )
@@ -216,7 +220,7 @@ class CustomUserRegistrationForm(UserCreationForm):
     accept_terms = forms.BooleanField(
         required=True,
         error_messages={
-            "required": "You must accept the Terms & Conditions and Privacy Policy to create an account."
+            "required": "Please agree to the Terms & Conditions and confirm you have read the Privacy Policy."
         },
         widget=forms.CheckboxInput(attrs={
             "class": "terms-checkbox",
@@ -486,10 +490,12 @@ ORDER_FORM_INPUT_CLASS = "w-full rounded border border-brand-border px-3.5 py-2.
 
 
 class OrderForm(forms.Form):
+    accept_order_terms = forms.BooleanField(required=True, label="Accept order terms", error_messages={"required": "Please read and agree to the order terms and refund policy."})
     customer_phone = forms.CharField(
         max_length=20,
         label="Recipient's Phone Number",
         widget=forms.TextInput(attrs={
+            "inputmode": "tel", "autocomplete": "tel",
             "placeholder": "Example: 0970000000",
             "class": ORDER_FORM_INPUT_CLASS,
         })
@@ -535,6 +541,9 @@ class OrderForm(forms.Form):
 
         if delivery_method == "direct" and not cleaned_data.get("delivery_address"):
             self.add_error("delivery_address", "Please provide the delivery address.")
+
+        if delivery_method == "collection":
+            cleaned_data["delivery_address"] = ""
 
         # A collection centre is required for both delivery methods once any
         # centre exists — for "direct" orders it's the staging point a biker

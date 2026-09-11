@@ -1,0 +1,8 @@
+Third-party assets retained at existing versions. Preserve embedded licence notices.
+https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css -> fontawesome/css/all.min.css
+https://unpkg.com/htmx.org@2.0.4 -> htmx.min.js
+https://unpkg.com/@alpinejs/collapse@3.14.9/dist/cdn.min.js -> alpine-collapse.min.js
+https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js -> alpine.min.js
+https://unpkg.com/swiper@11/swiper-bundle.min.css -> swiper-bundle.min.css
+https://unpkg.com/swiper@11/swiper-bundle.min.js -> swiper-bundle.min.js
+Font Awesome Free: icons CC BY 4.0, fonts SIL OFL 1.1, code MIT. HTMX: 0BSD. Alpine and Swiper: MIT.

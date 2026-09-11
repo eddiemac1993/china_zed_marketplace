@@ -4,6 +4,19 @@
 
 {% block title %}{{ product.name }} · ChinaZed 中赞商城{% endblock %}
 
+{% block meta_description %}{{ product.name }} — K{{ product.selling_price|floatformat:2 }}. {{ product.description|striptags|truncatechars:160 }}{% endblock %}
+{% block social_meta %}
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="ChinaZed">
+<meta property="og:title" content="{{ product.name }}">
+<meta property="og:description" content="K{{ product.selling_price|floatformat:2 }} · Deposit K{{ product.deposit_amount|floatformat:2 }} · Balance K{{ product.balance_amount|floatformat:2 }}">
+<meta property="og:url" content="{{ social_product_url }}">
+{% if social_image_url %}<meta property="og:image" content="{{ social_image_url }}">
+<meta property="og:image:alt" content="{{ product.name }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ social_image_url }}">{% endif %}
+<meta name="twitter:title" content="{{ product.name }}">
+{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-[1300px] px-4 py-3.5 pb-[210px] sm:px-5 lg:pb-3.5" x-data="{ zoomOpen: false, mainImg: '{{ product.display_image_url|escapejs }}' }">
 
@@ -21,7 +34,7 @@
 
         <!-- LEFT: IMAGE PANEL -->
         <div class="overflow-hidden rounded-xl border border-brand-border bg-white">
-            <div class="relative {% if product.display_image_url %}aspect-square cursor-zoom-in{% else %}flex min-h-[150px] items-center justify-center{% endif %} overflow-hidden bg-neutral-50" @click="if (mainImg) zoomOpen = true">
+            <div class="relative {% if product.display_image_url %}aspect-square cursor-zoom-in{% else %}flex min-h-[150px] items-center justify-center{% endif %} overflow-hidden bg-neutral-50" @click="if (mainImg) zoomOpen = true" {% if product.display_image_url %}role="button" tabindex="0" aria-label="Enlarge product image" @keydown.enter.prevent="zoomOpen = true" @keydown.space.prevent="zoomOpen = true"{% endif %}>
                 {% if product.display_image_url %}
                     <img :src="mainImg" id="mainProductImage" src="{{ product.display_image_url }}" alt="{{ product.name }}" fetchpriority="high" class="h-full w-full object-cover transition duration-400 hover:scale-105">
                     <span class="absolute bottom-3 right-3 z-[3] rounded-full bg-black/60 px-2.5 py-1.5 text-[11px] font-black text-white">Tap to zoom</span>
@@ -64,7 +77,7 @@
                     {% endif %}
                     {% if product.product_type == "local" %}
                         {% if product.stock_quantity > 0 %}
-                            <span class="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">🇿🇲 Zambia stock · Ships within 10 days</span>
+                            <span class="rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">🇿🇲 Zambia stock · Estimated dispatch: up to 10 days</span>
                             <span class="rounded bg-neutral-100 px-2 py-1 text-[10px] font-bold text-brand-muted">Stock: {{ product.stock_quantity }}</span>
                         {% else %}
                             <span class="rounded bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">Out of Stock</span>
@@ -124,7 +137,7 @@
                     <div class="mb-3.5 flex items-center gap-2.5 rounded border border-emerald-200 bg-emerald-50 px-3.5 py-2.5">
                         <i class="fa-solid fa-truck-fast text-lg text-emerald-700"></i>
                         <div>
-                            <h4 class="text-xs font-bold text-emerald-900">Ships within 10 days</h4>
+                            <h4 class="text-xs font-bold text-emerald-900">Estimated dispatch: up to 10 days</h4>
                             <p class="mt-0.5 text-[11px] text-emerald-700">Dispatched from Zambia · Track in your profile</p>
                         </div>
                     </div>
@@ -141,7 +154,7 @@
                     {% if product.imported_from_link %}
                     <div class="mb-3 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold leading-relaxed text-emerald-800">
                         <i class="fa-solid fa-circle-check mt-0.5"></i>
-                        <span>We verify your requested size, color, and quantity within 2 days after your deposit. If the requested option is unavailable and you choose not to continue before purchase, your deposit is refunded 100%.</span>
+                        <span>We will confirm your requested size, colour and quantity before purchasing. If the option is unavailable, we will contact you about cancellation or an alternative you approve. Your statutory refund rights apply.</span>
                     </div>
                     {% endif %}
                     {% if not product.is_order_ready %}
@@ -201,7 +214,7 @@
                         </a>
                         <a href="{% url 'product_whatsapp' product.slug %}"
                            target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600" style="color:#fff!important;background-color:#10b981">
-                            <i class="fa-brands fa-whatsapp text-base"></i><span style="color:#fff!important">Share or Order on WhatsApp</span>
+                            <i class="fa-brands fa-whatsapp text-base"></i><span style="color:#fff!important">Share on WhatsApp</span>
                         </a>
 
                     {% else %}
@@ -216,7 +229,7 @@
                     <div class="mt-3 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-3">
                         <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-circle-check text-emerald-500"></i> 35% Deposit Only</span>
                         <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-robot text-brand-red"></i> AI Assistant</span>
-                        <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-location-dot text-brand-blue"></i> Real-time Tracking</span>
+                        <span class="inline-flex items-center gap-1 rounded border border-brand-border bg-neutral-50 px-2.5 py-1 text-[10px] font-bold text-brand-muted"><i class="fa-solid fa-location-dot text-brand-blue"></i> Order status updates</span>
                     </div>
 
                 </div>
@@ -297,8 +310,8 @@
 </div>
 
 {% if product.display_image_url %}
-<div class="fixed inset-0 z-[2000] items-center justify-center bg-black/90 p-4.5" x-show="zoomOpen" x-cloak @click="zoomOpen = false" style="display: none;">
-    <button type="button" class="absolute right-4 top-3.5 grid h-11 w-11 place-items-center rounded-full bg-white text-2xl text-neutral-900" aria-label="Close image zoom">×</button>
+<div class="fixed inset-0 z-[2000] items-center justify-center bg-black/90 p-4.5" x-show="zoomOpen" x-cloak @click.self="zoomOpen = false" @keydown.escape.window="zoomOpen = false" role="dialog" aria-modal="true" aria-label="Product image" tabindex="-1" data-a11y-dialog style="display: none;">
+    <button type="button" class="absolute right-4 top-3.5 grid h-11 w-11 place-items-center rounded-full bg-white text-2xl text-neutral-900" aria-label="Close image zoom" @click="zoomOpen = false">×</button>
     <img :src="mainImg" alt="{{ product.name }}" class="max-h-[92vh] max-w-[96vw] rounded-lg bg-white object-contain">
 </div>
 {% endif %}
@@ -352,12 +365,13 @@ document.querySelectorAll('.variant-picker').forEach(function (picker) {
 });
 // ── Recently Viewed: record this product ──
 (function () {
+    if (!window.czConsent || !window.czConsent.allows("personalization")) return;
     try {
         var item = {
             slug: "{{ product.slug }}",
             name: "{{ product.name|escapejs }}",
             url: "{% url 'product_detail' product.slug %}",
-            img: "{{ product.display_image_url|default:'' }}",
+            img: "{{ product.display_image_url|default:''|escapejs }}",
             price: "K{{ product.selling_price|floatformat:0|intcomma }}",
             category_id: {{ product.category_id|default:"null" }}
         };

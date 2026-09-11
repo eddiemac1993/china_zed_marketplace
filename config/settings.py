@@ -29,7 +29,9 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-SITE_URL = os.getenv("SITE_URL", "https://chinatozambia.org").rstrip("/")
+SITE_URL = os.getenv("SITE_URL", "https://www.chinatozambia.org").rstrip("/")
+if SITE_URL in {"http://chinatozambia.org", "https://chinatozambia.org", "http://www.chinatozambia.org"}:
+    SITE_URL = "https://www.chinatozambia.org"
 CSRF_TRUSTED_ORIGINS = [
     origin.strip().rstrip("/")
     for origin in os.getenv(
@@ -68,6 +70,7 @@ LOAN_SMS_SENDER = os.getenv("LOAN_SMS_SENDER", "")
 LOAN_WHATSAPP_SENDER = os.getenv("LOAN_WHATSAPP_SENDER", "")
 
 MIDDLEWARE = [
+    'core.page_analytics.PageAnalyticsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

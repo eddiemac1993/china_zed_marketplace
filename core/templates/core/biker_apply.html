@@ -55,32 +55,32 @@
                     {% csrf_token %}
 
                     <div class="mb-3.5">
-                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.full_name.label }}</label>
+                        <label for="{{ form.full_name.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.full_name.label }}</label>
                         {{ form.full_name }}
                         {% if form.full_name.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.full_name.errors.0 }}</div>{% endif %}
                     </div>
 
                     <div class="mb-3.5">
-                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.phone.label }}</label>
+                        <label for="{{ form.phone.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.phone.label }}</label>
                         {{ form.phone }}
                         {% if form.phone.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.phone.errors.0 }}</div>{% endif %}
                     </div>
 
                     <div class="mb-3.5">
-                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.vehicle_type.label }}</label>
+                        <label for="{{ form.vehicle_type.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.vehicle_type.label }}</label>
                         {{ form.vehicle_type }}
                         {% if form.vehicle_type.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.vehicle_type.errors.0 }}</div>{% endif %}
                     </div>
 
                     <div class="mb-3.5">
-                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.home_centre.label }}</label>
+                        <label for="{{ form.home_centre.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.home_centre.label }}</label>
                         {{ form.home_centre }}
                         {% if form.home_centre.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.home_centre.errors.0 }}</div>{% endif %}
                         <div class="mt-1 text-[11px] leading-relaxed text-brand-muted">You'll only see delivery jobs that are staged at this centre.</div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.id_number.label }}</label>
+                        <label for="{{ form.id_number.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.id_number.label }}</label>
                         {{ form.id_number }}
                         <div class="mt-1 text-[11px] leading-relaxed text-brand-muted">Optional, but helps us verify you faster.</div>
                     </div>

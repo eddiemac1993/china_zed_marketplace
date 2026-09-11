@@ -1,8 +1,16 @@
+from .analytics import analytics_dashboard
+from django.views.generic import TemplateView
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
+    path("profile/analytics/", analytics_dashboard, name="analytics_dashboard"),
+    path("products/visible-history/", views.visible_history_products, name="visible_history_products"),
+    path("refund-policy/", TemplateView.as_view(template_name="core/refunds.html"), name="refunds"),
+    path("cookies/", TemplateView.as_view(template_name="core/cookies.html"), name="cookies"),
+    path("business-details/", TemplateView.as_view(template_name="core/business_details.html"), name="business_details"),
+    path("profile/products/<int:product_id>/homepage/", views.staff_product_homepage_view, name="staff_product_homepage"),
     # Home
     path("", views.home, name="home"),
     # django-webpush registers its own url named "service_worker"; since it is

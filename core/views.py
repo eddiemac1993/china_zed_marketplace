@@ -1,3 +1,6 @@
+from django.views.decorators.http import require_http_methods
+from django.core.paginator import Paginator
+from .privacy_controls import has_optional_consent
 import base64
 import json
 import logging
@@ -96,16 +99,10 @@ def private_product_media_view(request, path):
 
 
 def record_marketplace_event(request, event_type, **details):
-    """Record useful first-party behaviour without retaining visitor IP addresses."""
-    if not request.session.session_key:
-        request.session.create()
-    MarketplaceEvent.objects.create(
-        event_type=event_type,
-        user=request.user if request.user.is_authenticated else None,
-        session_key=request.session.session_key or "",
-        path=request.path[:500],
-        **details,
-    )
+    if not has_optional_consent(request, "analytics"):
+        return
+    minimal = {key: value for key, value in details.items() if key in {"product", "result_count", "quantity"}}
+    MarketplaceEvent.objects.create(event_type=event_type, user=request.user if request.user.is_authenticated else None, path=request.path[:500] if event_type == "product_view" else "", **minimal)
 
 
 AI_ASSISTANT_SYSTEM_PROMPT = """
@@ -116,10 +113,10 @@ Business rules:
 - China pre-orders use a 35% deposit.
 - Balance is paid when the order arrives and is ready for pickup or local delivery.
 - Link-imported China pre-orders have an estimated delivery window of 14 to 60 days.
-- After the first deposit, requested size, color, and quantity are verified within two days.
+- Staff must confirm the requested option before purchasing. Do not promise a verification deadline.
 - If the buyer declines unavailable options before purchase, the full deposit is refundable.
 - Customers can request a product quote from Alibaba, Taobao, Temu, 1688, Shein, or another supplier.
-- If an item is unavailable, ChinaZed helps find an alternative or adjusts the order.
+- If an item is unavailable, do not substitute or adjust it without the customer agreement; explain cancellation rights.
 - Refunds or changes follow the order policy.
 - Do not promise exact availability, final pricing, or delivery dates without staff confirmation.
 - If a customer needs account-specific changes, payment verification, refund approval, or urgent support, tell them staff will review it.
@@ -170,14 +167,9 @@ def assistant_chat_view(request):
             "reply": "Please type your question so I can help."
         })
 
+    if payload.get("ai_consent") is not True:
+        return JsonResponse({"reply": fallback_assistant_reply(message)})
     context_lines = []
-    if request.user.is_authenticated:
-        recent_orders = Order.objects.filter(user=request.user).order_by("-order_date")[:3]
-        for order in recent_orders:
-            context_lines.append(
-                f"Order #{order.id}: status {order.get_status_display()}, total K{order.total_price}, "
-                f"deposit K{order.deposit_amount}, balance K{order.balance_amount}."
-            )
 
     api_key = os.getenv("OPENAI_API_KEY")
 
@@ -252,6 +244,8 @@ def analyze_product_photo_view(request):
     if not is_approved_supplier(request.user):
         return JsonResponse({"error": "Approved supplier access is required.", "code": "forbidden"}, status=403)
 
+    if request.POST.get("ai_consent") != "true":
+        return JsonResponse({"error": "Choose permission before sending a photo to OpenAI.", "code": "consent_required"}, status=400)
     photo = request.FILES.get("photo")
     if not photo:
         return JsonResponse({"error": "Attach a product photo first.", "code": "missing_photo"}, status=400)
@@ -417,22 +411,22 @@ def home(request):
     product_type = request.GET.get("type", "").strip()
     sort = request.GET.get("sort", "").strip()
 
-    products = Product.objects.filter(is_available=True, status="active", is_deleted=False).order_by("-created_at")
+    products = Product.objects.filter(show_on_homepage=True, is_available=True, status="active", is_deleted=False).order_by("-created_at")
     categories = Category.objects.all().order_by("name")
 
     featured_products = with_display_annotations(Product.objects.filter(
-        is_available=True, status="active", is_deleted=False,
+        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
         is_featured=True
     )).order_by("-created_at")[:8]
 
     local_products = with_display_annotations(Product.objects.filter(
-        is_available=True, status="active", is_deleted=False,
+        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
         product_type="local",
         stock_quantity__gt=0
     )).order_by("-created_at")[:10]
 
     preorder_products = with_display_annotations(Product.objects.filter(
-        is_available=True, status="active", is_deleted=False,
+        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
         product_type="preorder"
     )).order_by("-created_at")[:10]
 
@@ -443,7 +437,7 @@ def home(request):
         & (Q(product_type="preorder") | Q(product_type="local", stock_quantity__gt=0))
     )
     trending_products = with_display_annotations(Product.objects.filter(
-        card_ready, is_available=True, status="active", is_deleted=False
+        card_ready, show_on_homepage=True, is_available=True, status="active", is_deleted=False
     )).order_by("-sold_count", "-views_count", "-created_at")[:10]
 
     active_rate = Product.active_exchange_rate()
@@ -456,7 +450,7 @@ def home(request):
         card_ready,
         Q(product_type="preorder", rmb_price__lte=preorder_rmb_limit)
         | Q(product_type="local", rmb_price__lte=local_cost_limit),
-        is_available=True, status="active", is_deleted=False,
+        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
     )).order_by("-is_featured", "-created_at")[:10]
 
     testimonials = ProductReview.objects.filter(
@@ -566,7 +560,7 @@ def home_recommendations_view(request):
     products = []
     if category_ids:
         products = with_display_annotations(Product.objects.filter(
-            is_available=True, category_id__in=category_ids
+            show_on_homepage=True, status="active", is_deleted=False, is_available=True, category_id__in=category_ids
         )).order_by("-is_featured", "-created_at")[:10]
 
     return render(request, "core/components/_product_grid.html", {
@@ -604,7 +598,8 @@ def product_detail(request, slug):
         status="active",
         is_deleted=False,
     )
-    Product.objects.filter(pk=product.pk).update(views_count=F("views_count") + 1)
+    if has_optional_consent(request, "analytics"):
+        Product.objects.filter(pk=product.pk).update(views_count=F("views_count") + 1)
     record_marketplace_event(request, "product_view", product=product)
 
     cart_count = 0
@@ -626,6 +621,8 @@ def product_detail(request, slug):
     } for variant in variants]
 
     return render(request, "core/product_detail.html", {
+        "social_image_url": request.build_absolute_uri(product.display_image_url()) if product.display_image_url() else "",
+        "social_product_url": request.build_absolute_uri(request.path),
         "product": product,
         "cart_count": cart_count,
         "uses_structured_variants": product.uses_structured_variants(),
@@ -881,6 +878,7 @@ def profile_view(request):
         "profile_form": profile_form,
         "profile_complete": customer_profile.is_complete(),
         "profile_completion": customer_profile.completion_percentage(),
+        "staff_gallery": Paginator(Product.objects.filter(is_deleted=False).order_by("-created_at").prefetch_related("gallery_images"), 24).get_page(request.GET.get("gallery_page")) if request.user.is_staff else None,
         "staff_draft_products": [
             {
                 "product": product,
@@ -3131,3 +3129,33 @@ def save_product_image_view(request, slug):
     return response
 
 
+
+
+@staff_member_required(login_url="login")
+@require_POST
+def staff_product_homepage_view(request, product_id):
+    from django.http import HttpResponseBadRequest
+    from django.urls import reverse
+    value = request.POST.get("visible")
+    if value not in ("0", "1"):
+        return HttpResponseBadRequest("Choose on or off.")
+    product = get_object_or_404(Product, pk=product_id, is_deleted=False)
+    product.show_on_homepage = value == "1"
+    product.save(update_fields=["show_on_homepage", "updated_at"])
+    if "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse({"visible": product.show_on_homepage})
+    messages.success(request, f"{product.name}: main page visibility saved.")
+    page = request.POST.get("gallery_page", "1")
+    page = page if page.isdigit() else "1"
+    return redirect(reverse("profile") + "?gallery_page=" + page + "#product-gallery")
+
+
+@require_http_methods(["GET"])
+def visible_history_products(request):
+    if not has_optional_consent(request, "personalization"):
+        return JsonResponse({"slugs": []})
+    slugs = request.GET.get("slugs", "").split(",")[:12]
+    visible = Product.objects.filter(slug__in=slugs, show_on_homepage=True, is_available=True, status="active", is_deleted=False).values_list("slug", flat=True)
+    response = JsonResponse({"slugs": list(visible)})
+    response["Cache-Control"] = "no-store"
+    return response

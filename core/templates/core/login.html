@@ -56,9 +56,14 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Password</label>
-                    <input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required
+                    <label for="login-password" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-brand-muted">Password</label>
+                    <div style="position:relative">
+                <input type="password" id="login-password" style="padding-right:48px" name="password" autocomplete="current-password" placeholder="Enter your password" required
                            class="w-full rounded border border-brand-border bg-neutral-50 px-3.5 py-2.5 text-sm text-brand-ink outline-none transition focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-red-100">
+                    <button type="button" id="toggle-login-password" aria-label="Show password" aria-controls="login-password" aria-pressed="false" title="Show password" style="position:absolute;right:2px;top:2px;bottom:2px;width:44px;display:grid;place-items:center;background:transparent;border:0;border-radius:4px;cursor:pointer;color:#6b7280">
+                        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
                 </div>
 
                 <div class="-mt-1 mb-3.5 text-right">
@@ -79,4 +84,20 @@
 
     </div>
 </div>
+
+<script>
+(function () {
+    const field = document.getElementById('login-password');
+    const toggle = document.getElementById('toggle-login-password');
+    toggle.addEventListener('click', function () {
+        const show = field.type === 'password';
+        field.type = show ? 'text' : 'password';
+        toggle.setAttribute('aria-pressed', String(show));
+        toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        toggle.title = show ? 'Hide password' : 'Show password';
+        toggle.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    });
+    field.form.addEventListener('submit', function () { field.type = 'password'; });
+})();
+</script>
 {% endblock %}

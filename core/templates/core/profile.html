@@ -4,6 +4,8 @@
 {% block title %}My Orders · ChinaZed 中赞商城{% endblock %}
 
 {% block content %}
+{% if request.user.is_staff %}<div class="mx-auto max-w-[1300px] px-5 pt-4"><a href="{% url 'analytics_dashboard' %}" class="inline-flex rounded-lg bg-brand-red px-5 py-3 text-white font-bold">View shop analytics →</a></div>{% endif %}
+
 <div class="mx-auto max-w-[1180px] px-4 py-4 sm:px-5">
 
     <!-- HERO -->
@@ -42,7 +44,7 @@
                 {% csrf_token %}
                 {% for field in profile_form %}
                 <div class="{% if field.name == 'photo' %}sm:col-span-2{% endif %}">
-                    <label for="{{ field.id_for_label }}" class="mb-1.5 block text-xs font-bold text-brand-ink">{{ field.label }} *</label>
+                    <label for="{{ field.id_for_label }}" class="mb-1.5 block text-xs font-bold text-brand-ink">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
                     {{ field }}
                     {% for error in field.errors %}<p class="mt-1 text-xs font-semibold text-red-600">{{ error }}</p>{% endfor %}
                 </div>
@@ -229,6 +231,7 @@
     });
     </script>
 
+    {% include "core/components/_admin_product_gallery.html" %}
     {% if request.user.is_staff and staff_shop_products %}
     <section class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
         <div class="flex items-center justify-between bg-neutral-900 px-4 py-3 text-white sm:px-5">

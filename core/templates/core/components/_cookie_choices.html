@@ -1,0 +1,6 @@
+<aside id="cookie-choices" hidden aria-labelledby="cookie-heading" class="cookie-panel">
+<h2 id="cookie-heading" tabindex="-1">Your privacy choices</h2>
+<p>Essential cookies keep sign-in and forms working. Optional analytics records pages and products viewed, linked to your account when signed in so administrators can review activity. It is off until you choose it. Browsing history is also optional. <a href="{% url 'cookies' %}">Read the cookie policy</a>.</p>
+<div class="cookie-options"><label><input id="consent-analytics" type="checkbox"> Allow usage analytics (linked to my account when signed in)</label><label><input id="consent-personalization" type="checkbox"> Remember recently viewed products</label></div>
+<div class="cookie-buttons"><button type="button" data-consent-choice="reject">Reject optional</button><button type="button" data-consent-choice="accept">Accept optional</button><button type="button" data-consent-choice="save">Save selections</button></div><p id="cookie-status" role="status"></p>
+</aside>
