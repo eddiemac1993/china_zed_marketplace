@@ -73,9 +73,32 @@
             .doc-card { padding: 18px 16px; } .doc-item { padding: 15px 16px; }
         }
 
+        /* Discourage casual saving of raw product photos (long-press / right-click / drag-out).
+           Not foolproof — screenshots and devtools always get through — but it steers
+           regular customers toward the branded "Download Poster" button instead. */
+        img {
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
+            user-drag: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
         {% block extra_style %}{% endblock %}
     </style>
     {% block extra_head %}{% endblock %}
+    <script>
+        document.addEventListener('contextmenu', function (event) {
+            if (event.target && event.target.tagName === 'IMG') {
+                event.preventDefault();
+            }
+        });
+        document.addEventListener('dragstart', function (event) {
+            if (event.target && event.target.tagName === 'IMG') {
+                event.preventDefault();
+            }
+        });
+    </script>
 <link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260911-wholesale">
 <script src="{% static 'core/js/privacy-choices.js' %}?v=20260909-2"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
