@@ -132,11 +132,11 @@ class OrderItemInline(admin.TabularInline):
         "product_name", "requested_size", "requested_color", "quantity",
         "availability_status", "available_sizes", "available_colors",
         "available_quantity", "availability_note", "availability_checked_at",
-        "unit_price", "line_total", "product_type", "created_at",
+        "unit_price", "price_tier", "line_total", "product_type", "created_at",
     )
     readonly_fields = (
         "product_name", "requested_size", "requested_color", "quantity",
-        "unit_price", "line_total", "product_type", "created_at",
+        "unit_price", "price_tier", "line_total", "product_type", "created_at",
         "availability_checked_at",
     )
 
@@ -169,6 +169,8 @@ class ExchangeRateAdmin(admin.ModelAdmin):
         "deposit_percentage",
         "collection_fee_percentage",
         "direct_delivery_fee_percentage",
+        "wholesale_min_quantity",
+        "wholesale_discount_percentage",
         "is_active",
         "updated_at",
     )

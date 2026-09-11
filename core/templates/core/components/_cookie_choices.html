@@ -1,6 +1,29 @@
 <aside id="cookie-choices" hidden aria-labelledby="cookie-heading" class="cookie-panel">
-<h2 id="cookie-heading" tabindex="-1">Your privacy choices</h2>
-<p>Essential cookies keep sign-in and forms working. Optional analytics records pages and products viewed, linked to your account when signed in so administrators can review activity. It is off until you choose it. Browsing history is also optional. <a href="{% url 'cookies' %}">Read the cookie policy</a>.</p>
-<div class="cookie-options"><label><input id="consent-analytics" type="checkbox"> Allow usage analytics (linked to my account when signed in)</label><label><input id="consent-personalization" type="checkbox"> Remember recently viewed products</label></div>
-<div class="cookie-buttons"><button type="button" data-consent-choice="reject">Reject optional</button><button type="button" data-consent-choice="accept">Accept optional</button><button type="button" data-consent-choice="save">Save selections</button></div><p id="cookie-status" role="status"></p>
+    <div class="cookie-header">
+        <span class="cookie-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span>
+        <div>
+            <p class="cookie-eyebrow">Privacy &amp; preferences</p>
+            <h2 id="cookie-heading" tabindex="-1">Your privacy choices</h2>
+        </div>
+    </div>
+    <p class="cookie-intro">Essential cookies keep sign-in and forms working. You decide whether to enable the optional features below. Both are off until you choose them. <a href="{% url 'cookies' %}">Read the cookie policy</a>.</p>
+    <div class="cookie-options">
+        <label class="cookie-option">
+            <input id="consent-analytics" type="checkbox" aria-describedby="consent-analytics-description">
+            <span><span class="cookie-option-title">Allow usage analytics</span><span class="cookie-option-description" id="consent-analytics-description">Records pages and products viewed, linked to your account when signed in so administrators can review activity.</span></span>
+        </label>
+        <label class="cookie-option">
+            <input id="consent-personalization" type="checkbox" aria-describedby="consent-personalization-description">
+            <span><span class="cookie-option-title">Remember recently viewed products</span><span class="cookie-option-description" id="consent-personalization-description">Saves your browsing history on this browser so you can find products again.</span></span>
+        </label>
+    </div>
+    <div class="cookie-footer">
+        <p class="cookie-note">Change your choices anytime in Cookie settings.</p>
+        <div class="cookie-buttons">
+            <button type="button" data-consent-choice="reject">Reject optional</button>
+            <button type="button" data-consent-choice="accept">Accept optional</button>
+            <button type="button" data-consent-choice="save">Save selections</button>
+        </div>
+    </div>
+    <p id="cookie-status" role="status"></p>
 </aside>

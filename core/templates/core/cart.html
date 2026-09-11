@@ -68,12 +68,18 @@
 
                             <!-- PRICE -->
                             <div>
-                                <div class="text-[10px] text-brand-muted">Unit Price</div>
+                                <div class="flex items-center gap-1.5 text-[10px] text-brand-muted">
+                                    Unit Price
+                                    {% if item.is_wholesale %}<span class="rounded bg-brand-orange px-1.5 py-0.5 text-[9px] font-bold text-white">ORDER PRICE</span>{% endif %}
+                                </div>
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-xs font-bold text-brand-red">K</span>
                                     <span class="font-display text-xl font-black leading-none text-brand-red">{{ item.unit_price|floatformat:0|intcomma }}</span>
                                 </div>
                                 <div class="mt-0.5 text-[11px] text-brand-muted">Line total: <strong class="font-bold text-brand-ink">K{{ item.line_total|floatformat:0|intcomma }}</strong></div>
+                                {% if not item.is_wholesale %}
+                                <div class="mt-0.5 text-[10px] text-emerald-600">Buy {{ item.product.wholesale_min_quantity }}+ for order pricing</div>
+                                {% endif %}
                             </div>
 
                             <!-- QTY + REMOVE -->

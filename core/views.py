@@ -1268,7 +1268,7 @@ def add_to_cart_view(request, slug):
         "add_to_cart",
         product=product,
         quantity=quantity,
-        value=product.selling_price() * quantity,
+        value=product.unit_price_for_quantity(quantity) * quantity,
     )
 
     messages.success(request, f"{product.name} added to cart.")
@@ -1416,7 +1416,7 @@ def checkout_cart_view(request):
                     color_name=item.variant.color.name if item.variant_id and item.variant.color_id else item.requested_color,
                     size_name=item.variant.size.name if item.variant_id and item.variant.size_id else item.requested_size,
                     availability_status=("pending" if item.product.imported_from_link and item.product.product_type == "preorder" else "not_required"),
-                    unit_price=item.variant.selling_price() if item.variant_id else item.product.selling_price(),
+                    unit_price=item.unit_price(),
                     product_type=item.product.product_type,
                     line_total=item.line_total(),
                 )
@@ -2182,6 +2182,7 @@ from decimal import Decimal, InvalidOperation
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
 
+from django.contrib.staticfiles import finders
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -2190,6 +2191,17 @@ from django.views.decorators.http import require_GET
 from .models import Product
 
 logger = logging.getLogger(__name__)
+
+
+def load_icon_font(filename, size):
+    """Load a Font Awesome webfont so real icon glyphs can be drawn onto posters."""
+    try:
+        path = finders.find(f"core/vendor/fontawesome/webfonts/{filename}")
+        if path:
+            return ImageFont.truetype(path, size)
+    except Exception:
+        logger.exception("Could not load icon font %s", filename)
+    return None
 
 
 # =========================
@@ -2949,7 +2961,7 @@ def save_product_image_view(request, slug):
         Product, slug=slug, is_available=True, status="active", is_deleted=False
     )
     scale = 2
-    width, height = 1080 * scale, 1600 * scale
+    width, height = 1080 * scale, 1730 * scale
 
     def px(value):
         return int(value * scale)
@@ -2961,6 +2973,11 @@ def save_product_image_view(request, slug):
     title_font = load_system_font("DejaVuSans-Bold.ttf", px(58))
     price_font = load_system_font("DejaVuSans-Bold.ttf", px(96))
     cta_font = load_system_font("DejaVuSans-Bold.ttf", px(31))
+    order_label_font = load_system_font("DejaVuSans-Bold.ttf", px(25))
+    order_price_font = load_system_font("DejaVuSans-Bold.ttf", px(50))
+    icon_solid_md = load_icon_font("fa-solid-900.ttf", px(30))
+    icon_solid_sm = load_icon_font("fa-solid-900.ttf", px(22))
+    icon_brand_lg = load_icon_font("fa-brands-400.ttf", px(42))
 
     margin = px(28)
     card_right = width - margin
@@ -3079,45 +3096,70 @@ def save_product_image_view(request, slug):
     )
 
     price_label_y = max(title_bottom + px(18), px(1200))
-    draw.text((px(78), price_label_y), "PRICE", font=small_bold, fill="#B8C0CC")
+    draw.text((px(78), price_label_y), "PRICE / EACH", font=small_bold, fill="#B8C0CC")
     price = f"K{format_currency(product.selling_price())}"
     price = truncate_to_width(draw, price, price_font, px(900))
     draw.text((px(72), price_label_y + px(28)), price, font=price_font, fill="#FF5A00")
 
-    cta_top = px(1405)
+    # ORDER PRICE pill — the bulk-quantity discount, drawn as its own highlighted block
+    # so it reads as a distinct offer rather than competing with the main price.
+    pill_top = px(1362)
+    pill_bottom = px(1462)
     draw.rounded_rectangle(
-        (px(70), cta_top, px(1010), px(1510)), radius=px(52),
+        (px(70), pill_top, px(1010), pill_bottom), radius=px(24), fill="#FF5000",
+    )
+    icon_x = px(100)
+    if icon_solid_md:
+        draw.text((icon_x, pill_top + px(18)), "", font=icon_solid_md, fill="#FFFFFF")
+        text_x = px(146)
+    else:
+        text_x = px(100)
+    draw.text(
+        (text_x, pill_top + px(16)),
+        f"ORDER PRICE · {product.wholesale_min_quantity()}+ UNITS",
+        font=order_label_font, fill="#FFE8DB",
+    )
+    order_price_text = truncate_to_width(
+        draw, f"K{format_currency(round(product.wholesale_price()))} / each", order_price_font, px(880)
+    )
+    draw.text((text_x, pill_top + px(48)), order_price_text, font=order_price_font, fill="#FFFFFF")
+
+    cta_top = px(1535)
+    cta_bottom = px(1640)
+    draw.rounded_rectangle(
+        (px(70), cta_top, px(1010), cta_bottom), radius=px(52),
         fill="#08AD61", outline="#20E283", width=px(3),
     )
+    circle_center = (px(135), (cta_top + cta_bottom) // 2)
+    circle_r = px(33)
     draw.ellipse(
-        (px(105), px(1427), px(166), px(1488)), outline="#FFFFFF", width=px(4)
+        (circle_center[0] - circle_r, circle_center[1] - circle_r,
+         circle_center[0] + circle_r, circle_center[1] + circle_r),
+        outline="#FFFFFF", width=px(3),
     )
-    # A simple handset mark avoids depending on icon fonts on the server.
-    draw.arc(
-        (px(119), px(1438), px(153), px(1478)), 125, 315,
-        fill="#FFFFFF", width=px(5),
-    )
-    draw.line(
-        (px(121), px(1465), px(113), px(1480), px(130), px(1476)),
-        fill="#FFFFFF", width=px(4), joint="curve",
-    )
-    draw.line(
-        (px(123), px(1443), px(130), px(1452), px(142), px(1465), px(151), px(1470)),
-        fill="#FFFFFF", width=px(5), joint="curve",
-    )
+    if icon_brand_lg:
+        draw_centered_text(
+            draw,
+            (circle_center[0] - circle_r, circle_center[1] - circle_r,
+             circle_center[0] + circle_r, circle_center[1] + circle_r),
+            "", icon_brand_lg, "#FFFFFF",
+        )
     draw_centered_text(
-        draw, (px(165), cta_top, px(995), px(1510)),
+        draw, (px(185), cta_top, px(995), cta_bottom),
         "Order on WhatsApp   +260 766 491 002", cta_font, "#FFFFFF",
     )
-    draw.line((px(100), px(1543), px(310), px(1543)), fill="#10B981", width=px(2))
-    draw.line((px(770), px(1543), px(980), px(1543)), fill="#10B981", width=px(2))
-    draw.ellipse((px(342), px(1527), px(374), px(1559)), outline="#10B981", width=px(2))
-    draw.line((px(358), px(1528), px(358), px(1558)), fill="#10B981", width=px(2))
-    draw.arc((px(346), px(1527), px(370), px(1559)), 90, 270, fill="#10B981", width=px(1))
-    draw.arc((px(346), px(1527), px(370), px(1559)), 270, 90, fill="#10B981", width=px(1))
-    draw.line((px(343), px(1543), px(373), px(1543)), fill="#10B981", width=px(1))
+
+    footer_top = px(1652)
+    footer_bottom = px(1694)
+    footer_mid = (footer_top + footer_bottom) // 2
+    draw.line((px(100), footer_mid, px(310), footer_mid), fill="#10B981", width=px(2))
+    draw.line((px(770), footer_mid, px(980), footer_mid), fill="#10B981", width=px(2))
+    if icon_solid_sm:
+        draw_centered_text(
+            draw, (px(343), footer_top, px(373), footer_bottom), "", icon_solid_sm, "#10B981",
+        )
     draw_centered_text(
-        draw, (px(375), px(1522), px(705), px(1564)),
+        draw, (px(375), footer_top, px(705), footer_bottom),
         "chinatozambia.org", regular, "#D1D5DB",
     )
 

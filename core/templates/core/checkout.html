@@ -147,7 +147,7 @@
                                     <span class="inline-block rounded bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-brand-blue">🇨🇳 Pre-order</span>
                                 {% endif %}
                                 <div class="mt-1.5 flex items-center justify-between">
-                                    <span class="text-[11px] text-brand-muted">Qty: {{ item.quantity }}</span>
+                                    <span class="text-[11px] text-brand-muted">Qty: {{ item.quantity }}{% if item.is_wholesale %} <span class="rounded bg-brand-orange px-1.5 py-0.5 text-[9px] font-bold text-white">ORDER PRICE</span>{% endif %}</span>
                                     <span class="font-display text-base font-black text-brand-red">K{{ item.line_total|floatformat:0|intcomma }}</span>
                                 </div>
                             </div>

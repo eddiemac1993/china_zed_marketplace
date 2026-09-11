@@ -9,16 +9,34 @@
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="ChinaZed">
 <meta property="og:title" content="{{ product.name }}">
-<meta property="og:description" content="K{{ product.selling_price|floatformat:2 }} · Deposit K{{ product.deposit_amount|floatformat:2 }} · Balance K{{ product.balance_amount|floatformat:2 }}">
+<meta property="og:description" content="K{{ product.selling_price|floatformat:2 }} · Deposit K{{ product.deposit_amount|floatformat:2 }} · Balance K{{ product.balance_amount|floatformat:2 }}{% if product.is_order_ready %} · Order price K{{ product.wholesale_price|floatformat:2 }}+ for {{ product.wholesale_min_quantity }}+ units{% endif %}">
 <meta property="og:url" content="{{ social_product_url }}">
 {% if social_image_url %}<meta property="og:image" content="{{ social_image_url }}">
 <meta property="og:image:alt" content="{{ product.name }}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{{ social_image_url }}">{% endif %}
 <meta name="twitter:title" content="{{ product.name }}">
+{% if product.is_order_ready %}
+<meta property="product:price:amount" content="{{ product.selling_price|floatformat:2 }}">
+<meta property="product:price:currency" content="ZMW">
+<meta property="product:brand" content="ChinaZed">
+<meta property="product:availability" content="{% if product.product_type == 'local' %}{% if product.stock_quantity > 0 %}in stock{% else %}out of stock{% endif %}{% else %}preorder{% endif %}">
+<meta property="product:condition" content="new">
+<meta property="product:retailer_item_id" content="{{ product.sku }}">
+{% endif %}
 {% endblock %}
 {% block content %}
-<div class="mx-auto max-w-[1300px] px-4 py-3.5 pb-[210px] sm:px-5 lg:pb-3.5" x-data="{ zoomOpen: false, mainImg: '{{ product.display_image_url|escapejs }}' }">
+<div class="mx-auto max-w-[1300px] px-4 py-3.5 pb-[210px] sm:px-5 lg:pb-3.5" x-data="{
+    zoomOpen: false,
+    mainImg: '{{ product.display_image_url|escapejs }}',
+    qty: 1,
+    retailPrice: {{ product.selling_price|default:0|floatformat:2 }},
+    wholesalePrice: {{ product.wholesale_price|default:0|floatformat:2 }},
+    wholesaleMinQty: {{ product.wholesale_min_quantity }},
+    get isWholesale() { return this.qty >= this.wholesaleMinQty; },
+    get unitPrice() { return this.isWholesale ? this.wholesalePrice : this.retailPrice; },
+    fmt(n) { return Math.round(n).toLocaleString(); }
+}">
 
     <div class="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-brand-muted">
         <a href="{% url 'home' %}" class="transition hover:text-brand-red">Home</a>
@@ -105,9 +123,20 @@
                 <div class="p-4.5">
 
                     {% if product.is_order_ready %}
-                    <div class="mb-3.5 flex items-baseline gap-1">
+                    <div class="mb-1 flex items-baseline gap-1">
                         <span class="text-base font-bold text-brand-red">K</span>
-                        <span class="customer-price font-display text-[42px] font-black leading-none tracking-tight text-brand-red">{{ product.selling_price|floatformat:0|intcomma }}</span>
+                        <span class="customer-price font-display text-[42px] font-black leading-none tracking-tight text-brand-red" x-text="fmt(unitPrice)">{{ product.selling_price|floatformat:0|intcomma }}</span>
+                        <span x-show="isWholesale" x-cloak class="ml-1 rounded bg-brand-orange px-1.5 py-0.5 text-[10px] font-bold text-white">ORDER PRICE</span>
+                    </div>
+                    <div class="mb-3.5 text-[11px] font-semibold text-brand-muted">
+                        <span x-show="!isWholesale">Retail price per unit</span>
+                        <span x-show="isWholesale" x-cloak>Order price applied · Total K<span x-text="fmt(unitPrice * qty)"></span> for <span x-text="qty"></span> items</span>
+                    </div>
+                    <div class="wholesale-detail-price">
+                        <span class="wholesale-price-label">Order Price</span>
+                        <strong>K{{ product.wholesale_price|floatformat:2|intcomma }} <small>/ each</small></strong>
+                        <span>Buy {{ product.wholesale_min_quantity }} or more units to qualify.</span>
+                        {% if uses_structured_variants %}<span>Price may vary by option. Minimum quantity applies per cart item.</span>{% endif %}
                     </div>
                     {% else %}
                     <div class="mb-3.5">
@@ -185,6 +214,7 @@
                             <div class="mb-3 flex items-center gap-2.5">
                                 <span class="text-xs font-bold text-brand-muted">Qty:</span>
                                 <input type="number" name="quantity" value="1" min="1"
+                                       x-model.number="qty" @input="qty = qty < 1 ? 1 : qty"
                                        {% if product.product_type == "local" %}max="{{ product.stock_quantity }}"{% endif %}
                                        class="h-10 w-[70px] rounded border border-brand-border text-center text-sm font-bold text-brand-ink outline-none focus:border-brand-red">
                             </div>
@@ -215,6 +245,12 @@
                         <a href="{% url 'product_whatsapp' product.slug %}"
                            target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600" style="color:#fff!important;background-color:#10b981">
                             <i class="fa-brands fa-whatsapp text-base"></i><span style="color:#fff!important">Share on WhatsApp</span>
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ social_product_url|urlencode }}"
+                           target="_blank" rel="noopener"
+                           onclick="window.open(this.href,'facebook-share','width=580,height=650,noopener,noreferrer');return false;"
+                           class="mt-2 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-blue-500/25 transition hover:-translate-y-0.5" style="color:#fff!important;background-color:#1877F2">
+                            <i class="fa-brands fa-facebook text-base"></i><span style="color:#fff!important">Share on Facebook</span>
                         </a>
 
                     {% else %}

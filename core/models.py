@@ -73,6 +73,14 @@ class ExchangeRate(TimeStampedModel):
         max_digits=5, decimal_places=2, default=Decimal("70.00"),
         help_text="Share of the delivery fee (%) paid out to the biker who completes a direct delivery.",
     )
+    wholesale_min_quantity = models.PositiveIntegerField(
+        default=10,
+        help_text="Minimum quantity of a single product needed to qualify for wholesale pricing.",
+    )
+    wholesale_discount_percentage = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("10.00"),
+        help_text="Discount off the retail price applied per unit once the wholesale quantity is reached.",
+    )
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -297,6 +305,20 @@ class Product(TimeStampedModel):
         rate = self.active_exchange_rate()
         percentage = rate.deposit_percentage if rate else DEFAULT_DEPOSIT_PERCENTAGE
         return money(self.selling_price() * (percentage / Decimal("100")))
+
+    def wholesale_min_quantity(self):
+        rate = self.active_exchange_rate()
+        return rate.wholesale_min_quantity if rate else 10
+
+    def wholesale_price(self):
+        rate = self.active_exchange_rate()
+        discount = rate.wholesale_discount_percentage if rate else Decimal("10.00")
+        return money(self.selling_price() * (Decimal("1") - discount / Decimal("100")))
+
+    def unit_price_for_quantity(self, quantity):
+        if quantity >= self.wholesale_min_quantity():
+            return self.wholesale_price()
+        return self.selling_price()
 
     def is_order_ready(self):
         """Return whether this listing has enough information to be purchased."""
@@ -526,6 +548,16 @@ class ProductVariant(TimeStampedModel):
             return money(self.cost_price * exchange * (Decimal("1") + markup / Decimal("100")))
         return self.product.selling_price()
 
+    def wholesale_price(self):
+        rate = self.product.active_exchange_rate()
+        discount = rate.wholesale_discount_percentage if rate else Decimal("10.00")
+        return money(self.selling_price() * (Decimal("1") - discount / Decimal("100")))
+
+    def unit_price_for_quantity(self, quantity):
+        if quantity >= self.product.wholesale_min_quantity():
+            return self.wholesale_price()
+        return self.selling_price()
+
     def in_stock(self):
         return not self.track_inventory or self.stock_quantity > 0
 
@@ -615,11 +647,14 @@ class CartItem(models.Model):
         ordering = ["-added_at"]
 
     def line_total(self):
-        price = self.variant.selling_price() if self.variant_id else self.product.selling_price()
-        return money(price * self.quantity)
+        return money(self.unit_price() * self.quantity)
 
     def unit_price(self):
-        return self.variant.selling_price() if self.variant_id else self.product.selling_price()
+        obj = self.variant if self.variant_id else self.product
+        return obj.unit_price_for_quantity(self.quantity)
+
+    def is_wholesale(self):
+        return self.quantity >= self.product.wholesale_min_quantity()
 
     def display_image_url(self):
         if self.variant_id and self.variant.color_id:
@@ -1062,6 +1097,11 @@ class OrderItem(models.Model):
 
     unit_price = models.DecimalField(max_digits=12, decimal_places=2)
     line_total = models.DecimalField(max_digits=12, decimal_places=2)
+    price_tier = models.CharField(
+        max_length=12,
+        choices=[("retail", "Retail"), ("wholesale", "Wholesale")],
+        default="retail",
+    )
 
     product_type = models.CharField(max_length=20, default="preorder")
     requested_size = models.CharField(max_length=80, blank=True)
@@ -1102,10 +1142,12 @@ class OrderItem(models.Model):
             self.requested_size = self.requested_size or self.size_name
 
         if not self.unit_price:
-            self.unit_price = self.product.selling_price()
+            obj = self.variant if self.variant_id else self.product
+            self.unit_price = obj.unit_price_for_quantity(self.quantity)
 
         self.line_total = money(self.unit_price * self.quantity)
         self.product_type = self.product.product_type
+        self.price_tier = "wholesale" if self.quantity >= self.product.wholesale_min_quantity() else "retail"
 
         super().save(*args, **kwargs)
 
