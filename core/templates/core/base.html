@@ -164,7 +164,7 @@
             });
         })();
     </script>
-<link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260912-referrals">
+<link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260912-profile-search">
 <script src="{% static 'core/js/privacy-choices.js' %}?v=20260909-2"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 </head>
@@ -262,22 +262,14 @@
 </footer>
 
 {% block floating_actions %}
-<!-- FLOATING ACTIONS -->
-<div class="fixed right-2.5 z-[6000] flex flex-col items-end gap-2 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] sm:right-4 lg:bottom-6 print:hidden"
-     style="position:fixed;right:10px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:6000"
-     x-data="{ showTop: false }"
-     @scroll.window="showTop = window.scrollY > 400">
-    <a href="{% url 'assistant' %}" title="AI Assistant" aria-label="AI Assistant"
-       class="flex h-11 w-11 items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-brand-red to-brand-orange text-[13px] font-black text-white shadow-lg shadow-red-900/30 transition hover:-translate-y-0.5 hover:shadow-xl sm:h-[52px] sm:w-auto sm:min-w-[58px] sm:px-4">
-        <i class="fa-solid fa-robot"></i><span class="hidden sm:inline">Help</span>
-    </a>
-    <button type="button" id="installAppBtn" aria-label="Install ChinaZed app"
-            class="flex min-h-[40px] items-center justify-center gap-1.5 rounded-full bg-neutral-900 px-3 text-[11px] font-bold text-white shadow-lg transition hover:-translate-y-0.5" style="min-height:40px;padding:0 12px">
-        <i class="fa-solid fa-arrow-down-to-line"></i><span>Install</span>
-    </button>
-    <button type="button" @click="window.scrollTo({top:0,behavior:'smooth'})" x-show="showTop" x-transition.opacity aria-label="Back to top"
-            class="grid h-10 w-10 place-items-center rounded-full bg-black/50 text-base text-white transition hover:bg-brand-red"><i class="fa-solid fa-arrow-up"></i></button>
+<!-- Help and install actions have reserved space; they never cover page content. -->
+{% if request.resolver_match.url_name != 'assistant' %}
+<div class="site-help-actions print:hidden" aria-label="Help and app tools">
+    {% if request.resolver_match.url_name != 'profile' %}<a href="{% url 'assistant' %}" class="site-help-link"><span aria-hidden="true">✦</span> Ask AI assistant</a>{% endif %}
+    <button type="button" id="installAppBtn" aria-label="Install ChinaZed app" class="site-install-button">Install app</button>
+    <a href="#main-content" class="site-help-link">Back to top ↑</a>
 </div>
+{% endif %}
 {% endblock %}
 
 {% include "core/components/_mobile_bottom_nav.html" %}

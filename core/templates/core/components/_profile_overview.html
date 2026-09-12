@@ -1,0 +1,14 @@
+{% load humanize %}
+<header class="account-heading">
+    <div class="account-identity">
+        <div class="account-avatar">{% if customer_profile.photo %}<img src="{{ customer_profile.photo.url }}" alt="Your profile photo">{% else %}{{ request.user.username|first|upper }}{% endif %}</div>
+        <div><p class="account-eyebrow">Your ChinaZed account</p><h1>Welcome back, {% firstof request.user.first_name request.user.username %}.</h1><p>Your orders, rewards and favourite finds. All in one place.</p></div>
+    </div>
+    <a class="account-button account-button-primary" href="{% url 'home' %}">Continue shopping <span aria-hidden="true">↗</span></a>
+</header>
+<div class="account-metrics" aria-label="Account overview">
+    <a href="#order-history"><span class="account-metric-icon" aria-hidden="true">↗</span><span>Active orders</span><strong>{{ active_orders_count }}</strong><small>Follow your deliveries</small></a>
+    <a href="#order-history"><span class="account-metric-icon account-green" aria-hidden="true">✓</span><span>Completed orders</span><strong>{{ successful_orders.count }}</strong><small>Delivered to you</small></a>
+    <a href="#referral-earnings"><span class="account-metric-icon account-orange" aria-hidden="true">＋</span><span>Referral rewards</span><strong><small>K</small>{{ referral_earned|floatformat:2|intcomma }}</strong><small>Earned, awaiting payout</small></a>
+    <a href="#account-settings"><span class="account-metric-icon" aria-hidden="true">◎</span><span>Profile completion</span><strong>{{ profile_completion }}<small>%</small></strong><small>{% if profile_complete %}You're all set{% else %}Complete your details{% endif %}</small></a>
+</div>

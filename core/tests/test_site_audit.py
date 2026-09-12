@@ -47,9 +47,9 @@ class SiteAuditTests(SimpleTestCase):
         self.assertTrue(profile.is_complete())
         self.assertEqual(profile.completion_percentage(),100)
 
-    def test_opted_in_analytics_omits_identifiers_and_search_text(self):
+    def test_opted_in_search_records_query_without_unrelated_details(self):
         request=self.factory.get("/")
         request.user=AnonymousUser()
         with patch("core.views.has_optional_consent",return_value=True), patch("core.views.MarketplaceEvent.objects.create") as create:
             views.record_marketplace_event(request,"search",search_query="private email",order="private",result_count=2)
-        create.assert_called_once_with(event_type="search",user=None,path="",result_count=2)
+        create.assert_called_once_with(event_type="search",user=None,path="",result_count=2,search_query="private email")

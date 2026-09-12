@@ -1,0 +1,7 @@
+<section id="search-history" class="account-section">
+    <div class="account-section-heading"><div><p class="account-eyebrow">Pick up where you left off</p><h2>Recent searches</h2></div><button type="button" data-cookie-settings class="account-text-button">Privacy settings</button></div>
+    <p class="account-section-note">With usage analytics enabled, your submitted searches are saved and visible to administrators to help improve the catalogue.</p>
+    {% if recent_searches %}<div class="account-search-list">
+    {% for search in recent_searches %}<a href="{% url 'home' %}?q={{ search.search_query|urlencode }}#results"><span class="account-search-icon" aria-hidden="true">⌕</span><span><strong>{{ search.search_query }}</strong><small>{{ search.result_count }} result{{ search.result_count|pluralize }} · {{ search.created_at|date:"j M, H:i" }}</small></span><span aria-hidden="true">↗</span></a>{% endfor %}
+    </div>{% else %}<div class="account-search-empty">{% if search_history_enabled %}Your next product search will appear here.{% else %}Enable usage analytics in Privacy settings to save your searches.{% endif %}</div>{% endif %}
+</section>

@@ -1,0 +1,19 @@
+<aside class="account-sidebar">
+    <nav aria-label="Account sections" class="account-navigation">
+        <p class="account-eyebrow">My account</p>
+        <a href="#order-history"><span aria-hidden="true">▣</span> My orders</a>
+        <a href="#referral-earnings"><span aria-hidden="true">◇</span> Referral rewards</a>
+        <a href="#search-history"><span aria-hidden="true">⌕</span> Recent searches</a>
+        <a href="#product-requests"><span aria-hidden="true">＋</span> Product requests</a>
+        <a href="#account-settings"><span aria-hidden="true">◎</span> Account settings</a>
+        <a href="{% url 'wishlist' %}"><span aria-hidden="true">♡</span> Saved products</a>
+        {% if request.user.is_staff %}<a href="{% url 'analytics_dashboard' %}">Shop analytics ↗</a><a href="{% url 'admin:core_searchhistory_changelist' %}">Customer searches ↗</a>{% endif %}
+        <a href="{% url 'logout' %}" class="account-signout">Sign out</a>
+    </nav>
+    <section class="account-help" aria-labelledby="account-help-heading">
+        <span class="account-help-icon" aria-hidden="true">✦</span>
+        <h2 id="account-help-heading">A little help?</h2>
+        <p>Ask about your order, delivery or finding a product.</p>
+        <a href="{% url 'assistant' %}" class="account-button">Ask AI assistant ↗</a>
+    </section>
+</aside>

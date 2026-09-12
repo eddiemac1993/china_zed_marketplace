@@ -1443,3 +1443,11 @@ class MarketplaceEvent(models.Model):
         subject = self.search_query or (self.product.name if self.product_id else "")
         return f"{self.get_event_type_display()}: {subject}".strip()
 
+
+
+class SearchHistory(MarketplaceEvent):
+    """Admin view of submitted product searches, using the existing event store."""
+    class Meta:
+        proxy = True
+        verbose_name = "Search history"
+        verbose_name_plural = "Search history"

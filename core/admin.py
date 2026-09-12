@@ -1350,3 +1350,18 @@ admin.site.index = chinazed_admin_index
 
 # Referral ledger and month-end payout administration.
 from . import referral_admin  # noqa: F401,E402
+
+
+from .models import SearchHistory
+
+
+@admin.register(SearchHistory)
+class SearchHistoryAdmin(MarketplaceEventAdmin):
+    list_display = ("search_query", "user", "result_count", "created_at")
+    list_filter = ("event_type", "created_at")
+    search_fields = ("search_query", "user__username", "user__email")
+    list_select_related = ("user",)
+    ordering = ("-created_at",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(event_type__in=["search", "zero_search"]).exclude(search_query="")

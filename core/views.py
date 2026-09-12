@@ -1,3 +1,5 @@
+from .catalog import homepage_products
+from django.views.decorators.cache import never_cache
 from .referrals import capture_referral, referrer_for, profile_rewards, referral_url
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
@@ -106,6 +108,10 @@ def record_marketplace_event(request, event_type, **details):
     if not has_optional_consent(request, "analytics"):
         return
     minimal = {key: value for key, value in details.items() if key in {"product", "result_count", "quantity"}}
+    if event_type in {"search", "zero_search"}:
+        minimal["search_query"] = " ".join(str(details.get("search_query", "")).split())[:200]
+        if not minimal["search_query"]:
+            return
     MarketplaceEvent.objects.create(event_type=event_type, user=request.user if request.user.is_authenticated else None, path=request.path[:500] if event_type == "product_view" else "", **minimal)
 
 
@@ -494,28 +500,27 @@ def upload_payment_proof_view(request, order_id):
         "cart_count": get_user_cart(request.user).total_items(),
     })
 
+@never_cache
 def home(request):
     query = request.GET.get("q", "").strip()
     category_id = request.GET.get("category", "").strip()
     product_type = request.GET.get("type", "").strip()
     sort = request.GET.get("sort", "").strip()
 
-    products = Product.objects.filter(show_on_homepage=True, is_available=True, status="active", is_deleted=False).order_by("-created_at")
+    visible_products = homepage_products()
+    products = visible_products.order_by("-created_at")
     categories = Category.objects.all().order_by("name")
 
-    featured_products = with_display_annotations(Product.objects.filter(
-        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
+    featured_products = with_display_annotations(visible_products.filter(
         is_featured=True
     )).order_by("-created_at")[:8]
 
-    local_products = with_display_annotations(Product.objects.filter(
-        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
+    local_products = with_display_annotations(visible_products.filter(
         product_type="local",
         stock_quantity__gt=0
     )).order_by("-created_at")[:10]
 
-    preorder_products = with_display_annotations(Product.objects.filter(
-        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
+    preorder_products = with_display_annotations(visible_products.filter(
         product_type="preorder"
     )).order_by("-created_at")[:10]
 
@@ -525,9 +530,7 @@ def home(request):
         & (Q(image__isnull=False) | ~Q(external_image_url=""))
         & (Q(product_type="preorder") | Q(product_type="local", stock_quantity__gt=0))
     )
-    trending_products = with_display_annotations(Product.objects.filter(
-        card_ready, show_on_homepage=True, is_available=True, status="active", is_deleted=False
-    )).order_by("-sold_count", "-views_count", "-created_at")[:10]
+    trending_products = with_display_annotations(visible_products.filter(card_ready)).order_by("-sold_count", "-views_count", "-created_at")[:10]
 
     active_rate = Product.active_exchange_rate()
     rmb_to_zmw = active_rate.rmb_to_zmw if active_rate else Decimal("3.20")
@@ -535,11 +538,10 @@ def home(request):
     local_markup = active_rate.local_markup_percentage if active_rate else Decimal("80.00")
     preorder_rmb_limit = Decimal("200") / (rmb_to_zmw * (Decimal("1") + preorder_markup / Decimal("100")))
     local_cost_limit = Decimal("200") / (Decimal("1") + local_markup / Decimal("100"))
-    budget_products = with_display_annotations(Product.objects.filter(
+    budget_products = with_display_annotations(visible_products.filter(
         card_ready,
         Q(product_type="preorder", rmb_price__lte=preorder_rmb_limit)
         | Q(product_type="local", rmb_price__lte=local_cost_limit),
-        show_on_homepage=True, is_available=True, status="active", is_deleted=False,
     )).order_by("-is_featured", "-created_at")[:10]
 
     testimonials = ProductReview.objects.filter(
@@ -628,12 +630,13 @@ def advertise_success_view(request, ad_id):
 
 
 @ratelimit(key="ip", rate="60/m", method="GET", block=True)
+@never_cache
 def search_suggestions_view(request):
     query = request.GET.get("q", "").strip()
     suggestions = []
     if len(query) >= 2:
-        suggestions = Product.objects.filter(
-            is_available=True, name__icontains=query
+        suggestions = homepage_products().filter(
+            name__icontains=query
         ).order_by("-is_featured", "-created_at")[:6]
 
     return render(request, "core/components/_search_suggestions.html", {
@@ -642,14 +645,15 @@ def search_suggestions_view(request):
     })
 
 
+@never_cache
 def home_recommendations_view(request):
     raw_ids = request.GET.get("categories", "")
     category_ids = [c for c in raw_ids.split(",") if c.strip().isdigit()]
 
     products = []
     if category_ids:
-        products = with_display_annotations(Product.objects.filter(
-            show_on_homepage=True, status="active", is_deleted=False, is_available=True, category_id__in=category_ids
+        products = with_display_annotations(homepage_products().filter(
+            category_id__in=category_ids
         )).order_by("-is_featured", "-created_at")[:10]
 
     return render(request, "core/components/_product_grid.html", {
@@ -957,6 +961,8 @@ def profile_view(request):
 
     return render(request, "core/profile.html", {
         **profile_rewards(request.user),
+        "recent_searches": MarketplaceEvent.objects.filter(user=request.user, event_type__in=["search", "zero_search"]).exclude(search_query="").order_by("-created_at")[:10],
+        "search_history_enabled": has_optional_consent(request, "analytics"),
         "orders": orders,
         "successful_orders": successful_orders,
         "cancelled_orders": cancelled_orders,
@@ -3441,7 +3447,7 @@ def visible_history_products(request):
     if not has_optional_consent(request, "personalization"):
         return JsonResponse({"slugs": []})
     slugs = request.GET.get("slugs", "").split(",")[:12]
-    visible = Product.objects.filter(slug__in=slugs, show_on_homepage=True, is_available=True, status="active", is_deleted=False).values_list("slug", flat=True)
+    visible = homepage_products().filter(slug__in=slugs).values_list("slug", flat=True)
     response = JsonResponse({"slugs": list(visible)})
     response["Cache-Control"] = "no-store"
     return response

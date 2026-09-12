@@ -1,6 +1,5 @@
-const CACHE_NAME = "chinazed-app-v4-logo-20260912";
+const CACHE_NAME = "chinazed-app-v5-live-catalog";
 const APP_SHELL = [
-    "/",
     "/login/",
     "/register/",
     "/static/core/manifest.webmanifest",
@@ -40,6 +39,15 @@ self.addEventListener("fetch", function (event) {
     }
 
     if (request.mode === "navigate") {
+        // Stock and visibility must be checked live, including search/filter URLs.
+        if (new URL(request.url).pathname === "/") {
+            event.respondWith(fetch(request, {cache: "no-store"}).catch(function () {
+                return new Response("You are offline. Reconnect and refresh to see current products and stock.", {
+                    status: 503, headers: {"Content-Type": "text/plain; charset=utf-8"}
+                });
+            }));
+            return;
+        }
         event.respondWith(
             fetch(request)
                 .then(function (response) {

@@ -51,6 +51,10 @@ class AdminQuickPublishProductForm(forms.ModelForm):
 
 
 class AdminProfileProductForm(forms.ModelForm):
+    stock_quantity = forms.IntegerField(
+        required=False, min_value=0,
+        help_text="Zambia stock: enter 0 or leave blank to mark sold out and hide from the homepage.",
+    )
     customer_image = forms.ImageField(
         required=False,
         label="Replace customer image",
@@ -73,11 +77,8 @@ class AdminProfileProductForm(forms.ModelForm):
             if not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs["class"] = input_class
 
-    def clean(self):
-        cleaned = super().clean()
-        if cleaned.get("product_type") == "local" and cleaned.get("status") == "active" and not cleaned.get("stock_quantity"):
-            self.add_error("stock_quantity", "Active Zambia stock must be greater than zero.")
-        return cleaned
+    def clean_stock_quantity(self):
+        return self.cleaned_data.get("stock_quantity") or 0
 
 
 class CustomerProfileForm(forms.ModelForm):
