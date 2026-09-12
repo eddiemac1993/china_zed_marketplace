@@ -1218,6 +1218,69 @@ class DeliveryJob(TimeStampedModel):
         return f"Job for Order #{self.order_id} ({self.get_status_display()})"
 
 
+class ParcelRequest(TimeStampedModel):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="parcel_requests")
+
+    sender_name = models.CharField(max_length=150)
+    sender_phone = models.CharField(max_length=20)
+    recipient_name = models.CharField(max_length=150)
+    recipient_phone = models.CharField(max_length=20)
+
+    pickup_address = models.TextField(help_text="Where our team should come to collect the parcel from.")
+    dropoff_address = models.TextField()
+    parcel_description = models.CharField(max_length=255)
+    customer_note = models.TextField(blank=True)
+
+    weight_kg = models.DecimalField(
+        max_digits=6, decimal_places=2, blank=True, null=True,
+        help_text="Recorded by staff when the parcel is collected and weighed.",
+    )
+    delivery_fee = models.DecimalField(
+        max_digits=12, decimal_places=2, blank=True, null=True,
+        help_text="Set by staff after visiting to weigh the parcel and confirm the delivery distance. Blank until quoted.",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def has_quote(self):
+        return self.delivery_fee is not None
+
+    def current_status_display(self):
+        job = getattr(self, "job", None)
+        return job.get_status_display() if job else "Pending"
+
+    def __str__(self):
+        return f"Parcel #{self.pk} - {self.sender_name} to {self.recipient_name}"
+
+
+class ParcelJob(TimeStampedModel):
+    STATUS_CHOICES = [
+        ("available", "Available"),
+        ("accepted", "Accepted"),
+        ("picked_up", "Picked Up"),
+        ("delivered", "Delivered"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    parcel = models.OneToOneField(ParcelRequest, on_delete=models.CASCADE, related_name="job")
+    biker = models.ForeignKey(Biker, on_delete=models.SET_NULL, null=True, blank=True, related_name="parcel_jobs")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="available")
+
+    biker_fee_percentage_used = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    biker_payout_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    accepted_at = models.DateTimeField(blank=True, null=True)
+    picked_up_at = models.DateTimeField(blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Parcel job for #{self.parcel_id} ({self.get_status_display()})"
+
+
 class StockMovement(TimeStampedModel):
     MOVEMENT_CHOICES = [
         ("in", "Stock In"),

@@ -36,7 +36,11 @@
         </div>
 
         <div class="shrink-0 border-t border-brand-border bg-white px-3 pb-2 pt-3">
-        <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;margin-bottom:10px;color:#333"><input id="ai-consent" type="checkbox"> Use external AI: send my question to OpenAI for an answer. Do not include passwords, payment details or identity documents. Leave unchecked for basic help. <a href="{% url 'privacy' %}" style="text-decoration:underline">Privacy</a></label>
+        <label id="ai-consent-label" style="display:flex;gap:8px;align-items:center;font-size:12px;margin-bottom:10px;color:#333">
+            <input id="ai-consent" type="checkbox">
+            <span id="ai-consent-full">Use external AI: send my question to OpenAI for an answer. Do not include passwords, payment details or identity documents. Leave unchecked for basic help. <a href="{% url 'privacy' %}" style="text-decoration:underline">Privacy</a></span>
+            <span id="ai-consent-short" style="display:none">AI answers enabled. <a href="{% url 'privacy' %}" style="text-decoration:underline">Privacy</a></span>
+        </label>
         <form class="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 p-1.5 pl-4 focus-within:border-brand-orange focus-within:bg-white" id="chatForm">
             {% csrf_token %}
             <input aria-label="Your question" id="messageInput" name="message" autocomplete="off" placeholder="Type your question..." value="{{ initial_message }}"
@@ -55,6 +59,33 @@
     const input = document.getElementById("messageInput");
     const messages = document.getElementById("messages");
     const csrf = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    const consentCheckbox = document.getElementById("ai-consent");
+    const consentFullText = document.getElementById("ai-consent-full");
+    const consentShortText = document.getElementById("ai-consent-short");
+
+    function applyConsentDisplay(checked) {
+        consentFullText.style.display = checked ? "none" : "";
+        consentShortText.style.display = checked ? "" : "none";
+    }
+
+    let savedConsent = false;
+    try {
+        savedConsent = localStorage.getItem("chinazed_ai_consent") === "true";
+    } catch (error) {
+        savedConsent = false;
+    }
+    consentCheckbox.checked = savedConsent;
+    applyConsentDisplay(savedConsent);
+
+    consentCheckbox.addEventListener("change", function () {
+        applyConsentDisplay(consentCheckbox.checked);
+        try {
+            localStorage.setItem("chinazed_ai_consent", consentCheckbox.checked ? "true" : "false");
+        } catch (error) {
+            // Ignore storage failures (private browsing, etc.) - the checkbox still works this session.
+        }
+    });
 
     function addMessage(text, who) {
         const bubble = document.createElement("div");

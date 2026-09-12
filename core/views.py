@@ -41,6 +41,7 @@ from .forms import (
     CustomUserRegistrationForm,
     PaymentProofForm,
     BikerApplicationForm,
+    ParcelRequestForm,
 )
 
 
@@ -63,6 +64,8 @@ from .models import (
     CollectionCentre,
     Biker,
     DeliveryJob,
+    ParcelRequest,
+    ParcelJob,
     SupplierProductRequest,
     SupplierProductRequestImage,
     Advertisement,
@@ -109,6 +112,13 @@ AI_ASSISTANT_SYSTEM_PROMPT = """
 You are the ChinaZed Marketplace customer assistant for buyers in Zambia.
 Answer clearly and politely. Keep replies short and practical.
 
+You will sometimes be given a list of actual ChinaZed products relevant to the
+customer's message (name, price, order/bulk price, stock, and link). Only
+mention specific products, prices, or stock levels that appear in that list -
+never invent a product name, price, or availability. If no matching products
+were given and the customer asks about a specific item, say you couldn't find
+that exact product and suggest they browse the site or use Request Product.
+
 Business rules:
 - China pre-orders use a 35% deposit.
 - Balance is paid when the order arrives and is ready for pickup or local delivery.
@@ -122,9 +132,82 @@ Business rules:
 - If a customer needs account-specific changes, payment verification, refund approval, or urgent support, tell them staff will review it.
 """
 
+PRODUCT_QUERY_STOPWORDS = {
+    "the", "a", "an", "is", "are", "do", "does", "for", "and", "or", "of", "to", "in", "on",
+    "with", "have", "has", "i", "you", "your", "it", "this", "that", "price", "cost", "how",
+    "much", "what", "where", "can", "want", "need", "looking", "buy", "any", "got", "please",
+    "hi", "hello", "there", "me", "my", "about", "there's", "im", "am",
+}
+
+# Everyday/colloquial terms shoppers use that don't literally appear in the
+# catalog's product names, so a plain substring search would miss them.
+PRODUCT_QUERY_SYNONYMS = {
+    "slipper": ["slide", "sandal"],
+    "slippers": ["slide", "sandal", "slipper"],
+    "slides": ["slide", "sandal"],
+    "flip": ["slide", "sandal"],
+    "tekkies": ["sneaker"],
+    "takkies": ["sneaker"],
+    "trainers": ["sneaker"],
+    "sneaker": ["sneaker"],
+    "pants": ["trouser"],
+    "trousers": ["trouser"],
+    "tshirt": ["t-shirt", "shirt"],
+    "tee": ["t-shirt", "shirt"],
+    "shoes": ["sandal", "slide", "sneaker", "footwear"],
+}
+
+
+def find_matching_products(message, limit=5):
+    words = [w for w in re.findall(r"[a-zA-Z0-9]+", message.lower()) if len(w) > 2 and w not in PRODUCT_QUERY_STOPWORDS]
+    if not words:
+        return Product.objects.none()
+
+    terms = set()
+    for word in words[:6]:
+        terms.add(word)
+        terms.update(PRODUCT_QUERY_SYNONYMS.get(word, []))
+
+    query = Q()
+    for term in terms:
+        query |= (
+            Q(name__icontains=term)
+            | Q(description__icontains=term)
+            | Q(category__name__icontains=term)
+            | Q(color_options__icontains=term)
+            | Q(size_options__icontains=term)
+        )
+
+    return (
+        Product.objects.filter(query, status="active", is_available=True, is_deleted=False)
+        .select_related("category")
+        .distinct()[:limit]
+    )
+
+
+def format_product_context(products):
+    lines = []
+    for product in products:
+        if not product.is_order_ready():
+            continue
+        availability = product.stock_status() if product.product_type == "local" else "Pre-order from China"
+        line = (
+            f"- {product.name} ({product.category.name if product.category_id else 'Uncategorized'}): "
+            f"K{product.selling_price():.0f} each, {availability}. "
+            f"Order price K{product.wholesale_price():.0f} each for {product.wholesale_min_quantity()}+ units. "
+            f"Link: {settings.SITE_URL}/product/{product.slug}/"
+        )
+        lines.append(line)
+    return lines
+
 
 def fallback_assistant_reply(message):
     text = message.lower()
+    product_lines = format_product_context(find_matching_products(message))
+
+    if product_lines:
+        intro = "Here's what I found on ChinaZed that matches:"
+        return intro + "\n" + "\n".join(product_lines)
 
     if "deposit" in text or "pay" in text:
         return "ChinaZed pre-orders start with a 35% deposit. The balance is paid when your order arrives and is ready for pickup or local delivery."
@@ -169,7 +252,12 @@ def assistant_chat_view(request):
 
     if payload.get("ai_consent") is not True:
         return JsonResponse({"reply": fallback_assistant_reply(message)})
-    context_lines = []
+
+    product_lines = format_product_context(find_matching_products(message))
+    if product_lines:
+        context_message = "Matching ChinaZed products:\n" + "\n".join(product_lines)
+    else:
+        context_message = "No specific ChinaZed product matched this message. Do not invent a product name, price, or stock level."
 
     api_key = os.getenv("OPENAI_API_KEY")
 
@@ -187,7 +275,7 @@ def assistant_chat_view(request):
                 "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
                 "messages": [
                     {"role": "system", "content": AI_ASSISTANT_SYSTEM_PROMPT},
-                    {"role": "system", "content": "\n".join(context_lines) if context_lines else "No signed-in order context."},
+                    {"role": "system", "content": context_message},
                     {"role": "user", "content": message},
                 ],
                 "temperature": 0.3,
@@ -1994,11 +2082,28 @@ def biker_dashboard_view(request):
 
     total_earned = money(sum((job.biker_payout_amount for job in DeliveryJob.objects.filter(biker=biker, status="delivered")), 0))
 
+    available_parcel_jobs = ParcelJob.objects.filter(
+        status="available"
+    ).select_related("parcel").order_by("created_at")
+
+    active_parcel_jobs = ParcelJob.objects.filter(
+        biker=biker, status__in=["accepted", "picked_up"]
+    ).select_related("parcel").order_by("-accepted_at")
+
+    completed_parcel_jobs = ParcelJob.objects.filter(
+        biker=biker, status="delivered"
+    ).select_related("parcel").order_by("-delivered_at")[:20]
+
+    total_earned += money(sum((job.biker_payout_amount for job in ParcelJob.objects.filter(biker=biker, status="delivered")), 0))
+
     return render(request, "core/biker_dashboard.html", {
         "biker": biker,
         "available_jobs": available_jobs,
         "active_jobs": active_jobs,
         "completed_jobs": completed_jobs,
+        "available_parcel_jobs": available_parcel_jobs,
+        "active_parcel_jobs": active_parcel_jobs,
+        "completed_parcel_jobs": completed_parcel_jobs,
         "total_earned": total_earned,
         "vapid_public_key": settings.WEBPUSH_SETTINGS["VAPID_PUBLIC_KEY"],
     })
@@ -2085,6 +2190,140 @@ def biker_mark_delivered_view(request, job_id):
     Biker.objects.filter(id=biker.id).update(total_deliveries=biker.total_deliveries + 1)
 
     messages.success(request, f"Order #{job.order_id} marked as delivered.")
+    return redirect("biker_dashboard")
+
+
+# =========================
+# SEND A PARCEL
+# =========================
+
+@login_required(login_url="login")
+def send_parcel_view(request):
+    if request.method == "POST":
+        form = ParcelRequestForm(request.POST)
+
+        if form.is_valid():
+            parcel = ParcelRequest.objects.create(
+                customer=request.user,
+                sender_name=form.cleaned_data["sender_name"],
+                sender_phone=form.cleaned_data["sender_phone"],
+                recipient_name=form.cleaned_data["recipient_name"],
+                recipient_phone=form.cleaned_data["recipient_phone"],
+                pickup_address=form.cleaned_data["pickup_address"],
+                dropoff_address=form.cleaned_data["dropoff_address"],
+                parcel_description=form.cleaned_data["parcel_description"],
+                customer_note=form.cleaned_data["customer_note"],
+            )
+
+            ParcelJob.objects.create(parcel=parcel, status="available")
+
+            parcel_link = request.build_absolute_uri(reverse("parcel_detail", kwargs={"pk": parcel.pk}))
+            send_mail(
+                subject=f"New Parcel Request - #{parcel.pk}",
+                message=f"""
+A customer has requested a parcel pickup on ChinaZed.
+
+Parcel: #{parcel.pk}
+Customer: {request.user.username} ({request.user.email})
+
+Sender: {parcel.sender_name} ({parcel.sender_phone})
+Recipient: {parcel.recipient_name} ({parcel.recipient_phone})
+
+Pickup Address:
+{parcel.pickup_address}
+
+Delivery Address:
+{parcel.dropoff_address}
+
+What's being sent: {parcel.parcel_description}
+Note: {parcel.customer_note or "None"}
+
+Next step: visit the customer to weigh the parcel and confirm the delivery
+distance, then set the delivery fee on this request.
+
+Parcel Link:
+{parcel_link}
+""",
+                from_email=None,
+                recipient_list=[ADMIN_ORDER_EMAIL],
+                fail_silently=True,
+            )
+
+            messages.success(request, "Your parcel request has been submitted. Our team will contact you to collect and weigh it.")
+            return redirect("parcel_detail", pk=parcel.pk)
+    else:
+        form = ParcelRequestForm()
+
+    my_parcels = ParcelRequest.objects.filter(customer=request.user).select_related("job")[:10]
+
+    return render(request, "core/send_parcel.html", {
+        "form": form,
+        "my_parcels": my_parcels,
+    })
+
+
+@login_required(login_url="login")
+def parcel_detail_view(request, pk):
+    parcel = get_object_or_404(
+        ParcelRequest.objects.select_related("job", "job__biker"),
+        pk=pk, customer=request.user,
+    )
+    return render(request, "core/parcel_detail.html", {"parcel": parcel})
+
+
+@login_required(login_url="login")
+@require_POST
+def biker_accept_parcel_job_view(request, job_id):
+    if not is_approved_biker(request.user):
+        messages.error(request, "You are not an approved biker.")
+        return redirect("home")
+
+    biker = request.user.biker_profile
+    job = get_object_or_404(ParcelJob, id=job_id, status="available")
+
+    job.biker = biker
+    job.status = "accepted"
+    job.accepted_at = timezone.now()
+    job.save(update_fields=["biker", "status", "accepted_at", "updated_at"])
+
+    messages.success(request, f"Parcel job #{job.parcel_id} accepted.")
+    return redirect("biker_dashboard")
+
+
+@login_required(login_url="login")
+@require_POST
+def biker_mark_parcel_picked_up_view(request, job_id):
+    if not is_approved_biker(request.user):
+        messages.error(request, "You are not an approved biker.")
+        return redirect("home")
+
+    job = get_object_or_404(ParcelJob, id=job_id, biker=request.user.biker_profile, status="accepted")
+
+    job.status = "picked_up"
+    job.picked_up_at = timezone.now()
+    job.save(update_fields=["status", "picked_up_at", "updated_at"])
+
+    messages.success(request, f"Parcel #{job.parcel_id} marked as picked up.")
+    return redirect("biker_dashboard")
+
+
+@login_required(login_url="login")
+@require_POST
+def biker_mark_parcel_delivered_view(request, job_id):
+    if not is_approved_biker(request.user):
+        messages.error(request, "You are not an approved biker.")
+        return redirect("home")
+
+    biker = request.user.biker_profile
+    job = get_object_or_404(ParcelJob, id=job_id, biker=biker, status="picked_up")
+
+    job.status = "delivered"
+    job.delivered_at = timezone.now()
+    job.save(update_fields=["status", "delivered_at", "updated_at"])
+
+    Biker.objects.filter(id=biker.id).update(total_deliveries=biker.total_deliveries + 1)
+
+    messages.success(request, f"Parcel #{job.parcel_id} marked as delivered.")
     return redirect("biker_dashboard")
 
 

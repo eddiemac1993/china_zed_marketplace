@@ -1,0 +1,47 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}Parcel #{{ parcel.pk }} · ChinaZed 中赞商城{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-[700px] px-4 py-4 sm:px-5">
+
+    <div class="mb-3.5 flex items-center justify-between gap-3 rounded-2xl bg-gradient-to-br from-neutral-950 via-neutral-900 to-red-950 p-6 text-white shadow-lg shadow-black/20 sm:p-7">
+        <div>
+            <div class="mb-2.5 inline-block rounded bg-brand-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-brand-red-dark"><i class="fa-solid fa-box"></i> Parcel #{{ parcel.pk }}</div>
+            <h1 class="font-display text-2xl font-black leading-tight sm:text-3xl">To {{ parcel.recipient_name }}</h1>
+        </div>
+        <span class="whitespace-nowrap rounded-full bg-white/15 px-3.5 py-2 text-xs font-black uppercase tracking-wide ring-1 ring-white/25">{{ parcel.current_status_display }}</span>
+    </div>
+
+    {% if not parcel.has_quote %}
+    <div class="mb-3.5 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+        <i class="fa-solid fa-hourglass-half mt-0.5"></i>
+        <span>Our team will contact you to collect and weigh this parcel. The delivery fee will be confirmed once it's weighed and the distance is checked.</span>
+    </div>
+    {% endif %}
+
+    <div class="overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        <div class="border-b border-neutral-100 px-5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">Details</div>
+        <div class="divide-y divide-neutral-100 p-5">
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-user w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Sender</div><div class="text-brand-muted">{{ parcel.sender_name }} · {{ parcel.sender_phone }}</div></div></div>
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-user-check w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Recipient</div><div class="text-brand-muted">{{ parcel.recipient_name }} · {{ parcel.recipient_phone }}</div></div></div>
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-location-dot w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Pickup Address</div><div class="text-brand-muted">{{ parcel.pickup_address }}</div></div></div>
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-house w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Delivery Address</div><div class="text-brand-muted">{{ parcel.dropoff_address }}</div></div></div>
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-box-open w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Parcel</div><div class="text-brand-muted">{{ parcel.parcel_description }}</div></div></div>
+            {% if parcel.customer_note %}
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-note-sticky w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Note</div><div class="text-brand-muted">{{ parcel.customer_note }}</div></div></div>
+            {% endif %}
+            {% if parcel.weight_kg %}
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-weight-hanging w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Weight</div><div class="text-brand-muted">{{ parcel.weight_kg }} kg</div></div></div>
+            {% endif %}
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-money-bill w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Delivery Fee</div><div class="text-brand-muted">{% if parcel.has_quote %}K{{ parcel.delivery_fee|floatformat:0|intcomma }}{% else %}Pending — confirmed after collection{% endif %}</div></div></div>
+            {% if parcel.job.biker %}
+            <div class="flex items-start gap-3 py-2.5 text-sm"><i class="fa-solid fa-motorcycle w-5 text-brand-orange"></i><div><div class="font-bold text-brand-ink">Rider</div><div class="text-brand-muted">{{ parcel.job.biker.full_name }}</div></div></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'send_parcel' %}" class="mt-4 block text-center text-[11px] text-brand-muted transition hover:text-brand-red">← Send another parcel</a>
+</div>
+{% endblock %}

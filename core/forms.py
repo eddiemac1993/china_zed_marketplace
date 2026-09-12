@@ -575,3 +575,76 @@ class BikerApplicationForm(forms.ModelForm):
         self.fields["home_centre"].queryset = CollectionCentre.objects.filter(is_active=True, is_deleted=False)
         self.fields["home_centre"].empty_label = "Select the centre you operate from"
         self.fields["id_number"].required = False
+
+
+class ParcelRequestForm(forms.Form):
+    sender_name = forms.CharField(
+        max_length=150,
+        label="Your Name (Sender)",
+        widget=forms.TextInput(attrs={"class": ORDER_FORM_INPUT_CLASS, "placeholder": "Full name"}),
+    )
+    sender_phone = forms.CharField(
+        max_length=20,
+        label="Your Phone Number",
+        widget=forms.TextInput(attrs={
+            "inputmode": "tel", "autocomplete": "tel",
+            "placeholder": "Example: 0970000000",
+            "class": ORDER_FORM_INPUT_CLASS,
+        }),
+    )
+    recipient_name = forms.CharField(
+        max_length=150,
+        label="Recipient's Name",
+        widget=forms.TextInput(attrs={"class": ORDER_FORM_INPUT_CLASS, "placeholder": "Full name"}),
+    )
+    recipient_phone = forms.CharField(
+        max_length=20,
+        label="Recipient's Phone Number",
+        widget=forms.TextInput(attrs={
+            "inputmode": "tel", "autocomplete": "tel",
+            "placeholder": "Example: 0970000000",
+            "class": ORDER_FORM_INPUT_CLASS,
+        }),
+    )
+    pickup_address = forms.CharField(
+        label="Pickup Address (Lusaka only)",
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": "Street address, area/compound, and any landmark that helps our team find you in Lusaka",
+            "class": ORDER_FORM_INPUT_CLASS,
+        }),
+    )
+    dropoff_address = forms.CharField(
+        label="Delivery Address (Lusaka only)",
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": "Street address, area/compound, and any landmark that helps our team find it in Lusaka",
+            "class": ORDER_FORM_INPUT_CLASS,
+        }),
+    )
+    parcel_description = forms.CharField(
+        max_length=255,
+        label="What are you sending?",
+        widget=forms.TextInput(attrs={"class": ORDER_FORM_INPUT_CLASS, "placeholder": "E.g. Documents, clothes, a small box"}),
+    )
+    customer_note = forms.CharField(
+        required=False,
+        label="Note for our team",
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": "Any handling instructions?",
+            "class": ORDER_FORM_INPUT_CLASS,
+        }),
+    )
+
+    def clean_pickup_address(self):
+        address = self.cleaned_data["pickup_address"]
+        if "lusaka" not in address.lower():
+            raise forms.ValidationError("Send a Parcel is only available within Lusaka right now. Please include Lusaka in the pickup address.")
+        return address
+
+    def clean_dropoff_address(self):
+        address = self.cleaned_data["dropoff_address"]
+        if "lusaka" not in address.lower():
+            raise forms.ValidationError("Send a Parcel is only available within Lusaka right now. Please include Lusaka in the delivery address.")
+        return address

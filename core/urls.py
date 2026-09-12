@@ -102,6 +102,16 @@ urlpatterns = [
     path("biker/jobs/<int:job_id>/delivered/", views.biker_mark_delivered_view, name="biker_mark_delivered"),
 
     # =========================
+    # SEND A PARCEL
+    # =========================
+
+    path("send-a-parcel/", views.send_parcel_view, name="send_parcel"),
+    path("parcel/<int:pk>/", views.parcel_detail_view, name="parcel_detail"),
+    path("biker/parcel-jobs/<int:job_id>/accept/", views.biker_accept_parcel_job_view, name="biker_accept_parcel_job"),
+    path("biker/parcel-jobs/<int:job_id>/picked-up/", views.biker_mark_parcel_picked_up_view, name="biker_mark_parcel_picked_up"),
+    path("biker/parcel-jobs/<int:job_id>/delivered/", views.biker_mark_parcel_delivered_view, name="biker_mark_parcel_delivered"),
+
+    # =========================
     # POLICY
     # =========================
 

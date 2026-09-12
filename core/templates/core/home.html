@@ -34,14 +34,16 @@
         </div>
     </div>
 
-    <section class="mb-3.5 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
-        <div class="grid gap-px bg-neutral-100">
-            <a href="{% if request.user.is_authenticated %}{% url 'loans:my_loans' %}{% else %}{% url 'login' %}?next={% url 'loans:my_loans' %}{% endif %}" class="flex items-center gap-3 bg-white p-3.5 transition hover:bg-neutral-50">
-                <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg" style="background:#d1fae5;color:#059669"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                <div><div class="text-xs font-black text-brand-ink">Quick Loan</div><div class="mt-0.5 text-[11px] text-brand-muted">View loan information{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
-            </a>
-        </div>
-    </section>
+    <div class="mb-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        <a href="{% if request.user.is_authenticated %}{% url 'loans:my_loans' %}{% else %}{% url 'login' %}?next={% url 'loans:my_loans' %}{% endif %}" class="flex items-center gap-3 rounded-xl border border-brand-border bg-white p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg" style="background:#d1fae5;color:#059669"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <div><div class="text-xs font-black text-brand-ink">Quick Loan</div><div class="mt-0.5 text-[11px] text-brand-muted">View loan information{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
+        </a>
+        <a href="{% if request.user.is_authenticated %}{% url 'send_parcel' %}{% else %}{% url 'login' %}?next={% url 'send_parcel' %}{% endif %}" class="flex items-center gap-3 rounded-xl border border-brand-border bg-white p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg" style="background:#fee2e2;color:#dc2626"><i class="fa-solid fa-box"></i></div>
+            <div><div class="text-xs font-black text-brand-ink">Send a Parcel</div><div class="mt-0.5 text-[11px] text-brand-muted">Lusaka only · priced by weight &amp; distance{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
+        </a>
+    </div>
 
     <nav aria-label="Popular categories" class="no-scrollbar mb-3.5 flex gap-2 overflow-x-auto pb-1">
         <a href="?type=local#results" class="shrink-0 rounded-full bg-brand-green px-3.5 py-2 text-xs font-black text-white"><i class="fa-solid fa-location-dot mr-1"></i> Zambia Stock</a>

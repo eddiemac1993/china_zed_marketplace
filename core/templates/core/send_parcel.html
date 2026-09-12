@@ -1,0 +1,164 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}Send a Parcel · ChinaZed 中赞商城{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-[760px] px-4 py-4 sm:px-5">
+
+    <!-- HERO -->
+    <div class="relative mb-3.5 overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-950 via-neutral-900 to-red-950 p-6 text-white shadow-lg shadow-black/20 sm:p-8">
+        <span class="pointer-events-none absolute right-[-10px] top-[-35px] font-display text-7xl font-black text-white/[0.05]">中赞</span>
+        <div class="relative z-10 flex items-center gap-5">
+            <div class="min-w-0 flex-1">
+                <div class="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-brand-yellow ring-1 ring-white/20">
+                    <i class="fa-solid fa-location-dot"></i> Lusaka Only · Pilot Service
+                </div>
+                <h1 class="font-display text-3xl font-black leading-tight sm:text-4xl">Send a Parcel</h1>
+                <p class="mt-2.5 max-w-lg text-sm leading-relaxed text-white/70">Tell us what you're sending and where. Our own riders and vans come to you, weigh it, and deliver it across Lusaka.</p>
+            </div>
+
+            <!-- Parcel illustration (inline SVG, no external image needed) -->
+            <svg class="hidden h-40 w-44 shrink-0 sm:block" viewBox="0 0 320 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <ellipse cx="150" cy="232" rx="86" ry="14" fill="black" fill-opacity="0.35"/>
+                <path d="M20 190 C 60 150, 90 120, 130 140" stroke="white" stroke-opacity="0.25" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>
+                <circle cx="20" cy="190" r="5" fill="white" fill-opacity="0.35"/>
+
+                <!-- isometric box -->
+                <polygon points="70,80 150,120 150,220 70,180" fill="#C2410C"/>
+                <polygon points="230,80 150,120 150,220 230,180" fill="#FF5000"/>
+                <polygon points="150,40 230,80 150,120 70,80" fill="#FFC107"/>
+
+                <!-- tape -->
+                <polygon points="135.6,47.2 164.4,47.2 164,113 136,113" fill="#FFF6DF"/>
+                <polygon points="150,120 136,113 136,213 150,220" fill="#FFF6DF" fill-opacity="0.92"/>
+                <polygon points="150,120 164,113 164,213 150,220" fill="#FFE7B8" fill-opacity="0.85"/>
+
+                <!-- ChinaZed mark on the box -->
+                <text x="190" y="150" font-family="Barlow Condensed, sans-serif" font-weight="900" font-size="20" fill="white" fill-opacity="0.9" text-anchor="middle">CZ</text>
+
+                <!-- location pin badge -->
+                <circle cx="246" cy="196" r="30" fill="#FF0036" stroke="#0a0a0a" stroke-width="4"/>
+                <path d="M246 210 C 235 196, 235 184, 246 184 C 257 184, 257 196, 246 210 Z" fill="white"/>
+                <circle cx="246" cy="193" r="5" fill="#FF0036"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div class="mb-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        <div class="flex items-start gap-3 rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-red-50 text-sm font-black text-brand-red">1</div>
+            <div>
+                <div class="text-xs font-black text-brand-ink">Submit your request</div>
+                <div class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Sender, recipient and both addresses.</div>
+            </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-orange-50 text-sm font-black text-brand-orange">2</div>
+            <div>
+                <div class="text-xs font-black text-brand-ink">We collect &amp; weigh it</div>
+                <div class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Our team comes to you to pick it up.</div>
+            </div>
+        </div>
+        <div class="flex items-start gap-3 rounded-xl border border-brand-border bg-white p-4 shadow-sm">
+            <div class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-50 text-sm font-black text-emerald-600">3</div>
+            <div>
+                <div class="text-xs font-black text-brand-ink">We quote &amp; deliver</div>
+                <div class="mt-0.5 text-[11px] leading-relaxed text-brand-muted">Priced by weight, size and distance.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3.5 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+        <i class="fa-solid fa-circle-info mt-0.5"></i>
+        <span>Pricing isn't a flat rate — we confirm the exact fee once we've weighed your parcel and checked the delivery distance. This service currently covers <strong>Lusaka only</strong>.</span>
+    </div>
+
+    <!-- FORM -->
+    <div class="overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        <div class="border-b border-neutral-100 bg-gradient-to-r from-orange-50/60 to-white px-5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">Parcel Details</div>
+        <div class="p-5">
+
+            {% if form.non_field_errors %}
+                <div class="mb-3.5 rounded border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-900">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                    <div>
+                        <label for="{{ form.sender_name.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.sender_name.label }}</label>
+                        {{ form.sender_name }}
+                        {% if form.sender_name.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.sender_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.sender_phone.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.sender_phone.label }}</label>
+                        {{ form.sender_phone }}
+                        {% if form.sender_phone.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.sender_phone.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3.5 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                    <div>
+                        <label for="{{ form.recipient_name.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.recipient_name.label }}</label>
+                        {{ form.recipient_name }}
+                        {% if form.recipient_name.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.recipient_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.recipient_phone.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.recipient_phone.label }}</label>
+                        {{ form.recipient_phone }}
+                        {% if form.recipient_phone.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.recipient_phone.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3.5">
+                    <label for="{{ form.pickup_address.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600"><i class="fa-solid fa-location-dot mr-1 text-brand-orange"></i>{{ form.pickup_address.label }}</label>
+                    {{ form.pickup_address }}
+                    {% if form.pickup_address.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.pickup_address.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3.5">
+                    <label for="{{ form.dropoff_address.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600"><i class="fa-solid fa-house mr-1 text-brand-orange"></i>{{ form.dropoff_address.label }}</label>
+                    {{ form.dropoff_address }}
+                    {% if form.dropoff_address.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.dropoff_address.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3.5">
+                    <label for="{{ form.parcel_description.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.parcel_description.label }}</label>
+                    {{ form.parcel_description }}
+                    {% if form.parcel_description.errors %}<div class="mt-1 text-[11px] text-brand-red">{{ form.parcel_description.errors.0 }}</div>{% endif %}
+                    <div class="mt-1 text-[11px] leading-relaxed text-brand-muted">A rough idea of weight/size here helps us plan the pickup, e.g. "Small box, about 3kg".</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.customer_note.id_for_label }}" class="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-neutral-600">{{ form.customer_note.label }}</label>
+                    {{ form.customer_note }}
+                </div>
+
+                <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-red py-3.5 text-sm font-black text-white transition hover:bg-brand-red-dark active:scale-[0.98]"><i class="fa-solid fa-box"></i> Request Parcel Pickup</button>
+            </form>
+        </div>
+    </div>
+
+    {% if my_parcels %}
+    <div class="mt-3.5 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        <div class="border-b border-neutral-100 px-5 py-3.5 font-display text-lg font-black tracking-wide text-brand-red">Your Recent Parcels</div>
+        <div class="divide-y divide-neutral-100">
+            {% for parcel in my_parcels %}
+            <a href="{% url 'parcel_detail' parcel.pk %}" class="flex items-center justify-between gap-3 p-4 transition hover:bg-neutral-50">
+                <div>
+                    <div class="text-[13px] font-black text-brand-ink">To {{ parcel.recipient_name }}</div>
+                    <div class="mt-0.5 text-[11px] text-brand-muted">{{ parcel.created_at|timesince }} ago{% if parcel.has_quote %} · K{{ parcel.delivery_fee|floatformat:0|intcomma }}{% endif %}</div>
+                </div>
+                <span class="rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-brand-ink">{{ parcel.current_status_display }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <a href="{% url 'home' %}" class="mt-4 block text-center text-[11px] text-brand-muted transition hover:text-brand-red">← Back to marketplace</a>
+</div>
+{% endblock %}

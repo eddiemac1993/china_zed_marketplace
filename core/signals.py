@@ -8,7 +8,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from webpush import send_user_notification
 
-from .models import Product, Order, OrderCheckpoint, DeliveryJob, Biker, MarketplaceEvent, calculate_biker_payout
+from .models import Product, Order, OrderCheckpoint, DeliveryJob, Biker, MarketplaceEvent, calculate_biker_payout, ParcelJob
 
 logger = logging.getLogger(__name__)
 
@@ -132,3 +132,29 @@ def notify_bikers_of_new_job(sender, instance, created, **kwargs):
             send_user_notification(user=biker.user, payload=payload, ttl=43200)
         except Exception:
             logger.exception("Web push failed for biker %s (new job)", biker.user_id)
+
+
+@receiver(post_save, sender=ParcelJob)
+def notify_bikers_of_new_parcel_job(sender, instance, created, **kwargs):
+    if not created or instance.status != "available":
+        return
+
+    # Parcel delivery is a small, Lusaka-only in-house fleet for now, so every
+    # approved biker is eligible regardless of collection centre.
+    bikers = Biker.objects.filter(
+        is_approved=True,
+        is_active=True,
+        user__webpush_info__isnull=False,
+    ).distinct()
+
+    payload = {
+        "head": "New parcel job available",
+        "body": "A new parcel job is available. Open the app to accept it.",
+        "url": "/biker/dashboard/",
+    }
+
+    for biker in bikers.iterator():
+        try:
+            send_user_notification(user=biker.user, payload=payload, ttl=43200)
+        except Exception:
+            logger.exception("Web push failed for biker %s (new parcel job)", biker.user_id)

@@ -22,6 +22,8 @@ from .models import (
     OrderItem,
     OrderCheckpoint,
     DeliveryJob,
+    ParcelRequest,
+    ParcelJob,
     CustomerProductRequest,
     SupplierProductRequest,
     SupplierProductRequestImage,
@@ -219,6 +221,24 @@ class DeliveryJobAdmin(admin.ModelAdmin):
     search_fields = ("order__id", "biker__full_name")
     readonly_fields = (
         "order", "centre", "biker_fee_percentage_used", "biker_payout_amount",
+        "accepted_at", "picked_up_at", "delivered_at", "created_at", "updated_at",
+    )
+
+
+@admin.register(ParcelRequest)
+class ParcelRequestAdmin(admin.ModelAdmin):
+    list_display = ("id", "customer", "sender_name", "recipient_name", "weight_kg", "delivery_fee", "created_at")
+    search_fields = ("sender_name", "recipient_name", "sender_phone", "recipient_phone", "customer__username")
+    readonly_fields = ("customer", "sender_name", "sender_phone", "recipient_name", "recipient_phone", "pickup_address", "dropoff_address", "parcel_description", "customer_note", "created_at", "updated_at")
+
+
+@admin.register(ParcelJob)
+class ParcelJobAdmin(admin.ModelAdmin):
+    list_display = ("parcel", "biker", "status", "biker_payout_amount", "created_at")
+    list_filter = ("status",)
+    search_fields = ("parcel__id", "biker__full_name")
+    readonly_fields = (
+        "parcel",
         "accepted_at", "picked_up_at", "delivered_at", "created_at", "updated_at",
     )
 

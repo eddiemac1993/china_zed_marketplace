@@ -124,6 +124,93 @@
         {% endfor %}
     </div>
 
+    <!-- AVAILABLE PARCEL JOBS -->
+    <div class="mb-2.5 mt-6 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-box"></i> AVAILABLE PARCEL JOBS (LUSAKA)</span>
+        <span class="text-[11px] text-brand-muted">{{ available_parcel_jobs|length }} waiting</span>
+    </div>
+    <div class="mb-3.5 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        {% for job in available_parcel_jobs %}
+        <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div>
+                <div class="text-[13px] font-black text-brand-ink">Parcel #{{ job.parcel_id }} to {{ job.parcel.recipient_name }}</div>
+                <div class="mt-0.5 text-[11px] text-brand-muted">Pickup: {{ job.parcel.pickup_address|truncatechars:50 }} · {{ job.created_at|timesince }} ago</div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-[10px] text-brand-muted">Payout</div>
+                    <div class="font-display text-lg font-black text-brand-green">{% if job.biker_payout_amount %}K{{ job.biker_payout_amount|floatformat:0|intcomma }}{% else %}Set on collection{% endif %}</div>
+                </div>
+                <form method="POST" action="{% url 'biker_accept_parcel_job' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-lg bg-brand-red px-4 py-2.5 text-xs font-black text-white transition hover:bg-brand-red-dark active:scale-[0.98]"><i class="fa-solid fa-check"></i> Accept</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="flex flex-col items-center gap-2 p-8 text-center">
+            <i class="fa-solid fa-box-open text-3xl text-neutral-300"></i>
+            <div class="text-sm font-bold text-brand-ink">No parcel jobs waiting right now</div>
+            <div class="text-xs text-brand-muted">New parcel jobs will appear here as soon as a customer sends one.</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ACTIVE PARCEL DELIVERIES -->
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-truck-fast"></i> MY PARCEL DELIVERIES</span>
+        <span class="text-[11px] text-brand-muted">{{ active_parcel_jobs|length }} in progress</span>
+    </div>
+    <div class="mb-3.5 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        {% for job in active_parcel_jobs %}
+        <div class="p-4">
+            <div class="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div class="text-[13px] font-black text-brand-ink">Parcel #{{ job.parcel_id }}</div>
+                <span class="rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide {% if job.status == 'accepted' %}bg-blue-50 text-brand-blue{% else %}bg-amber-50 text-amber-700{% endif %}">{{ job.get_status_display }}</span>
+            </div>
+            <div class="mb-2.5 rounded-lg bg-neutral-50 p-3 text-xs leading-relaxed text-neutral-700">
+                <div><i class="fa-solid fa-location-dot w-4 text-brand-orange"></i> Collect: {{ job.parcel.pickup_address }}</div>
+                <div class="mt-1"><i class="fa-solid fa-house w-4 text-brand-orange"></i> Deliver: {{ job.parcel.dropoff_address }}</div>
+                <div class="mt-1"><i class="fa-solid fa-phone w-4 text-brand-orange"></i> {{ job.parcel.recipient_phone }}</div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="text-[11px] text-brand-muted">Payout: <span class="font-bold text-brand-green">{% if job.biker_payout_amount %}K{{ job.biker_payout_amount|floatformat:0|intcomma }}{% else %}Set on collection{% endif %}</span></div>
+                {% if job.status == "accepted" %}
+                <form method="POST" action="{% url 'biker_mark_parcel_picked_up' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-lg bg-brand-blue px-4 py-2 text-xs font-black text-white transition hover:brightness-110"><i class="fa-solid fa-box"></i> Mark Picked Up</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{% url 'biker_mark_parcel_delivered' job.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-lg bg-brand-green px-4 py-2 text-xs font-black text-white transition hover:bg-emerald-700"><i class="fa-solid fa-circle-check"></i> Mark Delivered</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center text-xs text-brand-muted">Nothing in progress. Accept a parcel job above to get started.</div>
+        {% endfor %}
+    </div>
+
+    <!-- COMPLETED PARCELS -->
+    <div class="mb-2.5 flex items-center justify-between">
+        <span class="font-display text-lg font-black tracking-wide text-brand-red"><i class="fa-solid fa-clipboard-list"></i> COMPLETED PARCELS</span>
+    </div>
+    <div class="divide-y divide-neutral-100 overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm">
+        {% for job in completed_parcel_jobs %}
+        <div class="flex items-center justify-between p-3.5 text-xs">
+            <div>
+                <span class="font-bold text-brand-ink">Parcel #{{ job.parcel_id }}</span>
+                <span class="ml-2 text-brand-muted">{{ job.delivered_at|date:"d M Y" }}</span>
+            </div>
+            <span class="font-bold text-brand-green">{% if job.biker_payout_amount %}K{{ job.biker_payout_amount|floatformat:0|intcomma }}{% else %}—{% endif %}</span>
+        </div>
+        {% empty %}
+        <div class="p-6 text-center text-xs text-brand-muted">No completed parcel deliveries yet.</div>
+        {% endfor %}
+    </div>
+
 </div>
 {% endblock %}
 
