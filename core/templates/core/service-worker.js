@@ -1,11 +1,11 @@
-const CACHE_NAME = "chinazed-app-v3";
+const CACHE_NAME = "chinazed-app-v4-logo-20260912";
 const APP_SHELL = [
     "/",
     "/login/",
     "/register/",
     "/static/core/manifest.webmanifest",
-    "/static/core/images/market-icon-192.png",
-    "/static/core/images/market-icon-512.png"
+    "/static/core/images/chinazed-20260912-192.png",
+    "/static/core/images/chinazed-20260912-512.png"
 ];
 
 self.addEventListener("install", function (event) {
@@ -96,7 +96,7 @@ self.addEventListener("push", function (event) {
     event.waitUntil(
         self.registration.showNotification(data.head || "ChinaZed", {
             body: data.body || "",
-            icon: data.icon || "/static/core/images/market-icon-192.png",
+            icon: data.icon || "/static/core/images/chinazed-20260912-192.png",
             data: { url: data.url || "/" }
         })
     );

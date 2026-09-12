@@ -1317,7 +1317,7 @@ class BroadcastNotificationAdmin(admin.ModelAdmin):
         users = User.objects.filter(is_active=True, webpush_info__isnull=False).distinct()
         sent = 0
         failed = 0
-        payload = {"head": obj.title, "body": obj.message, "url": obj.url or "/", "icon": "/static/core/images/market-icon-192.png"}
+        payload = {"head": obj.title, "body": obj.message, "url": obj.url or "/", "icon": "/static/core/images/chinazed-20260912-192.png"}
         for user in users:
             try:
                 send_user_notification(user=user, payload=payload, ttl=86400)
@@ -1347,3 +1347,6 @@ def chinazed_admin_index(request, extra_context=None):
 
 
 admin.site.index = chinazed_admin_index
+
+# Referral ledger and month-end payout administration.
+from . import referral_admin  # noqa: F401,E402

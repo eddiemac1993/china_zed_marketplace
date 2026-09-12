@@ -434,14 +434,15 @@ class Product(TimeStampedModel):
 
         return "Out of stock"
 
-    def whatsapp_link(self):
+    def whatsapp_link(self, product_url=None):
+        product_url = product_url or f"{settings.SITE_URL}/product/{self.slug}/"
         message = (
             "Check out this product on ChinaZed:\n"
             f"Product: {self.name}\n"
             f"Price: K{self.selling_price()}\n"
             f"Deposit: K{self.deposit_amount()}\n"
             f"Balance: K{self.balance_amount()}\n"
-            f"View product: {settings.SITE_URL}/product/{self.slug}/"
+            f"View product: {product_url}"
         )
         return f"https://api.whatsapp.com/send/?{urlencode({'text': message})}"
 
@@ -1087,6 +1088,8 @@ class Order(TimeStampedModel):
 
 
 class OrderItem(models.Model):
+    referrer = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
+                                 on_delete=models.PROTECT, related_name="referred_order_items", editable=False)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
@@ -1153,6 +1156,27 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product_name}"
+
+
+class ReferralReward(models.Model):
+    item = models.OneToOneField(OrderItem, on_delete=models.PROTECT, related_name="referral_reward")
+    referrer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="referral_rewards")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=12, default="pending", choices=[
+        ("pending", "Awaiting completion"), ("earned", "Awaiting month-end payment"),
+        ("paid", "Paid"), ("void", "Cancelled / refunded")])
+    earned_at = models.DateTimeField(null=True, blank=True)
+    payout_due = models.DateField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    payment_reference = models.CharField(max_length=200, blank=True)
+    paid_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT, related_name="referral_payments_recorded")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Referral #{self.pk}: K{self.amount} ({self.get_status_display()})"
 
 
 class OrderCheckpoint(TimeStampedModel):

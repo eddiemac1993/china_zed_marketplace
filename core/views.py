@@ -1,3 +1,4 @@
+from .referrals import capture_referral, referrer_for, profile_rewards, referral_url
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from .privacy_controls import has_optional_consent
@@ -688,6 +689,7 @@ def product_detail(request, slug):
     )
     if has_optional_consent(request, "analytics"):
         Product.objects.filter(pk=product.pk).update(views_count=F("views_count") + 1)
+    capture_referral(request, product)
     record_marketplace_event(request, "product_view", product=product)
 
     cart_count = 0
@@ -723,7 +725,7 @@ def product_detail(request, slug):
 def product_whatsapp_view(request, slug):
     product = get_object_or_404(Product, slug=slug, is_available=True, status="active", is_deleted=False)
     record_marketplace_event(request, "whatsapp_click", product=product)
-    return redirect(product.whatsapp_link())
+    return redirect(product.whatsapp_link(referral_url(request, product)))
 
 
 @login_required(login_url="login")
@@ -954,6 +956,7 @@ def profile_view(request):
     cart_count = get_user_cart(request.user).total_items()
 
     return render(request, "core/profile.html", {
+        **profile_rewards(request.user),
         "orders": orders,
         "successful_orders": successful_orders,
         "cancelled_orders": cancelled_orders,
@@ -1494,6 +1497,7 @@ def checkout_cart_view(request):
                 OrderItem.objects.create(
                     order=order,
                     product=item.product,
+                    referrer=referrer_for(request, item.product),
                     variant=item.variant,
                     product_name=item.product.name,
                     quantity=item.quantity,
@@ -1665,6 +1669,7 @@ def place_order_view(request, slug):
             OrderItem.objects.create(
                 order=order,
                 product=product,
+                referrer=referrer_for(request, product),
                 product_name=product.name,
                 quantity=1,
                 unit_price=product.selling_price(),

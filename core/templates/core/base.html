@@ -7,8 +7,8 @@
     <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
     <title>{% block title %}ChinaZed · 中赞商城{% endblock %}</title>
 {% block social_meta %}{% endblock %}
-    <link rel="icon" type="image/png" href="{% static 'core/images/market-icon-64.png' %}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'core/images/chinazed-20260912-64.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/chinazed-20260912-180.png' %}">
     <link rel="stylesheet" href="{% static 'core/vendor/fontawesome/css/all.min.css' %}">
 
     <link rel="stylesheet" href="{% static 'core/css/tailwind.css' %}?v=20260912-rebuild2">
@@ -164,7 +164,7 @@
             });
         })();
     </script>
-<link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260911-wholesale">
+<link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260912-referrals">
 <script src="{% static 'core/js/privacy-choices.js' %}?v=20260909-2"></script>
 <meta name="referrer" content="strict-origin-when-cross-origin">
 </head>
@@ -200,7 +200,7 @@
 <footer class="mt-6 bg-neutral-900 print:hidden {% if request.resolver_match.url_name == 'assistant' %}hidden{% endif %}">
     <div class="mx-auto grid max-w-[1300px] gap-9 px-5 py-7 sm:grid-cols-3">
         <div>
-            <img src="{% static 'core/images/market-icon-64.png' %}" alt="ChinaZed marketplace" class="h-[70px] w-[70px] object-contain">
+            <img src="{% static 'core/images/chinazed-20260912-64.png' %}" alt="ChinaZed marketplace" class="h-[70px] w-[70px] object-contain">
             <div class="mt-2.5 text-[10px] uppercase tracking-widest text-neutral-500">中赞商城 · Marketplace</div>
             <p class="mt-2.5 text-xs leading-relaxed text-neutral-400">Order selected products from China and local stock available in Zambia. Pay a deposit, we handle the rest.</p>
             <div class="mt-3.5 space-y-1.5 text-xs text-neutral-400">

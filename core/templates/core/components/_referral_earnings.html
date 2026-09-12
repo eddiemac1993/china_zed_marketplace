@@ -1,0 +1,16 @@
+{% load humanize %}
+<section id="referral-earnings" class="referral-panel" aria-labelledby="referral-heading">
+    <div class="referral-heading"><div><p class="cookie-eyebrow">Invite friends. Earn rewards.</p><h2 id="referral-heading">Your referral earnings</h2></div><span class="referral-rate">5% reward</span></div>
+    <p>Open any product and tap <strong>Share my referral link</strong>. When someone follows your link and orders that product within 30 days in the same browser, you earn 5% of the purchased item subtotal after delivery and full payment. Delivery fees are excluded. Self-referrals do not qualify.</p>
+    <div class="referral-totals">
+        <div><span>Awaiting order completion</span><strong>K{{ referral_pending|floatformat:2|intcomma }}</strong></div>
+        <div><span>Earned · awaiting payout</span><strong>K{{ referral_earned|floatformat:2|intcomma }}</strong></div>
+        <div><span>Already paid</span><strong>K{{ referral_paid|floatformat:2|intcomma }}</strong></div>
+    </div>
+    <p class="referral-note">Earned rewards are due at the end of the month in which the order qualifies. Payments are processed by ChinaZed and shown below once recorded. Keep your profile phone number up to date so the team can arrange payment. Cancelled or refunded orders do not qualify. If several links are followed for a product, the latest valid referral applies.</p>
+    {% if referral_rewards %}
+    <div class="referral-table-wrap"><table class="referral-table"><thead><tr><th>Product</th><th>Reward</th><th>Status</th><th>Payout due</th><th>Payment</th></tr></thead><tbody>
+    {% for reward in referral_rewards %}<tr><td>{{ reward.item.product_name }}</td><td>K{{ reward.amount|floatformat:2|intcomma }}</td><td>{{ reward.get_status_display }}</td><td>{{ reward.payout_due|date:"j M Y"|default:"After completion" }}</td><td>{% if reward.paid_at %}{{ reward.paid_at|date:"j M Y" }}<br>{{ reward.payment_reference }}{% else %}—{% endif %}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<div class="referral-empty">No referrals yet. Share a product you like to get started.</div>{% endif %}
+</section>

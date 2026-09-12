@@ -13,6 +13,17 @@ from .models import Product, Order, OrderCheckpoint, DeliveryJob, Biker, Marketp
 logger = logging.getLogger(__name__)
 
 
+from .models import OrderItem
+from .referrals import sync_order_rewards
+
+
+@receiver(post_save, sender=Order)
+@receiver(post_save, sender=OrderItem)
+def update_referral_rewards(sender, instance, raw=False, **kwargs):
+    if not raw:
+        sync_order_rewards(instance.pk if sender is Order else instance.order_id)
+
+
 @receiver(user_signed_up)
 def notify_owner_about_google_signup(sender, request, user, **kwargs):
     sociallogin = kwargs.get("sociallogin")
@@ -61,7 +72,7 @@ def notify_users_about_new_product(sender, instance, created, **kwargs):
     payload = {
         "head": f"New on ChinaZed: {instance.name}",
         "body": "A new item is available. Tap to view it.",
-        "icon": instance.display_image_url or "/static/core/images/chinazed-icon-192.png",
+        "icon": instance.display_image_url or "/static/core/images/chinazed-20260912-192.png",
         "url": f"/product/{instance.slug}/",
     }
 

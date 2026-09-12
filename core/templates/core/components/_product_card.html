@@ -1,4 +1,5 @@
-{% load humanize %}
+{% load humanize referral_tags %}
+{% product_share_url product as referral_share_url %}
 <div class="group relative flex flex-col overflow-hidden rounded-[10px] border border-transparent bg-white shadow-sm transition-all duration-300 ease-out sm:rounded-xl sm:border-brand-border hover:-translate-y-1.5 hover:border-brand-orange hover:shadow-xl hover:shadow-orange-900/10">
     <a href="{% url 'product_detail' product.slug %}" class="relative block aspect-square overflow-hidden bg-neutral-100">
         {% if product.display_image_url %}
@@ -89,7 +90,7 @@
             <a href="{% url 'save_product_image' product.slug %}" download aria-label="Download a poster for {{ product.name }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-border bg-white text-sm text-brand-ink transition hover:border-neutral-900 hover:bg-neutral-900 hover:text-white">
                 <i class="fa-solid fa-download" aria-hidden="true"></i>
             </a>
-            <button type="button" class="share-btn flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-border bg-white text-sm text-brand-ink transition hover:border-brand-blue hover:bg-brand-blue hover:text-white" aria-label="Share {{ product.name }}" data-share-title="{{ product.name }}" data-share-url="{{ request.scheme }}://{{ request.get_host }}{% url 'product_detail' product.slug %}">
+            <button type="button" class="share-btn flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-border bg-white text-sm text-brand-ink transition hover:border-brand-blue hover:bg-brand-blue hover:text-white" aria-label="Share {{ product.name }}" data-share-title="{{ product.name }}" data-share-url="{{ referral_share_url }}">
                 <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
             </button>
             <a href="{% url 'product_whatsapp' product.slug %}" target="_blank" rel="noopener" aria-label="Share {{ product.name }} on WhatsApp" class="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-500 text-[10px] font-black text-white transition hover:bg-emerald-600">
