@@ -4,7 +4,7 @@
     <h2 class="text-sm font-black">My product gallery</h2>
     <p class="text-xs mt-1">Choose which products appear on the main page. {{ staff_gallery.paginator.count }} products saved.</p>
   </div>
-  <p class="p-4 text-xs text-brand-muted">Switch off to hide a product from the main page. Products must also be active, available and in stock. Zambia stock with zero quantity is hidden. For pre-orders, set supplier availability to zero to hide sold-out items; blank supplier availability means unknown. Drafts remain unpublished.</p>
+  <p class="p-4 text-xs text-brand-muted">Switch off to hide a product from the main page. Switching ON publishes a ready product and makes it available. Products must have stock. Zambia stock with zero quantity is hidden. For pre-orders, set supplier availability to zero to hide sold-out items; blank supplier availability means unknown. Drafts remain unpublished.</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;padding:0 16px 16px">
   {% for product in staff_gallery %}
     <article style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff">
@@ -51,12 +51,12 @@
      var target=desired, data=new FormData(form);data.set("visible",target?"1":"0");
      status.textContent="Saving…";status.style.color="#595959";
      var response=await fetch(form.action,{method:"POST",body:data,credentials:"same-origin",headers:{"Accept":"application/json"}});
-     if(!response.ok || !(response.headers.get("content-type")||"").includes("application/json"))throw new Error("save");
-     var result=await response.json();if(typeof result.visible!=="boolean")throw new Error("save");
+     if(!(response.headers.get("content-type")||"").includes("application/json"))throw new Error("Could not confirm the save. Refresh and try again.");
+     var result=await response.json();if(!response.ok)throw new Error(result.error || "Could not save the change.");if(typeof result.visible!=="boolean")throw new Error("save");
      saved=result.visible;if(saved!==target)throw new Error("save");
     }
     status.textContent="Saved";status.style.color="#166534";
-   }catch(error){desired=saved;paint();status.textContent="Could not confirm the save. Refresh to check, then try again.";status.style.color="#b91c1c";}
+   }catch(error){desired=saved;paint();status.textContent=error.message === "save" ? "Could not confirm the save. Refresh to check, then try again." : error.message;status.style.color="#b91c1c";}
    finally{pending=false;}
   }
   form.addEventListener("submit",function(event){event.preventDefault();desired=!desired;paint();save();});

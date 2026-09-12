@@ -3432,8 +3432,17 @@ def staff_product_homepage_view(request, product_id):
     if value not in ("0", "1"):
         return HttpResponseBadRequest("Choose on or off.")
     product = get_object_or_404(Product, pk=product_id, is_deleted=False)
+    if value == "1":
+        if not product.is_order_ready() or (product.product_type == "preorder" and product.available_quantity == 0):
+            error = "Add a name, description, category, price, customer image and available stock before switching this product ON."
+            if "application/json" in request.headers.get("Accept", ""):
+                return JsonResponse({"error": error}, status=400)
+            messages.error(request, error)
+            return redirect(reverse("profile") + "#product-gallery")
+        product.status = "active"
+        product.is_available = True
     product.show_on_homepage = value == "1"
-    product.save(update_fields=["show_on_homepage", "updated_at"])
+    product.save(update_fields=["show_on_homepage", "status", "is_available", "updated_at"])
     if "application/json" in request.headers.get("Accept", ""):
         return JsonResponse({"visible": product.show_on_homepage})
     messages.success(request, f"{product.name}: main page visibility saved.")

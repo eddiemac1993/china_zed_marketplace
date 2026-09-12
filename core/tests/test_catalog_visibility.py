@@ -7,6 +7,41 @@ from core.models import Category, Product
 
 @override_settings(SECURE_SSL_REDIRECT=False, ALLOWED_HOSTS=["testserver"])
 class CatalogVisibilityTests(TestCase):
+    def test_turning_on_activates_ready_stocked_product(self):
+        staff = User.objects.create_user("publish-staff", is_staff=True)
+        self.client.force_login(staff)
+        Product.objects.filter(pk=self.live.pk).update(status="out_of_stock", is_available=False, show_on_homepage=False)
+        response = self.client.post(reverse("staff_product_homepage", args=[self.live.pk]),
+                                    {"visible": "1"}, HTTP_ACCEPT="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.live.refresh_from_db()
+        self.assertEqual(self.live.status, "active")
+        self.assertTrue(self.live.is_available)
+        self.assertIn(self.live, self.client.get(reverse("home")).context["products"])
+
+    def test_turning_on_rejects_zero_stock(self):
+        staff = User.objects.create_user("empty-stock-staff", is_staff=True)
+        self.client.force_login(staff)
+        Product.objects.filter(pk=self.live.pk).update(stock_quantity=0, show_on_homepage=False)
+        response = self.client.post(reverse("staff_product_homepage", args=[self.live.pk]),
+                                    {"visible": "1"}, HTTP_ACCEPT="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.live.refresh_from_db()
+        self.assertFalse(self.live.show_on_homepage)
+
+    def test_migration_repairs_only_stocked_enabled_products(self):
+        from importlib import import_module
+        from django.apps import apps
+        from django.db import connection
+        from types import SimpleNamespace
+        Product.objects.filter(pk__in=[self.live.pk, self.hidden[0].pk]).update(status="out_of_stock")
+        migration = import_module("core.migrations.0055_restore_stocked_homepage_products")
+        migration.restore_stocked_products(apps, SimpleNamespace(connection=connection))
+        self.live.refresh_from_db()
+        self.hidden[0].refresh_from_db()
+        self.assertEqual(self.live.status, "active")
+        self.assertEqual(self.hidden[0].status, "out_of_stock")
+
     def setUp(self):
         self.category = Category.objects.create(name="Catalog tests")
         self.live = self.product("visible", stock_quantity=3)

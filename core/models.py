@@ -265,6 +265,10 @@ class Product(TimeStampedModel):
 
         if self.product_type == "local" and self.stock_quantity <= 0:
             self.status = "out_of_stock"
+        elif self.product_type == "local" and self.status == "out_of_stock" and self.show_on_homepage and self.is_available:
+            self.status = "active"
+        if kwargs.get("update_fields") and "stock_quantity" in kwargs["update_fields"]:
+            kwargs["update_fields"] = set(kwargs["update_fields"]) | {"status"}
 
         if self.product_type == "local" and self.delivery_max_days > 10:
             self.delivery_min_days = 1
