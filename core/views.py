@@ -85,7 +85,7 @@ import html as html_lib
 from urllib.parse import urlparse
 from datetime import timedelta
 
-WHATSAPP_NUMBER = "260766491002"
+WHATSAPP_NUMBER = "260772447190"
 ADMIN_ORDER_EMAIL = "swiftfindzm@gmail.com"
 
 
@@ -3146,7 +3146,7 @@ def save_product_image_view(request, slug):
         )
     draw_centered_text(
         draw, (px(185), cta_top, px(995), cta_bottom),
-        "Order on WhatsApp   +260 766 491 002", cta_font, "#FFFFFF",
+        "Order on WhatsApp   +260 772 447 190", cta_font, "#FFFFFF",
     )
 
     footer_top = px(1652)
