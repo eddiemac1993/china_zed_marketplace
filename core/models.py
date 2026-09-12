@@ -78,7 +78,7 @@ class ExchangeRate(TimeStampedModel):
         help_text="Minimum quantity of a single product needed to qualify for wholesale pricing.",
     )
     wholesale_discount_percentage = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal("10.00"),
+        max_digits=5, decimal_places=2, default=Decimal("23.00"),
         help_text="Discount off the retail price applied per unit once the wholesale quantity is reached.",
     )
     is_active = models.BooleanField(default=True)
@@ -316,7 +316,7 @@ class Product(TimeStampedModel):
 
     def wholesale_price(self):
         rate = self.active_exchange_rate()
-        discount = rate.wholesale_discount_percentage if rate else Decimal("10.00")
+        discount = rate.wholesale_discount_percentage if rate else Decimal("23.00")
         return money(self.selling_price() * (Decimal("1") - discount / Decimal("100")))
 
     def unit_price_for_quantity(self, quantity):
@@ -555,7 +555,7 @@ class ProductVariant(TimeStampedModel):
 
     def wholesale_price(self):
         rate = self.product.active_exchange_rate()
-        discount = rate.wholesale_discount_percentage if rate else Decimal("10.00")
+        discount = rate.wholesale_discount_percentage if rate else Decimal("23.00")
         return money(self.selling_price() * (Decimal("1") - discount / Decimal("100")))
 
     def unit_price_for_quantity(self, quantity):
