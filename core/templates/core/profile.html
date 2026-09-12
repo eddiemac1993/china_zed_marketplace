@@ -248,6 +248,16 @@
                     <div class="min-w-0 flex-1">
                         <strong class="block truncate text-sm text-brand-ink">{{ item.product.name }}</strong>
                         <span class="text-[10px] text-brand-muted">{{ item.product.get_status_display }} · {{ item.product.get_product_type_display }} · K{{ item.product.selling_price }}</span>
+                        {% if item.product.product_type == "local" %}
+                            {% if item.product.stock_quantity > 0 %}
+                                <span class="ml-1.5 inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700">In stock: {{ item.product.stock_quantity }}</span>
+                            {% else %}
+                                <span class="ml-1.5 inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-700">Out of stock</span>
+                            {% endif %}
+                        {% endif %}
+                        {% if not item.product.is_available %}
+                            <span class="ml-1.5 inline-flex items-center rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-black text-neutral-700">Hidden</span>
+                        {% endif %}
                     </div>
                     <span class="text-xs font-black text-brand-orange">Edit <i class="fa-solid fa-chevron-down ml-1"></i></span>
                 </summary>

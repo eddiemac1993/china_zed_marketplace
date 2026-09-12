@@ -242,10 +242,15 @@
                            class="mt-2.5 flex w-full items-center justify-center rounded bg-neutral-900 py-3 text-[13px] font-bold text-white transition hover:bg-orange-600" style="color:#fff!important;background-color:#171717">
                             <i class="fa-solid fa-download mr-1.5" aria-hidden="true"></i><span style="color:#fff!important">Save Product Poster</span>
                         </a>
-                        <a href="{% url 'product_whatsapp' product.slug %}"
-                           target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600" style="color:#fff!important;background-color:#10b981">
-                            <i class="fa-brands fa-whatsapp text-base"></i><span style="color:#fff!important">Share on WhatsApp</span>
-                        </a>
+                        <div class="mt-2 grid grid-cols-[1fr_auto] gap-2">
+                            <a href="{% url 'product_whatsapp' product.slug %}"
+                               target="_blank" rel="noopener" class="flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/25 transition hover:-translate-y-0.5 hover:bg-emerald-600" style="color:#fff!important;background-color:#10b981">
+                                <i class="fa-brands fa-whatsapp text-base"></i><span style="color:#fff!important">Share on WhatsApp</span>
+                            </a>
+                            <button type="button" class="share-btn flex items-center justify-center rounded-lg border border-brand-border bg-white px-4 text-brand-ink transition hover:border-brand-blue hover:bg-brand-blue hover:text-white" aria-label="Share {{ product.name }}" data-share-title="{{ product.name }}" data-share-url="{{ social_product_url }}">
+                                <i class="fa-solid fa-share-nodes"></i>
+                            </button>
+                        </div>
 
                     {% else %}
                         <a href="{% url 'login' %}" class="block rounded bg-brand-orange py-3.5 text-center text-sm font-bold text-white transition hover:bg-orange-500"><i class="fa-solid fa-key"></i> Login to Add to Cart</a>

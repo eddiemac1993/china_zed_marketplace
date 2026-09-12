@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/images/market-icon-180.png' %}">
     <link rel="stylesheet" href="{% static 'core/vendor/fontawesome/css/all.min.css' %}">
 
-    <link rel="stylesheet" href="{% static 'core/css/tailwind.css' %}?v=20260912-rebuild">
+    <link rel="stylesheet" href="{% static 'core/css/tailwind.css' %}?v=20260912-rebuild2">
     <script src="{% static 'core/vendor/htmx.min.js' %}" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous" defer></script>
     <script src="{% static 'core/vendor/alpine-collapse.min.js' %}" defer></script>
     <script src="{% static 'core/vendor/alpine.min.js' %}" defer></script>
@@ -98,6 +98,71 @@
                 event.preventDefault();
             }
         });
+
+        // Universal "Share" button handler: any element with class="share-btn"
+        // plus data-share-url / data-share-title triggers the OS share sheet on
+        // supporting devices, or a small platform-picker menu otherwise.
+        (function () {
+            var menu = document.createElement('div');
+            menu.id = 'share-menu';
+            menu.className = 'hidden fixed z-[2000] w-52 rounded-lg border border-brand-border bg-white p-1.5 shadow-xl';
+            menu.innerHTML =
+                '<a href="#" data-share-action="facebook" class="flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-brand-ink transition hover:bg-neutral-50"><i class="fa-brands fa-facebook text-[#1877F2]"></i> Facebook</a>' +
+                '<a href="#" data-share-action="x" class="flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-brand-ink transition hover:bg-neutral-50"><i class="fa-brands fa-x-twitter"></i> X (Twitter)</a>' +
+                '<a href="#" data-share-action="telegram" class="flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-brand-ink transition hover:bg-neutral-50"><i class="fa-brands fa-telegram text-[#26A5E4]"></i> Telegram</a>' +
+                '<a href="#" data-share-action="whatsapp" class="flex items-center gap-2 rounded-md px-3 py-2 text-xs font-bold text-brand-ink transition hover:bg-neutral-50"><i class="fa-brands fa-whatsapp text-emerald-500"></i> WhatsApp</a>' +
+                '<button type="button" data-share-action="copy" class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-bold text-brand-ink transition hover:bg-neutral-50"><i class="fa-solid fa-link text-brand-muted"></i> Copy Link</button>';
+            document.addEventListener('DOMContentLoaded', function () {
+                document.body.appendChild(menu);
+            });
+
+            var current = { url: '', title: '' };
+
+            function closeMenu() { menu.classList.add('hidden'); }
+
+            document.addEventListener('click', function (event) {
+                var shareBtn = event.target.closest('.share-btn');
+                if (shareBtn) {
+                    event.preventDefault();
+                    current = {
+                        url: shareBtn.dataset.shareUrl || window.location.href,
+                        title: shareBtn.dataset.shareTitle || document.title,
+                    };
+                    if (navigator.share) {
+                        navigator.share(current).catch(function () {});
+                        return;
+                    }
+                    var rect = shareBtn.getBoundingClientRect();
+                    menu.style.top = Math.min(rect.bottom + 6, window.innerHeight - 220) + 'px';
+                    menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 220)) + 'px';
+                    menu.classList.remove('hidden');
+                    return;
+                }
+
+                var action = event.target.closest('[data-share-action]');
+                if (action) {
+                    event.preventDefault();
+                    var url = encodeURIComponent(current.url);
+                    var title = encodeURIComponent(current.title);
+                    var type = action.dataset.shareAction;
+                    if (type === 'facebook') window.open('https://www.facebook.com/sharer.php?u=' + url, '_blank', 'noopener');
+                    else if (type === 'x') window.open('https://twitter.com/intent/tweet?url=' + url + '&text=' + title, '_blank', 'noopener');
+                    else if (type === 'telegram') window.open('https://t.me/share/url?url=' + url + '&text=' + title, '_blank', 'noopener');
+                    else if (type === 'whatsapp') window.open('https://wa.me/?text=' + title + '%20' + url, '_blank', 'noopener');
+                    else if (type === 'copy') {
+                        navigator.clipboard.writeText(current.url).then(function () {
+                            action.innerHTML = '<i class="fa-solid fa-check text-emerald-500"></i> Copied!';
+                            setTimeout(closeMenu, 900);
+                        }).catch(function () {});
+                        return;
+                    }
+                    closeMenu();
+                    return;
+                }
+
+                if (!menu.contains(event.target)) closeMenu();
+            });
+        })();
     </script>
 <link rel="stylesheet" href="{% static 'core/css/accessibility.css' %}?v=20260911-wholesale">
 <script src="{% static 'core/js/privacy-choices.js' %}?v=20260909-2"></script>

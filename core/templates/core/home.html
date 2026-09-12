@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="mb-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+    <div class="mb-3.5 grid grid-cols-2 gap-2.5">
         <a href="{% if request.user.is_authenticated %}{% url 'loans:my_loans' %}{% else %}{% url 'login' %}?next={% url 'loans:my_loans' %}{% endif %}" class="flex items-center gap-3 rounded-xl border border-brand-border bg-white p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg" style="background:#d1fae5;color:#059669"><i class="fa-solid fa-hand-holding-dollar"></i></div>
             <div><div class="text-xs font-black text-brand-ink">Quick Loan</div><div class="mt-0.5 text-[11px] text-brand-muted">View loan information{% if not request.user.is_authenticated %} · login required{% endif %}</div></div>
